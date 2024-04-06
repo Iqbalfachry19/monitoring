@@ -109,7 +109,7 @@ fun LoginPage(navController: NavController) {
                         value = email,
                         onValueChange = { email = it },
                         label = { Text("Email") },
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier.fillMaxWidth().padding(8.dp),
                         keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Next),
                         keyboardActions = KeyboardActions { /* Handle next action if needed */ }
                     )
@@ -118,7 +118,7 @@ fun LoginPage(navController: NavController) {
                         value = password,
                         onValueChange = { password = it },
                         label = { Text("Password") },
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier.fillMaxWidth().padding(8.dp),
                         keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),
                         keyboardActions = KeyboardActions { /* Handle done action if needed */ }
                     )
