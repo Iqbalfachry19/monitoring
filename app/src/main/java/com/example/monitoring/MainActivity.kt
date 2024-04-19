@@ -1,6 +1,7 @@
 package com.example.monitoring
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Arrangement
@@ -43,6 +44,7 @@ import com.example.monitoring.ui.theme.MonitoringTheme
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
+import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
@@ -108,7 +110,7 @@ fun LoginPage(navController: NavController) {
                     OutlinedTextField(
                         value = email,
                         onValueChange = { email = it },
-                        label = { Text("Email") },
+                        label = { Text("Nama") },
                         modifier = Modifier.fillMaxWidth().padding(8.dp),
                         keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Next),
                         keyboardActions = KeyboardActions { /* Handle next action if needed */ }
@@ -124,16 +126,47 @@ fun LoginPage(navController: NavController) {
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     Button(onClick = {
-                        auth.signInWithEmailAndPassword(email, password)
+                        val nameEmail = "$email@gmail.com"
+                        auth.signInWithEmailAndPassword(nameEmail, password)
                             .addOnCompleteListener { task ->
                                 if (task.isSuccessful) {
                                     // Authentication successful, navigate to appropriate screen
-                                    navController.navigate("adminDashboard")
-                                } else {
-                                    // Authentication failed, show error message
-                                    val errorMessage = task.exception?.message ?: "Unknown error"
-                                    CoroutineScope(Dispatchers.Main).launch {
-                                        snackbarHostState.showSnackbar(errorMessage)
+                                    val user = auth.currentUser
+                                    if (user != null) {
+                                        Log.d("user",user.toString()    )
+                                        val userId = user.uid
+                                        val usersRef =
+                                            FirebaseFirestore.getInstance().collection("user")
+                                        usersRef.document(userId).get()
+                                            .addOnSuccessListener { document ->
+                                                if (document != null) {
+                                                    val role = document.getString("role")
+                                                    if (role == "admin") {
+                                                        navController.navigate("adminDashboard")
+                                                    } else if (role == "guru") {
+                                                        navController.navigate("teacherDashboard")
+
+                                                    } else {
+                                                        // User doesn't have required role, show error message
+                                                        CoroutineScope(Dispatchers.Main).launch {
+                                                            snackbarHostState.showSnackbar("Unauthorized access")
+                                                        }
+                                                    }
+                                                } else {
+                                                    // Document doesn't exist
+                                                    CoroutineScope(Dispatchers.Main).launch {
+                                                        snackbarHostState.showSnackbar("User document not found")
+                                                    }
+                                                }
+                                            }
+
+                                    } else {
+                                        // Authentication failed, show error message
+                                        val errorMessage =
+                                            task.exception?.message ?: "Unknown error"
+                                        CoroutineScope(Dispatchers.Main).launch {
+                                            snackbarHostState.showSnackbar(errorMessage)
+                                        }
                                     }
                                 }
                             }
@@ -156,4 +189,5 @@ fun AdminDashboard() {
 @Composable
 fun TeacherDashboard() {
     // Implement teacher dashboard UI
+    Text(text = "guru")
 }
