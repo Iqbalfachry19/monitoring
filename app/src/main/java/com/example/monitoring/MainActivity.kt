@@ -1,20 +1,28 @@
 package com.example.monitoring
 
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
+import androidx.compose.material3.Divider
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -23,6 +31,7 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -34,9 +43,11 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -44,11 +55,15 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import coil.annotation.ExperimentalCoilApi
+import coil.compose.rememberImagePainter
 import com.example.monitoring.ui.theme.MonitoringTheme
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.firestore
+import com.google.firebase.storage.storage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.awaitClose
@@ -59,6 +74,7 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
+import java.util.UUID
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -248,13 +264,15 @@ fun AdminDashboard(navController: NavController) {
         }
     }
 }
+@OptIn(ExperimentalCoilApi::class)
 @Composable
 fun DataGuru(
     navController: NavController
 ){
 
     val firestore = FirebaseFirestore.getInstance()
-    val dataList = remember { mutableStateListOf<String>() }
+    val dataList = remember { mutableStateListOf<Triple<String, String, String>>() }
+
 
     DisposableEffect(Unit) {
         val collectionRef = firestore.collection("guru")
@@ -273,8 +291,9 @@ fun DataGuru(
             snapshot?.documents?.forEach { document ->
                 val name = document.getString("nama") ?: ""
                 val keterangan = document.getString("keterangan") ?: ""
+                val imageUrl = document.getString("imageUrl") ?: ""
                 // Here you can collect more fields as needed
-                dataList.add("$name, $keterangan")
+                dataList.add(Triple(name, keterangan, imageUrl))
             }
         }
         onDispose {
@@ -304,18 +323,149 @@ navController.navigate("tambahGuru")
         Text(text = "Data Guru", style = MaterialTheme.typography.bodyLarge)
         Spacer(modifier = Modifier.height(16.dp))
         // Display the data fetched from Firestore
-        dataList.forEach { data ->
-            Text(text = data)
+        dataList.forEach { (name,keterangan, imageUrl) ->
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(8.dp)
+            ) {
+                Image(
+                    painter = rememberImagePainter(imageUrl),
+                    contentDescription = null,
+                    modifier = Modifier.size(50.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Column {
+                    Text(text = name, style = MaterialTheme.typography.bodySmall)
+                    Spacer(modifier = Modifier.height(4.dp))
+
+                    Text(
+                        text = keterangan,
+                        style = MaterialTheme.typography.bodyLarge,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+            }
+            Divider()
         }
     }
 }
 }
+@OptIn(ExperimentalCoilApi::class)
 @Composable
 fun TambahGuru(
     navController: NavController
 ) {
-Text("Tambah Guru")
+    var name by remember { mutableStateOf("") }
+    var description by remember { mutableStateOf("") }
+    var imageDownloadUrl by remember { mutableStateOf<String?>(null) }
+    val context = LocalContext.current
+    val getContent = rememberLauncherForActivityResult(contract = ActivityResultContracts.GetContent()) { uri ->
+        uri?.let {
+            uploadImageToFirebase(it) { downloadUrl ->
+                imageDownloadUrl = downloadUrl
+            }
+        }
+    }
+
+
+    Column(modifier = Modifier.fillMaxSize()) {
+        // Display the selected image
+        imageDownloadUrl?.let { imageUrl ->
+            Image(
+                painter = rememberImagePainter(imageUrl),
+                contentDescription = null,
+                modifier = Modifier
+                    .size(150.dp) // Adjust the size as needed
+                    .padding(16.dp) // Add padding for better layout
+            )
+        }
+
+        // Button to select image
+        Button(onClick = { getContent.launch("image/*") }) {
+            Text("Select Image")
+        }
+
+        // Text field for name
+        TextField(
+            value = name,
+            onValueChange = { name = it },
+            label = { Text("Nama") },
+            modifier = Modifier.fillMaxWidth().padding(16.dp)
+        )
+
+        // Text field for description
+        TextField(
+            value = description,
+            onValueChange = { description = it },
+            label = { Text("Keterangan") },
+            modifier = Modifier.fillMaxWidth().padding(16.dp)
+        )
+
+        // Button to submit data
+        Button(
+            onClick = {
+                submitDataToDatabase(name, description, imageDownloadUrl,navController)
+            },
+            modifier = Modifier.align(Alignment.CenterHorizontally).padding(16.dp)
+        ) {
+            Text("Submit")
+        }
+    }
 }
+
+private fun submitDataToDatabase(name: String, description: String, imageUrl: String?,
+                                 navController: NavController) {
+    // Access the Firestore collection where you want to store the data
+    val firestore = Firebase.firestore
+    val collectionRef = firestore.collection("guru")
+
+    // Create a new document with a unique ID
+    val documentRef = collectionRef.document()
+
+    // Create a data object to store the fields
+    val data = hashMapOf(
+        "nama" to name,
+        "keterangan" to description,
+        "imageUrl" to imageUrl
+    )
+
+    // Set the data for the document
+    documentRef.set(data)
+        .addOnSuccessListener {
+            // Document successfully written
+            Log.d("Firestore", "DocumentSnapshot successfully written!")
+            navController.popBackStack()
+        }
+        .addOnFailureListener { e ->
+            // Handle any errors that may occur while writing the document
+            Log.w("Firestore", "Error writing document", e)
+        }
+}
+fun uploadImageToFirebase(uri: Uri, callback: (String) -> Unit) {
+    val storage = Firebase.storage
+    val storageRef = storage.reference
+    val imagesRef = storageRef.child("images/${UUID.randomUUID()}")
+
+    val uploadTask = imagesRef.putFile(uri)
+
+    uploadTask.addOnSuccessListener { taskSnapshot ->
+        // Image uploaded successfully
+        // Now, retrieve the download URL
+        imagesRef.downloadUrl.addOnSuccessListener { downloadUri ->
+            val imageUrl = downloadUri.toString()
+            // Pass the download URL to the callback function
+            callback(imageUrl)
+        }.addOnFailureListener { exception ->
+            // Handle any errors that may occur while getting the download URL
+            Log.e("FirebaseStorage", "Failed to get download URL: ${exception.message}")
+        }
+    }.addOnFailureListener { exception ->
+        // Handle any errors that may occur while uploading the image
+        Log.e("FirebaseStorage", "Failed to upload image: ${exception.message}")
+    }
+}
+
 @Composable
 fun TeacherDashboard(
 
