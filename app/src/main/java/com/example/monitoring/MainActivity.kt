@@ -24,8 +24,10 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -34,8 +36,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -47,8 +51,14 @@ import com.google.firebase.auth.auth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.channelFlow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -63,7 +73,13 @@ class MainActivity : ComponentActivity() {
                         LoginPage(navController)
                     }
                     composable("adminDashboard") {
-                        AdminDashboard()
+                        AdminDashboard(navController)
+                    }
+                    composable("dataGuru") {
+                        DataGuru(navController)
+                    }
+                    composable("tambahGuru") {
+                        TambahGuru(navController)
                     }
                     composable("teacherDashboard") {
                         TeacherDashboard()
@@ -111,7 +127,9 @@ fun LoginPage(navController: NavController) {
                         value = email,
                         onValueChange = { email = it },
                         label = { Text("Nama") },
-                        modifier = Modifier.fillMaxWidth().padding(8.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp),
                         keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Next),
                         keyboardActions = KeyboardActions { /* Handle next action if needed */ }
                     )
@@ -120,9 +138,12 @@ fun LoginPage(navController: NavController) {
                         value = password,
                         onValueChange = { password = it },
                         label = { Text("Password") },
-                        modifier = Modifier.fillMaxWidth().padding(8.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp),
                         keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),
-                        keyboardActions = KeyboardActions { /* Handle done action if needed */ }
+                        keyboardActions = KeyboardActions { /* Handle done action if needed */ },
+                                visualTransformation = PasswordVisualTransformation()
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     Button(onClick = {
@@ -181,13 +202,163 @@ fun LoginPage(navController: NavController) {
 
 
 @Composable
-fun AdminDashboard() {
+fun AdminDashboard(navController: NavController) {
     // Implement admin dashboard UI
-    Text(text = "admin")
+    Column(
+        modifier = Modifier
+            .padding(16.dp)
+            .fillMaxSize(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(text = "Dashboard Admin", style = MaterialTheme.typography.bodyLarge)
+        Spacer(modifier = Modifier.height(16.dp))
+        Button(onClick = {
+            navController.navigate("dataGuru")
+        }) {
+            Text(text = "Data Guru")
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+        Button(onClick = {}) {
+            Text(text = "Data Staff")
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+        Button(onClick = {}) {
+            Text(text = "Data Siswa")
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+        Button(onClick = {}) {
+            Text(text = "Data Jadwal Pelajaran")
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+        Button(onClick = {}) {
+            Text(text = "Data Jadwal Ujian")
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+        Button(onClick = {}) {
+            Text(text = "Data Nilai dan Peringkat Siswa")
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+        Button(onClick = {}) {
+            Text(text = "Data Pekembangan Nilai")
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+        Button(onClick = {}) {
+            Text(text = "Data Rekapan Kehadiran Siswa")
+        }
+    }
 }
-
 @Composable
-fun TeacherDashboard() {
-    // Implement teacher dashboard UI
-    Text(text = "guru")
+fun DataGuru(
+    navController: NavController
+){
+
+    val firestore = FirebaseFirestore.getInstance()
+    val dataList = remember { mutableStateListOf<String>() }
+
+    DisposableEffect(Unit) {
+        val collectionRef = firestore.collection("guru")
+
+        // Listen for real-time updates to the Firestore collection
+        val listenerRegistration = collectionRef.addSnapshotListener { snapshot, error ->
+            if (error != null) {
+                // Handle error
+                return@addSnapshotListener
+            }
+
+            // Clear the previous data before adding new data
+            dataList.clear()
+
+            // Add the new data to the list
+            snapshot?.documents?.forEach { document ->
+                val name = document.getString("nama") ?: ""
+                val keterangan = document.getString("keterangan") ?: ""
+                // Here you can collect more fields as needed
+                dataList.add("$name, $keterangan")
+            }
+        }
+        onDispose {
+            listenerRegistration.remove()
+        }
+    }
+Scaffold(
+    floatingActionButton = {
+
+        ExtendedFloatingActionButton(
+            onClick = {
+                // show snackbar as a suspend function
+
+navController.navigate("tambahGuru")
+            }
+        ) { Text("+", fontSize = 24.sp) }
+    },
+) { innerPadding ->
+
+    Column(
+        modifier = Modifier
+            .padding(innerPadding)
+            .fillMaxSize(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(text = "Data Guru", style = MaterialTheme.typography.bodyLarge)
+        Spacer(modifier = Modifier.height(16.dp))
+        // Display the data fetched from Firestore
+        dataList.forEach { data ->
+            Text(text = data)
+        }
+    }
+}
+}
+@Composable
+fun TambahGuru(
+    navController: NavController
+) {
+Text("Tambah Guru")
+}
+@Composable
+fun TeacherDashboard(
+
+) {
+    Column(
+        modifier = Modifier
+            .padding(16.dp)
+            .fillMaxSize(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(text = "Dashboard Guru", style = MaterialTheme.typography.bodyLarge)
+        Spacer(modifier = Modifier.height(16.dp))
+        Button(onClick = {}) {
+            Text(text = "Data Guru")
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+        Button(onClick = {}) {
+            Text(text = "Data Staff")
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+        Button(onClick = {}) {
+            Text(text = "Data Siswa")
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+        Button(onClick = {}) {
+            Text(text = "Data Jadwal Pelajaran")
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+        Button(onClick = {}) {
+            Text(text = "Data Jadwal Ujian")
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+        Button(onClick = {}) {
+            Text(text = "Data Nilai dan Peringkat Siswa")
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+        Button(onClick = {}) {
+            Text(text = "Data Pekembangan Nilai")
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+        Button(onClick = {}) {
+            Text(text = "Data Rekapan Kehadiran Siswa")
+        }
+    }
 }
