@@ -10,8 +10,10 @@ import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -23,6 +25,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -39,6 +44,8 @@ import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.FloatingActionButton
@@ -76,6 +83,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -113,7 +121,10 @@ data class NavigationItem(
     val hasNews:Boolean,
     val badgeCount:Int? = null
 )
-
+data class CardItem(
+    val title: String,
+    val index:Int,
+)
 class MainActivity : ComponentActivity() {
     @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -258,28 +269,30 @@ fun LoginPage(navController: NavController) {
 fun NavigationSideBar(
     items: List<NavigationItem>,
     selectedItemIndex:Int,
-    onNavigate:(Int)-> Unit
+    onNavigate:(Int)-> Unit,
+    padding:PaddingValues
 ){
-NavigationRail(  header = {
-   FloatingActionButton(onClick = { }) {
-        Icon(imageVector = Icons.Default.Search, contentDescription = "Search")
-    }}, modifier = Modifier
+NavigationRail(  modifier = Modifier
     .background(MaterialTheme.colorScheme.inverseOnSurface)
-    .offset(x = (-1).dp)) {
+    .offset(x = (-1).dp).padding(padding)) {
+Column(            modifier = Modifier.fillMaxHeight(),
+    verticalArrangement = Arrangement.spacedBy(12.dp, Alignment.Bottom)
+) {
 
-        items.forEachIndexed { index, item ->
-            NavigationRailItem(
-                selected = selectedItemIndex == index,
-                onClick = { onNavigate(index) },
-                icon = {
-                    NavigationIcon(
-                        item = item,
-                        selected = selectedItemIndex == index
-                    )
-                },
-                label = { Text(text = item.title) })
-        }
 
+    items.forEachIndexed { index, item ->
+        NavigationRailItem(
+            selected = selectedItemIndex == index,
+            onClick = { onNavigate(index) },
+            icon = {
+                NavigationIcon(
+                    item = item,
+                    selected = selectedItemIndex == index
+                )
+            },
+            label = { Text(text = item.title, textAlign = TextAlign.Center ) })
+    }
+}
 }
 }
 @Composable
@@ -311,9 +324,11 @@ fun AdminDashboard(navController: NavController) {
     var selectedItemIndex by rememberSaveable {
         mutableStateOf(0)
     }
+    var selectedItemIndex1 by rememberSaveable {
+        mutableStateOf(0)
+    }
     val showNavigationRail = windowClass.widthSizeClass == WindowWidthSizeClass.Compact
-
-    val items = listOf(
+    val items1 = listOf(
         NavigationItem(
             title= "Home",
             selectedIcon = Icons.Filled.Home,
@@ -321,30 +336,80 @@ fun AdminDashboard(navController: NavController) {
             hasNews =false
         ),
         NavigationItem(
-            title= "Data Guru",
+            title= "Search",
             selectedIcon = Icons.Filled.Search,
             unselectedIcon = Icons.Outlined.Search,
             hasNews =false
         ),
-
         NavigationItem(
             title= "Settings",
             selectedIcon = Icons.Filled.Settings,
             unselectedIcon = Icons.Outlined.Settings
             ,
-            hasNews =true
-        )
+            hasNews =false
+        ),
+
+    )
+    val items = listOf(
+
+        NavigationItem(
+            title= "Data Guru",
+            selectedIcon = Icons.Filled.Person,
+            unselectedIcon = Icons.Outlined.Person,
+            hasNews =false
+        ),
+
+        NavigationItem(
+            title= "Data Staff",
+            selectedIcon = Icons.Filled.Person,
+            unselectedIcon = Icons.Outlined.Person
+            ,
+            hasNews =false
+        ),
+        NavigationItem(
+            title= "Data Siswa",
+            selectedIcon = Icons.Filled.Person,
+            unselectedIcon = Icons.Outlined.Person,
+            hasNews =false
+        ),
+        NavigationItem(
+            title= "Data \nJadwal \nPelajaran",
+            selectedIcon = Icons.Filled.Person,
+            unselectedIcon = Icons.Outlined.Person,
+            hasNews =false
+        ),
+        NavigationItem(
+            title= "Data \nJadwal Ujian",
+            selectedIcon = Icons.Filled.Person,
+            unselectedIcon = Icons.Outlined.Person,
+            hasNews =false
+        ),NavigationItem(
+            title= "Data \nNilai \ndan \nPeringkat\n Siswa",
+            selectedIcon = Icons.Filled.Person,
+            unselectedIcon = Icons.Outlined.Person,
+            hasNews =false
+        ),NavigationItem(
+            title= "Data \nPerkembangan \nNilai",
+            selectedIcon = Icons.Filled.Person,
+            unselectedIcon = Icons.Outlined.Person,
+            hasNews =false
+        ),NavigationItem(
+            title= "Data \nRekapan \nKehadiran Siswa",
+            selectedIcon = Icons.Filled.Person,
+            unselectedIcon = Icons.Outlined.Person,
+            hasNews =false
+        ),
     )
 
     Scaffold (
         bottomBar = {
             if(showNavigationRail){
 NavigationBar {
-    items.forEachIndexed { index, item ->
+    items1.forEachIndexed { index, item ->
         NavigationBarItem(
-            selected = selectedItemIndex == index,
+            selected = selectedItemIndex1 == index,
             onClick = {
-                selectedItemIndex = index
+                selectedItemIndex1 = index
                 // navController.navigate(item.title)
             },
             label = {
@@ -364,7 +429,7 @@ NavigationBar {
                     }
                 ) {
                     Icon(
-                        imageVector = if (index == selectedItemIndex) {
+                        imageVector = if (index == selectedItemIndex1) {
                             item.selectedIcon
                         } else item.unselectedIcon,
                         contentDescription = item.title
@@ -378,6 +443,12 @@ NavigationBar {
         },
 
     ) {
+        Row {
+
+            if(showNavigationRail){
+                NavigationSideBar(items = items, selectedItemIndex =selectedItemIndex, onNavigate = {selectedItemIndex = it},padding=it )
+
+            }
         if(selectedItemIndex == 0){
             // Implement admin dashboard UI
             Column(
@@ -389,46 +460,65 @@ NavigationBar {
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(text = "Dashboard Admin", style = MaterialTheme.typography.bodyLarge)
+                Spacer(modifier = Modifier.height(8.dp))
+                val cards= listOf(CardItem(
+                    title = "Data Guru",
+                    index = 1
+                ),
+                    CardItem(
+                        title = "Data Staff",
+                        index = 2
+                    ),
+                            CardItem(
+                            title = "Data Siswa",
+                                index = 3
+                ),
+                    CardItem(
+                        title = "Data Jadwal Pelajaran",
+                        index = 4
+                    ),
+                    CardItem(
+                        title = "Data Jadwal Ujian",
+                        index = 5
+                    ),
+                    CardItem(
+                        title = "Data Nilai dan Peringkat Siswa",
+                        index = 6
+                    ),
+                    CardItem(
+                        title = "Data Perkembangan Nilai",
+                        index = 7
+                    ),
+                    CardItem(
+                        title = "Data Rekapan Kehadiran Siswa",
+                        index = 6
+                    ),
+                    )
+                LazyVerticalGrid(
+                    columns = GridCells.Adaptive(minSize = 128.dp)
+                ) {
+                    items(cards) {
+                        Card(
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.surfaceVariant,
 
-                Spacer(modifier = Modifier.height(8.dp))
-                Button(onClick = {}) {
-                    Text(text = "Data Staff")
-                }
-                Spacer(modifier = Modifier.height(8.dp))
-                Button(onClick = {}) {
-                    Text(text = "Data Siswa")
-                }
-                Spacer(modifier = Modifier.height(8.dp))
-                Button(onClick = {}) {
-                    Text(text = "Data Jadwal Pelajaran")
-                }
-                Spacer(modifier = Modifier.height(8.dp))
-                Button(onClick = {}) {
-                    Text(text = "Data Jadwal Ujian")
-                }
-                Spacer(modifier = Modifier.height(8.dp))
-                Button(onClick = {}) {
-                    Text(text = "Data Nilai dan Peringkat Siswa")
-                }
-                Spacer(modifier = Modifier.height(8.dp))
-                Button(onClick = {}) {
-                    Text(text = "Data Pekembangan Nilai")
-                }
-                Spacer(modifier = Modifier.height(8.dp))
-                Button(onClick = {}) {
-                    Text(text = "Data Rekapan Kehadiran Siswa")
+                            ),
+                            modifier = Modifier
+                                .size(width = 100.dp, height = 100.dp).clickable { selectedItemIndex =it.index }.padding(8.dp)
+                        ) {
+                            Text(text = it.title, textAlign = TextAlign.Center, modifier = Modifier.align(Alignment.CenterHorizontally))
+                        }
+                    }
+
                 }
             }
         }
 if(selectedItemIndex == 1){
     DataGuru(navController = navController)
 }
-
+        }
     }
-    if(showNavigationRail){
-        NavigationSideBar(items = items, selectedItemIndex =selectedItemIndex, onNavigate = {selectedItemIndex = it} )
 
-    }
 }
 @OptIn(ExperimentalCoilApi::class)
 @Composable
