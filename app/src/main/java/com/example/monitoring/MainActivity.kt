@@ -56,6 +56,8 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemColors
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.NavigationRail
 import androidx.compose.material3.NavigationRailItem
 import androidx.compose.material3.OutlinedTextField
@@ -80,6 +82,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
@@ -180,6 +183,12 @@ class MainActivity : ComponentActivity() {
                     composable("dataNilai") {
                         DataNilai(navController)
                     }
+                    composable("dataPerkembangan") {
+                        DataPerkembangan(navController)
+                    }
+                    composable("dataRekapan") {
+                        DataRekapan(navController)
+                    }
                     composable("tambahGuru") {
                         TambahGuru(navController)
                     }
@@ -240,6 +249,10 @@ fun ScreenWithScaffold(navController: NavController, content: @Composable (Paddi
                 NavigationBar {
                     items1.forEach { item ->
                         NavigationBarItem(
+                            colors = NavigationBarItemDefaults.colors(
+
+                                indicatorColor = MaterialTheme.colorScheme.tertiary,
+                            ),
                             selected = currentRoute == item.route,
                             onClick = {
 
@@ -294,19 +307,19 @@ fun LoginPage(navController: NavController) {
 
         Scaffold(
             snackbarHost = { SnackbarHost(snackbarHostState) },
-            floatingActionButton = {
-                var clickCount by remember { mutableStateOf(0) }
-                ExtendedFloatingActionButton(
-                    onClick = {
-                        // show snackbar as a suspend function
-                        scope.launch {
-                            snackbarHostState.showSnackbar(
-                                "Snackbar # ${++clickCount}"
-                            )
-                        }
-                    }
-                ) { Text("Show snackbar") }
-            },
+//            floatingActionButton = {
+//                var clickCount by remember { mutableStateOf(0) }
+//                ExtendedFloatingActionButton(
+//                    onClick = {
+//                        // show snackbar as a suspend function
+//                        scope.launch {
+//                            snackbarHostState.showSnackbar(
+//                                "Snackbar # ${++clickCount}"
+//                            )
+//                        }
+//                    }
+//                ) { Text("Show snackbar") }
+//            },
             content = { innerPadding ->
                 Column(
                     modifier = Modifier
@@ -548,11 +561,11 @@ fun AdminDashboard(navController: NavController,it:PaddingValues) {
                     ),
                     CardItem(
                         title = "Data Perkembangan Nilai",
-                        route ="dataJadwalPelajaran"
+                        route ="dataPerkembangan"
                     ),
                     CardItem(
                         title = "Data Rekapan Kehadiran Siswa",
-                        route ="dataJadwalPelajaran"
+                        route ="dataRekapan"
                     ),
                     )
                 LazyVerticalGrid(
@@ -561,7 +574,7 @@ fun AdminDashboard(navController: NavController,it:PaddingValues) {
                     items(cards) {
                         Card(
                             colors = CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                                containerColor = MaterialTheme.colorScheme.tertiary,
 
                             ),
                             modifier = Modifier
@@ -1077,6 +1090,202 @@ fun DataNilai(
                             overflow = TextOverflow.Ellipsis
                         )
                     }
+
+                Divider()
+            }
+        }
+    }
+}
+@OptIn(ExperimentalCoilApi::class)
+@Composable
+fun DataPerkembangan(
+    navController: NavController
+){
+
+    val firestore = FirebaseFirestore.getInstance()
+    val dataList = remember { mutableStateListOf<Nilai<String, List<Pair<String, String>>,String>>() }
+
+
+    DisposableEffect(Unit) {
+        val collectionRef = firestore.collection("nilai")
+
+        // Listen for real-time updates to the Firestore collection
+        val listenerRegistration = collectionRef.addSnapshotListener { snapshot, error ->
+            if (error != null) {
+                // Handle error
+                return@addSnapshotListener
+            }
+
+            // Clear the previous data before adding new data
+            dataList.clear()
+
+            // Add the new data to the list
+            snapshot?.documents?.forEach { document ->
+                val nama = document.getString("nama") ?: ""
+                val mataPelajaranArray = document.get("mata_pelajaran") as? ArrayList<HashMap<String, String>> ?: arrayListOf()
+
+                // Iterate through each item in the mataPelajaranArray and extract nama and nilai
+                val mataPelajaranList = mutableListOf<Pair<String, String>>()
+                mataPelajaranArray.forEach { mataPelajaranMap ->
+                    val namaPelajaran = mataPelajaranMap["nama"] ?: ""
+                    val nilaiPelajaran = mataPelajaranMap["nilai"] ?: ""
+                    mataPelajaranList.add(Pair(namaPelajaran, nilaiPelajaran))
+                }
+                val peringkat = document.getString("peringkat") ?: ""
+                // Here you can collect more fields as needed
+                dataList.add(Nilai(nama, mataPelajaranList,peringkat))
+            }
+        }
+        onDispose {
+            listenerRegistration.remove()
+        }
+    }
+    Scaffold(
+        floatingActionButton = {
+
+            ExtendedFloatingActionButton(
+                onClick = {
+                    // show snackbar as a suspend function
+
+                    navController.navigate("tambahStaff")
+                }
+            ) { Text("+", fontSize = 24.sp) }
+        },
+    ) { innerPadding ->
+
+        Column(
+            modifier = Modifier
+                .padding(innerPadding)
+                .fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(text = "Data Nilai dan Peringkat Siswa", style = MaterialTheme.typography.bodyLarge)
+            Spacer(modifier = Modifier.height(16.dp))
+            // Display the data fetched from Firestore
+            dataList.forEach { (nama,matapelajaran,peringkat) ->
+
+                Spacer(modifier = Modifier.width(8.dp))
+                Column {
+                    Text(text = nama, style = MaterialTheme.typography.bodySmall)
+                    Spacer(modifier = Modifier.height(4.dp))
+
+
+
+                    matapelajaran.forEach { (pelajaran, nilai) ->
+                        Text(
+                            text = "$pelajaran: $nilai",
+                            style = MaterialTheme.typography.bodyLarge,
+                            maxLines = 1
+                        )}
+
+
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = peringkat,
+                        style = MaterialTheme.typography.bodyLarge,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+
+                Divider()
+            }
+        }
+    }
+}
+@OptIn(ExperimentalCoilApi::class)
+@Composable
+fun DataRekapan(
+    navController: NavController
+){
+
+    val firestore = FirebaseFirestore.getInstance()
+    val dataList = remember { mutableStateListOf<Nilai<String, List<Pair<String, String>>,String>>() }
+
+
+    DisposableEffect(Unit) {
+        val collectionRef = firestore.collection("nilai")
+
+        // Listen for real-time updates to the Firestore collection
+        val listenerRegistration = collectionRef.addSnapshotListener { snapshot, error ->
+            if (error != null) {
+                // Handle error
+                return@addSnapshotListener
+            }
+
+            // Clear the previous data before adding new data
+            dataList.clear()
+
+            // Add the new data to the list
+            snapshot?.documents?.forEach { document ->
+                val nama = document.getString("nama") ?: ""
+                val mataPelajaranArray = document.get("mata_pelajaran") as? ArrayList<HashMap<String, String>> ?: arrayListOf()
+
+                // Iterate through each item in the mataPelajaranArray and extract nama and nilai
+                val mataPelajaranList = mutableListOf<Pair<String, String>>()
+                mataPelajaranArray.forEach { mataPelajaranMap ->
+                    val namaPelajaran = mataPelajaranMap["nama"] ?: ""
+                    val nilaiPelajaran = mataPelajaranMap["nilai"] ?: ""
+                    mataPelajaranList.add(Pair(namaPelajaran, nilaiPelajaran))
+                }
+                val peringkat = document.getString("peringkat") ?: ""
+                // Here you can collect more fields as needed
+                dataList.add(Nilai(nama, mataPelajaranList,peringkat))
+            }
+        }
+        onDispose {
+            listenerRegistration.remove()
+        }
+    }
+    Scaffold(
+        floatingActionButton = {
+
+            ExtendedFloatingActionButton(
+                onClick = {
+                    // show snackbar as a suspend function
+
+                    navController.navigate("tambahStaff")
+                }
+            ) { Text("+", fontSize = 24.sp) }
+        },
+    ) { innerPadding ->
+
+        Column(
+            modifier = Modifier
+                .padding(innerPadding)
+                .fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(text = "Data Nilai dan Peringkat Siswa", style = MaterialTheme.typography.bodyLarge)
+            Spacer(modifier = Modifier.height(16.dp))
+            // Display the data fetched from Firestore
+            dataList.forEach { (nama,matapelajaran,peringkat) ->
+
+                Spacer(modifier = Modifier.width(8.dp))
+                Column {
+                    Text(text = nama, style = MaterialTheme.typography.bodySmall)
+                    Spacer(modifier = Modifier.height(4.dp))
+
+
+
+                    matapelajaran.forEach { (pelajaran, nilai) ->
+                        Text(
+                            text = "$pelajaran: $nilai",
+                            style = MaterialTheme.typography.bodyLarge,
+                            maxLines = 1
+                        )}
+
+
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = peringkat,
+                        style = MaterialTheme.typography.bodyLarge,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
 
                 Divider()
             }
