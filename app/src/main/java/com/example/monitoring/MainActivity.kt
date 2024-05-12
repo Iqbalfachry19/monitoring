@@ -125,6 +125,8 @@ data class NavigationItem(
     val hasNews:Boolean,
     val badgeCount:Int? = null
 )
+data class Quadruple<T, U, V, W>(val first: T, val second: U, val third: V, val fourth: W)
+
 data class CardItem(
     val title: String,
     val route:String,
@@ -166,8 +168,17 @@ class MainActivity : ComponentActivity() {
                     composable("dataSiswa") {
                         DataSiswa(navController)
                     }
+                    composable("dataJadwalPelajaran") {
+                        DataJadwalPelajaran(navController)
+                    }
                     composable("tambahGuru") {
                         TambahGuru(navController)
+                    }
+                    composable("tambahStaff") {
+                        TambahStaff(navController)
+                    }
+                    composable("tambahSiswa") {
+                        TambahSiswa(navController)
                     }
                     composable("teacherDashboard") {
                         TeacherDashboard()
@@ -714,7 +725,7 @@ fun DataSiswa(
                 onClick = {
                     // show snackbar as a suspend function
 
-                    navController.navigate("tambahGuru")
+                    navController.navigate("tambahSiswa")
                 }
             ) { Text("+", fontSize = 24.sp) }
         },
@@ -751,6 +762,106 @@ fun DataSiswa(
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis
                         )
+                    }
+                }
+                Divider()
+            }
+        }
+    }
+}
+@OptIn(ExperimentalCoilApi::class)
+@Composable
+fun DataJadwalPelajaran(
+    navController: NavController
+){
+
+    val firestore = FirebaseFirestore.getInstance()
+    val dataList = remember { mutableStateListOf<Quadruple<String, String, String,String>>() }
+
+
+    DisposableEffect(Unit) {
+        val collectionRef = firestore.collection("jadwalPelajaran")
+
+        // Listen for real-time updates to the Firestore collection
+        val listenerRegistration = collectionRef.addSnapshotListener { snapshot, error ->
+            if (error != null) {
+                // Handle error
+                return@addSnapshotListener
+            }
+
+            // Clear the previous data before adding new data
+            dataList.clear()
+
+            // Add the new data to the list
+            snapshot?.documents?.forEach { document ->
+                val nama = document.getString("nama") ?: ""
+                val jam = document.getString("jam") ?: ""
+                val kelas = document.getString("kelas") ?: ""
+                val hari = document.getString("hari") ?: ""
+                // Here you can collect more fields as needed
+                dataList.add(Quadruple(nama,jam,kelas,hari))
+            }
+        }
+        onDispose {
+            listenerRegistration.remove()
+        }
+    }
+    Scaffold(
+        floatingActionButton = {
+
+            ExtendedFloatingActionButton(
+                onClick = {
+                    // show snackbar as a suspend function
+
+                    navController.navigate("tambahJadwalPelajaran")
+                }
+            ) { Text("+", fontSize = 24.sp) }
+        },
+    ) { innerPadding ->
+
+        Column(
+            modifier = Modifier
+                .padding(innerPadding)
+                .fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(text = "Data Jadwal Pelajaran", style = MaterialTheme.typography.bodyLarge)
+            Spacer(modifier = Modifier.height(16.dp))
+            // Display the data fetched from Firestore
+            dataList.forEach { (nama,jam,kelas,hari) ->
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(8.dp)
+                ) {
+
+
+                    Column {
+                        Text(text = nama, style = MaterialTheme.typography.bodySmall)
+                        Spacer(modifier = Modifier.height(4.dp))
+
+                        Text(
+                            text = kelas,
+                            style = MaterialTheme.typography.bodyLarge,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = jam,
+                            style = MaterialTheme.typography.bodyLarge,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = hari,
+                            style = MaterialTheme.typography.bodyLarge,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+
                     }
                 }
                 Divider()
@@ -801,7 +912,7 @@ fun DataStaff(
                 onClick = {
                     // show snackbar as a suspend function
 
-                    navController.navigate("tambahGuru")
+                    navController.navigate("tambahStaff")
                 }
             ) { Text("+", fontSize = 24.sp) }
         },
@@ -842,6 +953,142 @@ fun DataStaff(
                 }
                 Divider()
             }
+        }
+    }
+}
+@OptIn(ExperimentalCoilApi::class)
+@Composable
+fun TambahSiswa(
+    navController: NavController
+) {
+    var name by remember { mutableStateOf("") }
+    var description by remember { mutableStateOf("") }
+    var imageDownloadUrl by remember { mutableStateOf<String?>(null) }
+    val context = LocalContext.current
+    val getContent = rememberLauncherForActivityResult(contract = ActivityResultContracts.GetContent()) { uri ->
+        uri?.let {
+            uploadImageToFirebase(it) { downloadUrl ->
+                imageDownloadUrl = downloadUrl
+            }
+        }
+    }
+
+
+    Column(modifier = Modifier.fillMaxSize()) {
+        // Display the selected image
+        imageDownloadUrl?.let { imageUrl ->
+            Image(
+                painter = rememberImagePainter(imageUrl),
+                contentDescription = null,
+                modifier = Modifier
+                    .size(150.dp) // Adjust the size as needed
+                    .padding(16.dp) // Add padding for better layout
+            )
+        }
+
+        // Button to select image
+        Button(onClick = { getContent.launch("image/*") }) {
+            Text("Select Image")
+        }
+
+        // Text field for name
+        TextField(
+            value = name,
+            onValueChange = { name = it },
+            label = { Text("Nama") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        )
+
+        // Text field for description
+        TextField(
+            value = description,
+            onValueChange = { description = it },
+            label = { Text("Keterangan") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        )
+
+        // Button to submit data
+        Button(
+            onClick = {
+                submitDataToDatabase(name, description, imageDownloadUrl,navController,data= "siswa")
+            },
+            modifier = Modifier
+                .align(Alignment.CenterHorizontally)
+                .padding(16.dp)
+        ) {
+            Text("Submit")
+        }
+    }
+}
+@OptIn(ExperimentalCoilApi::class)
+@Composable
+fun TambahStaff(
+    navController: NavController
+) {
+    var name by remember { mutableStateOf("") }
+    var description by remember { mutableStateOf("") }
+    var imageDownloadUrl by remember { mutableStateOf<String?>(null) }
+    val context = LocalContext.current
+    val getContent = rememberLauncherForActivityResult(contract = ActivityResultContracts.GetContent()) { uri ->
+        uri?.let {
+            uploadImageToFirebase(it) { downloadUrl ->
+                imageDownloadUrl = downloadUrl
+            }
+        }
+    }
+
+
+    Column(modifier = Modifier.fillMaxSize()) {
+        // Display the selected image
+        imageDownloadUrl?.let { imageUrl ->
+            Image(
+                painter = rememberImagePainter(imageUrl),
+                contentDescription = null,
+                modifier = Modifier
+                    .size(150.dp) // Adjust the size as needed
+                    .padding(16.dp) // Add padding for better layout
+            )
+        }
+
+        // Button to select image
+        Button(onClick = { getContent.launch("image/*") }) {
+            Text("Select Image")
+        }
+
+        // Text field for name
+        TextField(
+            value = name,
+            onValueChange = { name = it },
+            label = { Text("Nama") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        )
+
+        // Text field for description
+        TextField(
+            value = description,
+            onValueChange = { description = it },
+            label = { Text("Keterangan") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        )
+
+        // Button to submit data
+        Button(
+            onClick = {
+                submitDataToDatabase(name, description, imageDownloadUrl,navController,data= "staff")
+            },
+            modifier = Modifier
+                .align(Alignment.CenterHorizontally)
+                .padding(16.dp)
+        ) {
+            Text("Submit")
         }
     }
 }
@@ -903,7 +1150,7 @@ fun TambahGuru(
         // Button to submit data
         Button(
             onClick = {
-                submitDataToDatabase(name, description, imageDownloadUrl,navController)
+                submitDataToDatabase(name, description, imageDownloadUrl,navController,data= "guru")
             },
             modifier = Modifier
                 .align(Alignment.CenterHorizontally)
@@ -914,11 +1161,12 @@ fun TambahGuru(
     }
 }
 
+
 private fun submitDataToDatabase(name: String, description: String, imageUrl: String?,
-                                 navController: NavController) {
+                                 navController: NavController,data:String) {
     // Access the Firestore collection where you want to store the data
     val firestore = Firebase.firestore
-    val collectionRef = firestore.collection("guru")
+    val collectionRef = firestore.collection(data)
 
     // Create a new document with a unique ID
     val documentRef = collectionRef.document()
