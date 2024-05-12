@@ -26,6 +26,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -126,6 +127,8 @@ data class NavigationItem(
     val badgeCount:Int? = null
 )
 data class Quadruple<T, U, V, W>(val first: T, val second: U, val third: V, val fourth: W)
+data class Quintuple<T, U, V, W,X>(val first: T, val second: U, val third: V, val fourth: W, val fifth:X)
+data class Nilai<T, U, V>(val nama: T, val mataPelajaranList: U, val peringkat:V)
 
 data class CardItem(
     val title: String,
@@ -170,6 +173,12 @@ class MainActivity : ComponentActivity() {
                     }
                     composable("dataJadwalPelajaran") {
                         DataJadwalPelajaran(navController)
+                    }
+                    composable("dataJadwalUjian") {
+                        DataJadwalUjian(navController)
+                    }
+                    composable("dataNilai") {
+                        DataNilai(navController)
                     }
                     composable("tambahGuru") {
                         TambahGuru(navController)
@@ -531,11 +540,11 @@ fun AdminDashboard(navController: NavController,it:PaddingValues) {
                     ),
                     CardItem(
                         title = "Data Jadwal Ujian",
-                        route ="dataJadwalPelajaran"
+                        route ="dataJadwalUjian"
                     ),
                     CardItem(
                         title = "Data Nilai dan Peringkat Siswa",
-                        route ="dataJadwalPelajaran"
+                        route ="dataNilai"
                     ),
                     CardItem(
                         title = "Data Perkembangan Nilai",
@@ -864,6 +873,211 @@ fun DataJadwalPelajaran(
 
                     }
                 }
+                Divider()
+            }
+        }
+    }
+}
+@OptIn(ExperimentalCoilApi::class)
+@Composable
+fun DataJadwalUjian(
+    navController: NavController
+){
+
+    val firestore = FirebaseFirestore.getInstance()
+    val dataList = remember { mutableStateListOf<Quintuple<String, String, String,String,String>>() }
+
+
+    DisposableEffect(Unit) {
+        val collectionRef = firestore.collection("jadwalUjian")
+
+        // Listen for real-time updates to the Firestore collection
+        val listenerRegistration = collectionRef.addSnapshotListener { snapshot, error ->
+            if (error != null) {
+                // Handle error
+                return@addSnapshotListener
+            }
+
+            // Clear the previous data before adding new data
+            dataList.clear()
+
+            // Add the new data to the list
+            snapshot?.documents?.forEach { document ->
+                val nama = document.getString("nama") ?: ""
+                val jam = document.getString("jam") ?: ""
+                val kelas = document.getString("kelas") ?: ""
+                val hari = document.getString("hari") ?: ""
+                val tanggal = document.getString("tanggal") ?: ""
+                // Here you can collect more fields as needed
+                dataList.add(Quintuple(nama,jam,kelas,hari,tanggal))
+            }
+        }
+        onDispose {
+            listenerRegistration.remove()
+        }
+    }
+    Scaffold(
+        floatingActionButton = {
+
+            ExtendedFloatingActionButton(
+                onClick = {
+                    // show snackbar as a suspend function
+
+                    navController.navigate("tambahJadwalPelajaran")
+                }
+            ) { Text("+", fontSize = 24.sp) }
+        },
+    ) { innerPadding ->
+
+        Column(
+            modifier = Modifier
+                .padding(innerPadding)
+                .fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(text = "Data Jadwal Ujian", style = MaterialTheme.typography.bodyLarge)
+            Spacer(modifier = Modifier.height(16.dp))
+            // Display the data fetched from Firestore
+            dataList.forEach { (nama,jam,kelas,hari,tanggal) ->
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(8.dp)
+                ) {
+
+
+                    Column {
+                        Text(text = nama, style = MaterialTheme.typography.bodySmall)
+                        Spacer(modifier = Modifier.height(4.dp))
+
+                        Text(
+                            text = kelas,
+                            style = MaterialTheme.typography.bodyLarge,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = jam,
+                            style = MaterialTheme.typography.bodyLarge,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = hari,
+                            style = MaterialTheme.typography.bodyLarge,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = tanggal,
+                            style = MaterialTheme.typography.bodyLarge,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+                }
+                Divider()
+            }
+        }
+    }
+}
+@OptIn(ExperimentalCoilApi::class)
+@Composable
+fun DataNilai(
+    navController: NavController
+){
+
+    val firestore = FirebaseFirestore.getInstance()
+    val dataList = remember { mutableStateListOf<Nilai<String, List<Pair<String, String>>,String>>() }
+
+
+    DisposableEffect(Unit) {
+        val collectionRef = firestore.collection("nilai")
+
+        // Listen for real-time updates to the Firestore collection
+        val listenerRegistration = collectionRef.addSnapshotListener { snapshot, error ->
+            if (error != null) {
+                // Handle error
+                return@addSnapshotListener
+            }
+
+            // Clear the previous data before adding new data
+            dataList.clear()
+
+            // Add the new data to the list
+            snapshot?.documents?.forEach { document ->
+                val nama = document.getString("nama") ?: ""
+                val mataPelajaranArray = document.get("mata_pelajaran") as? ArrayList<HashMap<String, String>> ?: arrayListOf()
+
+                // Iterate through each item in the mataPelajaranArray and extract nama and nilai
+                val mataPelajaranList = mutableListOf<Pair<String, String>>()
+                mataPelajaranArray.forEach { mataPelajaranMap ->
+                    val namaPelajaran = mataPelajaranMap["nama"] ?: ""
+                    val nilaiPelajaran = mataPelajaranMap["nilai"] ?: ""
+                    mataPelajaranList.add(Pair(namaPelajaran, nilaiPelajaran))
+                }
+                val peringkat = document.getString("peringkat") ?: ""
+                // Here you can collect more fields as needed
+                dataList.add(Nilai(nama, mataPelajaranList,peringkat))
+            }
+        }
+        onDispose {
+            listenerRegistration.remove()
+        }
+    }
+    Scaffold(
+        floatingActionButton = {
+
+            ExtendedFloatingActionButton(
+                onClick = {
+                    // show snackbar as a suspend function
+
+                    navController.navigate("tambahStaff")
+                }
+            ) { Text("+", fontSize = 24.sp) }
+        },
+    ) { innerPadding ->
+
+        Column(
+            modifier = Modifier
+                .padding(innerPadding)
+                .fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(text = "Data Nilai dan Peringkat Siswa", style = MaterialTheme.typography.bodyLarge)
+            Spacer(modifier = Modifier.height(16.dp))
+            // Display the data fetched from Firestore
+            dataList.forEach { (nama,matapelajaran,peringkat) ->
+
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Column {
+                        Text(text = nama, style = MaterialTheme.typography.bodySmall)
+                        Spacer(modifier = Modifier.height(4.dp))
+
+
+
+                            matapelajaran.forEach { (pelajaran, nilai) ->
+                                Text(
+                                    text = "$pelajaran: $nilai",
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    maxLines = 1
+                                )}
+
+
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = peringkat,
+                            style = MaterialTheme.typography.bodyLarge,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+
                 Divider()
             }
         }
