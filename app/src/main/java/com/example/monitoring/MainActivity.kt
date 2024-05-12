@@ -91,6 +91,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.navigation.NavController
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -159,6 +160,12 @@ class MainActivity : ComponentActivity() {
                     composable("dataGuru") {
                         DataGuru(navController)
                     }
+                    composable("dataStaff") {
+                        DataStaff(navController)
+                    }
+                    composable("dataSiswa") {
+                        DataSiswa(navController)
+                    }
                     composable("tambahGuru") {
                         TambahGuru(navController)
                     }
@@ -216,7 +223,11 @@ fun ScreenWithScaffold(navController: NavController, content: @Composable (Paddi
                             selected = currentRoute == item.route,
                             onClick = {
 
-                                navController.navigate(item.route)
+                                navController.navigate(item.route){
+
+
+                                    restoreState = true
+                                }
                             },
                             label = {
                                 Text(text = item.title)
@@ -659,6 +670,180 @@ navController.navigate("tambahGuru")
         }
     }
 }
+}
+@OptIn(ExperimentalCoilApi::class)
+@Composable
+fun DataSiswa(
+    navController: NavController
+){
+
+    val firestore = FirebaseFirestore.getInstance()
+    val dataList = remember { mutableStateListOf<Triple<String, String, String>>() }
+
+
+    DisposableEffect(Unit) {
+        val collectionRef = firestore.collection("siswa")
+
+        // Listen for real-time updates to the Firestore collection
+        val listenerRegistration = collectionRef.addSnapshotListener { snapshot, error ->
+            if (error != null) {
+                // Handle error
+                return@addSnapshotListener
+            }
+
+            // Clear the previous data before adding new data
+            dataList.clear()
+
+            // Add the new data to the list
+            snapshot?.documents?.forEach { document ->
+                val name = document.getString("nama") ?: ""
+                val keterangan = document.getString("keterangan") ?: ""
+                val imageUrl = document.getString("imageUrl") ?: ""
+                // Here you can collect more fields as needed
+                dataList.add(Triple(name, keterangan, imageUrl))
+            }
+        }
+        onDispose {
+            listenerRegistration.remove()
+        }
+    }
+    Scaffold(
+        floatingActionButton = {
+
+            ExtendedFloatingActionButton(
+                onClick = {
+                    // show snackbar as a suspend function
+
+                    navController.navigate("tambahGuru")
+                }
+            ) { Text("+", fontSize = 24.sp) }
+        },
+    ) { innerPadding ->
+
+        Column(
+            modifier = Modifier
+                .padding(innerPadding)
+                .fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(text = "Data Siswa", style = MaterialTheme.typography.bodyLarge)
+            Spacer(modifier = Modifier.height(16.dp))
+            // Display the data fetched from Firestore
+            dataList.forEach { (name,keterangan, imageUrl) ->
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(8.dp)
+                ) {
+                    Image(
+                        painter = rememberImagePainter(imageUrl),
+                        contentDescription = null,
+                        modifier = Modifier.size(50.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Column {
+                        Text(text = name, style = MaterialTheme.typography.bodySmall)
+                        Spacer(modifier = Modifier.height(4.dp))
+
+                        Text(
+                            text = keterangan,
+                            style = MaterialTheme.typography.bodyLarge,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+                }
+                Divider()
+            }
+        }
+    }
+}
+@OptIn(ExperimentalCoilApi::class)
+@Composable
+fun DataStaff(
+    navController: NavController
+){
+
+    val firestore = FirebaseFirestore.getInstance()
+    val dataList = remember { mutableStateListOf<Triple<String, String, String>>() }
+
+
+    DisposableEffect(Unit) {
+        val collectionRef = firestore.collection("staff")
+
+        // Listen for real-time updates to the Firestore collection
+        val listenerRegistration = collectionRef.addSnapshotListener { snapshot, error ->
+            if (error != null) {
+                // Handle error
+                return@addSnapshotListener
+            }
+
+            // Clear the previous data before adding new data
+            dataList.clear()
+
+            // Add the new data to the list
+            snapshot?.documents?.forEach { document ->
+                val name = document.getString("nama") ?: ""
+                val keterangan = document.getString("keterangan") ?: ""
+                val imageUrl = document.getString("imageUrl") ?: ""
+                // Here you can collect more fields as needed
+                dataList.add(Triple(name, keterangan, imageUrl))
+            }
+        }
+        onDispose {
+            listenerRegistration.remove()
+        }
+    }
+    Scaffold(
+        floatingActionButton = {
+
+            ExtendedFloatingActionButton(
+                onClick = {
+                    // show snackbar as a suspend function
+
+                    navController.navigate("tambahGuru")
+                }
+            ) { Text("+", fontSize = 24.sp) }
+        },
+    ) { innerPadding ->
+
+        Column(
+            modifier = Modifier
+                .padding(innerPadding)
+                .fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(text = "Data Staff", style = MaterialTheme.typography.bodyLarge)
+            Spacer(modifier = Modifier.height(16.dp))
+            // Display the data fetched from Firestore
+            dataList.forEach { (name,keterangan, imageUrl) ->
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(8.dp)
+                ) {
+                    Image(
+                        painter = rememberImagePainter(imageUrl),
+                        contentDescription = null,
+                        modifier = Modifier.size(50.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Column {
+                        Text(text = name, style = MaterialTheme.typography.bodySmall)
+                        Spacer(modifier = Modifier.height(4.dp))
+
+                        Text(
+                            text = keterangan,
+                            style = MaterialTheme.typography.bodyLarge,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+                }
+                Divider()
+            }
+        }
+    }
 }
 @OptIn(ExperimentalCoilApi::class)
 @Composable
