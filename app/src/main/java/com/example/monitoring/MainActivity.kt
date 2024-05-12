@@ -3,6 +3,7 @@ package com.example.monitoring
 import android.app.Activity
 import android.net.Uri
 import android.os.Bundle
+import android.provider.Settings
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -92,6 +93,7 @@ import androidx.compose.ui.zIndex
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import coil.annotation.ExperimentalCoilApi
 import coil.compose.rememberImagePainter
@@ -115,6 +117,7 @@ import kotlinx.coroutines.tasks.await
 import java.util.UUID
 
 data class NavigationItem(
+    val route: String,
     val title: String,
     val unselectedIcon: ImageVector,
     val selectedIcon:ImageVector,
@@ -123,7 +126,7 @@ data class NavigationItem(
 )
 data class CardItem(
     val title: String,
-    val index:Int,
+    val route:String,
 )
 class MainActivity : ComponentActivity() {
     @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
@@ -139,7 +142,19 @@ class MainActivity : ComponentActivity() {
                         LoginPage(navController)
                     }
                     composable("adminDashboard") {
-                        AdminDashboard(navController)
+                        ScreenWithScaffold(navController) {
+                            AdminDashboard(navController,it)
+                        }
+                    }
+                    composable("search") {
+                        ScreenWithScaffold(navController) {
+                            Search(navController,it)
+                        }
+                    }
+                    composable("settings") {
+                        ScreenWithScaffold(navController) {
+                            Settings(navController,it)
+                        }
                     }
                     composable("dataGuru") {
                         DataGuru(navController)
@@ -155,7 +170,87 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
+@OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
+@Composable
+fun ScreenWithScaffold(navController: NavController, content: @Composable (PaddingValues) -> Unit) {
+    // Wrap the content with Scaffold
+    var selectedItemIndex1 by rememberSaveable {
+        mutableStateOf(0)
+    }
+    val activity = LocalContext.current as Activity
+    val windowClass = calculateWindowSizeClass(activity)
+    val showNavigationRail = windowClass.widthSizeClass == WindowWidthSizeClass.Compact
+    val items1 = listOf(
+        NavigationItem(
+            route = "adminDashboard",
+            title= "Home",
+            selectedIcon = Icons.Filled.Home,
+            unselectedIcon = Icons.Outlined.Home,
+            hasNews =false
+        ),
+        NavigationItem(
+            route = "search",
+            title= "Search",
+            selectedIcon = Icons.Filled.Search,
+            unselectedIcon = Icons.Outlined.Search,
+            hasNews =false
+        ),
+        NavigationItem(
+            route = "settings",
+            title= "Settings",
+            selectedIcon = Icons.Filled.Settings,
+            unselectedIcon = Icons.Outlined.Settings
+            ,
+            hasNews =false
+        ),
 
+        )
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
+    Scaffold (
+        bottomBar = {
+            if(showNavigationRail){
+                NavigationBar {
+                    items1.forEach { item ->
+                        NavigationBarItem(
+                            selected = currentRoute == item.route,
+                            onClick = {
+
+                                navController.navigate(item.route)
+                            },
+                            label = {
+                                Text(text = item.title)
+                            },
+                            alwaysShowLabel = false,
+                            icon = {
+                                BadgedBox(
+                                    badge = {
+                                        if(item.badgeCount != null) {
+                                            Badge {
+                                                Text(text = item.badgeCount.toString())
+                                            }
+                                        } else if(item.hasNews) {
+                                            Badge()
+                                        }
+                                    }
+                                ) {
+                                    Icon(
+                                        imageVector = if (currentRoute == item.route) {
+                                            item.selectedIcon
+                                        } else item.unselectedIcon,
+                                        contentDescription = item.title
+                                    )
+                                }
+                            }
+                        )
+                    }
+                }
+            }
+        },
+        content = content
+        )
+
+}
 @Composable
 fun LoginPage(navController: NavController) {
     // Implement login UI using Jetpack Compose components
@@ -274,7 +369,8 @@ fun NavigationSideBar(
 ){
 NavigationRail(  modifier = Modifier
     .background(MaterialTheme.colorScheme.inverseOnSurface)
-    .offset(x = (-1).dp).padding(padding)) {
+    .offset(x = (-1).dp)
+    .padding(padding)) {
 Column(            modifier = Modifier.fillMaxHeight(),
     verticalArrangement = Arrangement.spacedBy(12.dp, Alignment.Bottom)
 ) {
@@ -318,138 +414,72 @@ Icon(imageVector = if(selected) item.selectedIcon else item.unselectedIcon,
 }
 @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
 @Composable
-fun AdminDashboard(navController: NavController) {
-    val activity = LocalContext.current as Activity
-    val windowClass = calculateWindowSizeClass(activity)
+fun AdminDashboard(navController: NavController,it:PaddingValues) {
+
     var selectedItemIndex by rememberSaveable {
         mutableStateOf(0)
     }
-    var selectedItemIndex1 by rememberSaveable {
-        mutableStateOf(0)
-    }
-    val showNavigationRail = windowClass.widthSizeClass == WindowWidthSizeClass.Compact
-    val items1 = listOf(
-        NavigationItem(
-            title= "Home",
-            selectedIcon = Icons.Filled.Home,
-            unselectedIcon = Icons.Outlined.Home,
-            hasNews =false
-        ),
-        NavigationItem(
-            title= "Search",
-            selectedIcon = Icons.Filled.Search,
-            unselectedIcon = Icons.Outlined.Search,
-            hasNews =false
-        ),
-        NavigationItem(
-            title= "Settings",
-            selectedIcon = Icons.Filled.Settings,
-            unselectedIcon = Icons.Outlined.Settings
-            ,
-            hasNews =false
-        ),
 
-    )
-    val items = listOf(
 
-        NavigationItem(
-            title= "Data Guru",
-            selectedIcon = Icons.Filled.Person,
-            unselectedIcon = Icons.Outlined.Person,
-            hasNews =false
-        ),
+//    val items = listOf(
+//
+//        NavigationBottomItem(
+//            title= "Data Guru",
+//            selectedIcon = Icons.Filled.Person,
+//            unselectedIcon = Icons.Outlined.Person,
+//            hasNews =false
+//        ),
+//
+//        NavigationBottomItem(
+//            title= "Data Staff",
+//            selectedIcon = Icons.Filled.Person,
+//            unselectedIcon = Icons.Outlined.Person
+//            ,
+//            hasNews =false
+//        ),
+//        NavigationBottomItem(
+//            title= "Data Siswa",
+//            selectedIcon = Icons.Filled.Person,
+//            unselectedIcon = Icons.Outlined.Person,
+//            hasNews =false
+//        ),
+//        NavigationItem(
+//            title= "Data \nJadwal \nPelajaran",
+//            selectedIcon = Icons.Filled.Person,
+//            unselectedIcon = Icons.Outlined.Person,
+//            hasNews =false
+//        ),
+//        NavigationItem(
+//            title= "Data \nJadwal Ujian",
+//            selectedIcon = Icons.Filled.Person,
+//            unselectedIcon = Icons.Outlined.Person,
+//            hasNews =false
+//        ),NavigationItem(
+//            title= "Data \nNilai \ndan \nPeringkat\n Siswa",
+//            selectedIcon = Icons.Filled.Person,
+//            unselectedIcon = Icons.Outlined.Person,
+//            hasNews =false
+//        ),NavigationItem(
+//            title= "Data \nPerkembangan \nNilai",
+//            selectedIcon = Icons.Filled.Person,
+//            unselectedIcon = Icons.Outlined.Person,
+//            hasNews =false
+//        ),NavigationItem(
+//            title= "Data \nRekapan \nKehadiran Siswa",
+//            selectedIcon = Icons.Filled.Person,
+//            unselectedIcon = Icons.Outlined.Person,
+//            hasNews =false
+//        ),
+//    )
 
-        NavigationItem(
-            title= "Data Staff",
-            selectedIcon = Icons.Filled.Person,
-            unselectedIcon = Icons.Outlined.Person
-            ,
-            hasNews =false
-        ),
-        NavigationItem(
-            title= "Data Siswa",
-            selectedIcon = Icons.Filled.Person,
-            unselectedIcon = Icons.Outlined.Person,
-            hasNews =false
-        ),
-        NavigationItem(
-            title= "Data \nJadwal \nPelajaran",
-            selectedIcon = Icons.Filled.Person,
-            unselectedIcon = Icons.Outlined.Person,
-            hasNews =false
-        ),
-        NavigationItem(
-            title= "Data \nJadwal Ujian",
-            selectedIcon = Icons.Filled.Person,
-            unselectedIcon = Icons.Outlined.Person,
-            hasNews =false
-        ),NavigationItem(
-            title= "Data \nNilai \ndan \nPeringkat\n Siswa",
-            selectedIcon = Icons.Filled.Person,
-            unselectedIcon = Icons.Outlined.Person,
-            hasNews =false
-        ),NavigationItem(
-            title= "Data \nPerkembangan \nNilai",
-            selectedIcon = Icons.Filled.Person,
-            unselectedIcon = Icons.Outlined.Person,
-            hasNews =false
-        ),NavigationItem(
-            title= "Data \nRekapan \nKehadiran Siswa",
-            selectedIcon = Icons.Filled.Person,
-            unselectedIcon = Icons.Outlined.Person,
-            hasNews =false
-        ),
-    )
 
-    Scaffold (
-        bottomBar = {
-            if(showNavigationRail){
-NavigationBar {
-    items1.forEachIndexed { index, item ->
-        NavigationBarItem(
-            selected = selectedItemIndex1 == index,
-            onClick = {
-                selectedItemIndex1 = index
-                // navController.navigate(item.title)
-            },
-            label = {
-                Text(text = item.title)
-            },
-            alwaysShowLabel = false,
-            icon = {
-                BadgedBox(
-                    badge = {
-                        if(item.badgeCount != null) {
-                            Badge {
-                                Text(text = item.badgeCount.toString())
-                            }
-                        } else if(item.hasNews) {
-                            Badge()
-                        }
-                    }
-                ) {
-                    Icon(
-                        imageVector = if (index == selectedItemIndex1) {
-                            item.selectedIcon
-                        } else item.unselectedIcon,
-                        contentDescription = item.title
-                    )
-                }
-            }
-        )
-    }
-}
-            }
-        },
-
-    ) {
 //        Row {
 //
 //            if(showNavigationRail){
 //                NavigationSideBar(items = items, selectedItemIndex =selectedItemIndex, onNavigate = {selectedItemIndex = it},padding=it )
 //
 //            }
-        if(selectedItemIndex == 0){
+
             // Implement admin dashboard UI
             Column(
                 modifier = Modifier
@@ -463,35 +493,35 @@ NavigationBar {
                 Spacer(modifier = Modifier.height(8.dp))
                 val cards= listOf(CardItem(
                     title = "Data Guru",
-                    index = 1
+                    route = "dataGuru"
                 ),
                     CardItem(
                         title = "Data Staff",
-                        index = 2
+                        route ="dataStaff"
                     ),
                             CardItem(
                             title = "Data Siswa",
-                                index = 3
+                                route = "dataSiswa"
                 ),
                     CardItem(
                         title = "Data Jadwal Pelajaran",
-                        index = 4
+                        route ="dataJadwalPelajaran"
                     ),
                     CardItem(
                         title = "Data Jadwal Ujian",
-                        index = 5
+                        route ="dataJadwalPelajaran"
                     ),
                     CardItem(
                         title = "Data Nilai dan Peringkat Siswa",
-                        index = 6
+                        route ="dataJadwalPelajaran"
                     ),
                     CardItem(
                         title = "Data Perkembangan Nilai",
-                        index = 7
+                        route ="dataJadwalPelajaran"
                     ),
                     CardItem(
                         title = "Data Rekapan Kehadiran Siswa",
-                        index = 6
+                        route ="dataJadwalPelajaran"
                     ),
                     )
                 LazyVerticalGrid(
@@ -504,7 +534,9 @@ NavigationBar {
 
                             ),
                             modifier = Modifier
-                                .size(width = 200.dp, height = 100.dp).clickable { selectedItemIndex =it.index }.padding(8.dp)
+                                .size(width = 200.dp, height = 100.dp)
+                                .clickable { navController.navigate(it.route) }
+                                .padding(8.dp)
                         ) {
                             Column(
                                 verticalArrangement = Arrangement.Center,
@@ -523,14 +555,23 @@ NavigationBar {
                     }
 
                 }
+
             }
 //
-if(selectedItemIndex == 1){
-    DataGuru(navController = navController)
-}
-        }
-    }
 
+
+
+
+
+
+}
+@Composable
+fun Search(navController: NavController,it: PaddingValues){
+    Text(text = "Search")
+}
+@Composable
+fun Settings(navController: NavController,it: PaddingValues){
+    Text(text = "Settings")
 }
 @OptIn(ExperimentalCoilApi::class)
 @Composable
