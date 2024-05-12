@@ -443,12 +443,12 @@ NavigationBar {
         },
 
     ) {
-        Row {
-
-            if(showNavigationRail){
-                NavigationSideBar(items = items, selectedItemIndex =selectedItemIndex, onNavigate = {selectedItemIndex = it},padding=it )
-
-            }
+//        Row {
+//
+//            if(showNavigationRail){
+//                NavigationSideBar(items = items, selectedItemIndex =selectedItemIndex, onNavigate = {selectedItemIndex = it},padding=it )
+//
+//            }
         if(selectedItemIndex == 0){
             // Implement admin dashboard UI
             Column(
@@ -495,7 +495,7 @@ NavigationBar {
                     ),
                     )
                 LazyVerticalGrid(
-                    columns = GridCells.Adaptive(minSize = 128.dp)
+                    columns = GridCells.Adaptive(minSize = 200.dp)
                 ) {
                     items(cards) {
                         Card(
@@ -504,15 +504,27 @@ NavigationBar {
 
                             ),
                             modifier = Modifier
-                                .size(width = 100.dp, height = 100.dp).clickable { selectedItemIndex =it.index }.padding(8.dp)
+                                .size(width = 200.dp, height = 100.dp).clickable { selectedItemIndex =it.index }.padding(8.dp)
                         ) {
-                            Text(text = it.title, textAlign = TextAlign.Center, modifier = Modifier.align(Alignment.CenterHorizontally))
-                        }
+                            Column(
+                                verticalArrangement = Arrangement.Center,
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                modifier = Modifier.fillMaxSize()
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.Person,
+                                    contentDescription = "Person"
+                                )
+                                Text(
+                                    text = it.title,
+                                    textAlign = TextAlign.Center
+                                )
+                            }   }
                     }
 
                 }
             }
-        }
+//
 if(selectedItemIndex == 1){
     DataGuru(navController = navController)
 }
