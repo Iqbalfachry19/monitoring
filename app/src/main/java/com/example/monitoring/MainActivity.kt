@@ -33,6 +33,7 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Face
 import androidx.compose.material.icons.filled.Home
@@ -64,6 +65,7 @@ import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.NavigationRail
 import androidx.compose.material3.NavigationRailItem
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -333,6 +335,12 @@ fun LoginPage(navController: NavController) {
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     OutlinedTextField(
+                        colors = OutlinedTextFieldDefaults.colors(
+                            unfocusedTextColor = Color(0xFFE3FEF7),
+                            unfocusedBorderColor = Color(0xFFE3FEF7),
+                            unfocusedLabelColor = Color(0xFFE3FEF7),
+                            focusedTextColor =  Color(0xFFE3FEF7),
+                        ),
                         value = email,
                         onValueChange = { email = it },
                         label = { Text("Nama") },
@@ -344,6 +352,12 @@ fun LoginPage(navController: NavController) {
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     OutlinedTextField(
+                        colors = OutlinedTextFieldDefaults.colors(
+                            unfocusedTextColor = Color(0xFFE3FEF7),
+                            unfocusedBorderColor = Color(0xFFE3FEF7),
+                            unfocusedLabelColor = Color(0xFFE3FEF7),
+                            focusedTextColor =  Color(0xFFE3FEF7),
+                        ),
                         value = password,
                         onValueChange = { password = it },
                         label = { Text("Password") },
@@ -537,7 +551,16 @@ fun AdminDashboard(navController: NavController,it:PaddingValues) {
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(text = "Dashboard Admin", style = MaterialTheme.typography.headlineLarge)
+                Row(verticalAlignment = Alignment.CenterVertically,){
+                    Text(text = "Dashboard Admin", style = MaterialTheme.typography.headlineLarge, color = Color(0xFFE3FEF7))
+                    Spacer(modifier = Modifier.width(65.dp))
+                    Icon(
+                        imageVector = Icons.Filled.AccountCircle,
+                        contentDescription = "Person",
+                        modifier=Modifier.size(50.dp),
+                        tint = Color(0xFFE3FEF7)
+                    )
+                }
                 Spacer(modifier = Modifier.height(8.dp))
                 val cards= listOf(CardItem(
                     title = "Data Guru",
