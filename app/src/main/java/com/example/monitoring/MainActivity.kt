@@ -33,11 +33,14 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Face
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Search
@@ -136,6 +139,7 @@ data class Nilai<T, U, V>(val nama: T, val mataPelajaranList: U, val peringkat:V
 data class CardItem(
     val title: String,
     val route:String,
+    val icon:ImageVector?=Icons.Filled.Person,
 )
 class MainActivity : ComponentActivity() {
     @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
@@ -533,7 +537,7 @@ fun AdminDashboard(navController: NavController,it:PaddingValues) {
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(text = "Dashboard Admin", style = MaterialTheme.typography.bodyLarge)
+                Text(text = "Dashboard Admin", style = MaterialTheme.typography.headlineLarge)
                 Spacer(modifier = Modifier.height(8.dp))
                 val cards= listOf(CardItem(
                     title = "Data Guru",
@@ -549,23 +553,28 @@ fun AdminDashboard(navController: NavController,it:PaddingValues) {
                 ),
                     CardItem(
                         title = "Data Jadwal Pelajaran",
-                        route ="dataJadwalPelajaran"
+                        route ="dataJadwalPelajaran",
+                        icon = Icons.Filled.DateRange
                     ),
                     CardItem(
                         title = "Data Jadwal Ujian",
-                        route ="dataJadwalUjian"
+                        route ="dataJadwalUjian",
+                        icon = Icons.Filled.DateRange
                     ),
                     CardItem(
                         title = "Data Nilai dan Peringkat Siswa",
-                        route ="dataNilai"
+                        route ="dataNilai",
+                        icon = Icons.Filled.Star
                     ),
                     CardItem(
                         title = "Data Perkembangan Nilai",
-                        route ="dataPerkembangan"
+                        route ="dataPerkembangan",
+                        icon = Icons.Filled.Star
                     ),
                     CardItem(
                         title = "Data Rekapan Kehadiran Siswa",
-                        route ="dataRekapan"
+                        route ="dataRekapan",
+                        icon = Icons.Filled.Face
                     ),
                     )
                 LazyVerticalGrid(
@@ -587,10 +596,12 @@ fun AdminDashboard(navController: NavController,it:PaddingValues) {
                                 horizontalAlignment = Alignment.CenterHorizontally,
                                 modifier = Modifier.fillMaxSize()
                             ) {
-                                Icon(
-                                    imageVector = Icons.Filled.Person,
-                                    contentDescription = "Person"
-                                )
+                                it.icon?.let { it1 ->
+                                    Icon(
+                                        imageVector = it1,
+                                        contentDescription = "Person"
+                                    )
+                                }
                                 Text(
                                     text = it.title,
                                     textAlign = TextAlign.Center
@@ -1398,6 +1409,8 @@ fun TambahSiswa(
 
 
     Column(modifier = Modifier.fillMaxSize()) {
+        Text(text="Tambah Data Siswa", modifier = Modifier
+            .align(Alignment.CenterHorizontally))
         // Display the selected image
         imageDownloadUrl?.let { imageUrl ->
             Image(
@@ -1410,7 +1423,8 @@ fun TambahSiswa(
         }
 
         // Button to select image
-        Button(onClick = { getContent.launch("image/*") }) {
+        Button(onClick = { getContent.launch("image/*") }, modifier = Modifier
+            .align(Alignment.CenterHorizontally)) {
             Text("Select Image")
         }
 
@@ -1467,6 +1481,8 @@ fun TambahStaff(
 
     Column(modifier = Modifier.fillMaxSize()) {
         // Display the selected image
+        Text(text="Tambah Data Staff", modifier = Modifier
+            .align(Alignment.CenterHorizontally))
         imageDownloadUrl?.let { imageUrl ->
             Image(
                 painter = rememberImagePainter(imageUrl),
@@ -1478,7 +1494,8 @@ fun TambahStaff(
         }
 
         // Button to select image
-        Button(onClick = { getContent.launch("image/*") }) {
+        Button(onClick = { getContent.launch("image/*") }, modifier = Modifier
+            .align(Alignment.CenterHorizontally)) {
             Text("Select Image")
         }
 
@@ -1535,6 +1552,8 @@ fun TambahGuru(
 
     Column(modifier = Modifier.fillMaxSize()) {
         // Display the selected image
+        Text(text="Tambah Data Guru", modifier = Modifier
+            .align(Alignment.CenterHorizontally))
         imageDownloadUrl?.let { imageUrl ->
             Image(
                 painter = rememberImagePainter(imageUrl),
@@ -1546,7 +1565,8 @@ fun TambahGuru(
         }
 
         // Button to select image
-        Button(onClick = { getContent.launch("image/*") }) {
+        Button(onClick = { getContent.launch("image/*") }, modifier = Modifier
+            .align(Alignment.CenterHorizontally)) {
             Text("Select Image")
         }
 
