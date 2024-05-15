@@ -90,6 +90,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.modifier.modifierLocalConsumer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -696,7 +697,7 @@ Scaffold(
 
 navController.navigate("tambahGuru")
             }
-        ) { Text("+", fontSize = 24.sp) }
+        , containerColor = Color(0xFF77B0AA) ) { Text("+", fontSize = 24.sp, color = Color(0xFFE3FEF7)) }
     },
 ) { innerPadding ->
 
@@ -707,7 +708,8 @@ navController.navigate("tambahGuru")
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(text = "Data Guru", style = MaterialTheme.typography.bodyLarge)
+
+        Text(text = "Data Guru", style = MaterialTheme.typography.headlineLarge, color = Color(0xFFE3FEF7))
         Spacer(modifier = Modifier.height(16.dp))
         // Display the data fetched from Firestore
         dataList.forEach { (name,keterangan, imageUrl) ->
@@ -715,29 +717,46 @@ navController.navigate("tambahGuru")
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.padding(8.dp)
             ) {
-                Image(
-                    painter = rememberImagePainter(imageUrl),
-                    contentDescription = null,
-                    modifier = Modifier.size(50.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Column {
-                    Text(text = name, style = MaterialTheme.typography.bodySmall)
-                    Spacer(modifier = Modifier.height(4.dp))
+                Card(
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.tertiary,
 
-                    Text(
-                        text = keterangan,
-                        style = MaterialTheme.typography.bodyLarge,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
+                        ),
+                    modifier = Modifier
+                        .size(width = 200.dp, height = 120.dp)
+                        .clickable {  }
+                        .padding(8.dp)
+                ) {
+                    Image(
+                        painter = rememberImagePainter(imageUrl),
+                        contentDescription = null,
+                        modifier = Modifier.size(50.dp)
                     )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Column {
+                        Text(
+                            text = name,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = Color(0xFFE3FEF7)
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+
+                        Text(
+                            text = keterangan,
+                            style = MaterialTheme.typography.bodyLarge,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            color = Color(0xFFE3FEF7)
+                        )
+                    }
                 }
             }
-            Divider()
+            }
+
         }
     }
 }
-}
+
 @OptIn(ExperimentalCoilApi::class)
 @Composable
 fun DataSiswa(
