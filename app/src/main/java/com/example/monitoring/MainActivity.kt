@@ -2026,10 +2026,10 @@ fun TambahNilai(
     navController: NavController
 ) {
     var name by remember { mutableStateOf("") }
-    var kelas by remember { mutableStateOf("") }
-    var jam by remember { mutableStateOf("") }
-    var hari by remember { mutableStateOf("") }
-    var tanggal by remember { mutableStateOf("") }
+    var mataPelajaran by remember { mutableStateOf("") }
+    var nilai by remember { mutableStateOf("") }
+    var peringkat by remember { mutableStateOf("") }
+
     val context = LocalContext.current
 
 
@@ -2046,7 +2046,7 @@ fun TambahNilai(
         TextField(
             value = name,
             onValueChange = { name = it },
-            label = { Text("Nama Mata Pelajaran") },
+            label = { Text("Nama Siswa") },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp)
@@ -2054,42 +2054,35 @@ fun TambahNilai(
 
         // Text field for description
         TextField(
-            value = kelas,
-            onValueChange = { kelas = it },
-            label = { Text("Kelas") },
+            value = mataPelajaran,
+            onValueChange = {mataPelajaran = it },
+            label = { Text("Mata Pelajaran") },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp)
         )
         TextField(
-            value = jam,
-            onValueChange = { jam = it },
-            label = { Text("Jam") },
+            value = nilai,
+            onValueChange = { nilai = it },
+            label = { Text("Nilai") },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp)
         )
         TextField(
-            value = hari,
-            onValueChange = { hari = it },
-            label = { Text("Hari") },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-        )
-        TextField(
-            value = tanggal,
-            onValueChange = { name = it },
-            label = { Text("Nama Mata Pelajaran") },
+            value = peringkat,
+            onValueChange = { peringkat = it },
+            label = { Text("Peringkat") },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp)
         )
 
+
         // Button to submit data
         Button(
             onClick = {
-                submitDataToDatabaseUjian(name, kelas,jam,hari,tanggal,navController)
+                submitDataToDatabaseNilai(name, mataPelajaran,nilai,peringkat,navController)
             },
             modifier = Modifier
                 .align(Alignment.CenterHorizontally)
@@ -2339,6 +2332,36 @@ private fun submitDataToDatabase(name: String, description: String, imageUrl: St
         "nama" to name,
         "keterangan" to description,
         "imageUrl" to imageUrl
+    )
+
+    // Set the data for the document
+    documentRef.set(data)
+        .addOnSuccessListener {
+            // Document successfully written
+            Log.d("Firestore", "DocumentSnapshot successfully written!")
+            navController.popBackStack()
+        }
+        .addOnFailureListener { e ->
+            // Handle any errors that may occur while writing the document
+            Log.w("Firestore", "Error writing document", e)
+        }
+}
+private fun submitDataToDatabaseNilai(name: String,mataPelajaran:String,nilai:String ,peringkat:String,
+                                      navController: NavController) {
+    // Access the Firestore collection where you want to store the data
+    val firestore = Firebase.firestore
+    val collectionRef = firestore.collection("jadwalUjian")
+
+    // Create a new document with a unique ID
+    val documentRef = collectionRef.document()
+
+    // Create a data object to store the fields
+    val data = hashMapOf(
+        "nama" to name,
+        "kelas" to mataPelajaran,
+        "jam" to nilai,
+        "hari" to peringkat,
+
     )
 
     // Set the data for the document
