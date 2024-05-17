@@ -1876,7 +1876,7 @@ fun TambahRekapan(
 
 
     Column(modifier = Modifier.fillMaxSize()) {
-        Text(text="Tambah Data Jadwal Pelajaran", modifier = Modifier
+        Text(text="Tambah Data Rekapan Kehadiran Siswa", modifier = Modifier
             .align(Alignment.CenterHorizontally))
         // Display the selected image
 
@@ -1955,7 +1955,7 @@ fun TambahPerkembangan(
 
 
     Column(modifier = Modifier.fillMaxSize()) {
-        Text(text="Tambah Data Jadwal Pelajaran", modifier = Modifier
+        Text(text="Tambah Data Perkembangan Nilai", modifier = Modifier
             .align(Alignment.CenterHorizontally))
         // Display the selected image
 
@@ -2035,7 +2035,7 @@ fun TambahNilai(
 
 
     Column(modifier = Modifier.fillMaxSize()) {
-        Text(text="Tambah Data Jadwal Pelajaran", modifier = Modifier
+        Text(text="Tambah Data Nilai dan Peringkat Siswa", modifier = Modifier
             .align(Alignment.CenterHorizontally))
         // Display the selected image
 
