@@ -189,6 +189,8 @@ sealed interface Screen {
 
     @Serializable
     data object TambahSiswa: Screen
+    @Serializable
+    data object TambahJadwalPelajaran: Screen
 }
 data class CardItem<T>(
     val title: String,
@@ -256,6 +258,9 @@ class MainActivity : ComponentActivity() {
                     }
                     composable<Screen.TambahSiswa> {
                         TambahSiswa(navController)
+                    }
+                    composable<Screen.TambahJadwalPelajaran> {
+                        TambahJadwalPelajaran(navController)
                     }
                     composable<Screen.TeacherDashboard> {
                         ScreenWithScaffold(navController) {
@@ -840,7 +845,7 @@ Scaffold(
             onClick = {
                 // show snackbar as a suspend function
 
-navController.navigate("tambahGuru")
+navController.navigate(Screen.TambahGuru)
             }
         , containerColor = Color(0xFF77B0AA) ) { Text("+", fontSize = 24.sp, color = Color(0xFFE3FEF7)) }
     },
@@ -945,7 +950,7 @@ fun DataSiswa(
                 onClick = {
                     // show snackbar as a suspend function
 
-                    navController.navigate("tambahSiswa")
+                    navController.navigate(Screen.TambahSiswa)
                 }
                 , containerColor = Color(0xFF77B0AA) ) { Text("+", fontSize = 24.sp, color = Color(0xFFE3FEF7)) }
         },
@@ -1050,7 +1055,7 @@ fun DataJadwalPelajaran(
                 onClick = {
                     // show snackbar as a suspend function
 
-                    navController.navigate("tambahJadwalPelajaran")
+                    navController.navigate(Screen.TambahJadwalPelajaran)
                 }
                 , containerColor = Color(0xFF77B0AA) ) { Text("+", fontSize = 24.sp, color = Color(0xFFE3FEF7)) }
         },
@@ -1627,7 +1632,7 @@ fun DataStaffPage(
                 onClick = {
                     // show snackbar as a suspend function
 
-                    navController.navigate("tambahStaff")
+                    navController.navigate(Screen.TambahStaff)
                 }
                 , containerColor = Color(0xFF77B0AA) ) { Text("+", fontSize = 24.sp, color = Color(0xFFE3FEF7)) }
         },
@@ -1750,6 +1755,77 @@ fun TambahSiswa(
         Button(
             onClick = {
                 submitDataToDatabase(name, description, imageDownloadUrl,navController,data= "siswa")
+            },
+            modifier = Modifier
+                .align(Alignment.CenterHorizontally)
+                .padding(16.dp)
+        ) {
+            Text("Submit")
+        }
+    }
+}
+
+@OptIn(ExperimentalCoilApi::class)
+@Composable
+fun TambahJadwalPelajaran(
+    navController: NavController
+) {
+    var name by remember { mutableStateOf("") }
+    var kelas by remember { mutableStateOf("") }
+    var jam by remember { mutableStateOf("") }
+    var hari by remember { mutableStateOf("") }
+    val context = LocalContext.current
+
+
+
+    Column(modifier = Modifier.fillMaxSize()) {
+        Text(text="Tambah Data Jadwal Pelajaran", modifier = Modifier
+            .align(Alignment.CenterHorizontally))
+        // Display the selected image
+
+        // Button to select image
+
+
+        // Text field for name
+        TextField(
+            value = name,
+            onValueChange = { name = it },
+            label = { Text("Nama Mata Pelajaran") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        )
+
+        // Text field for description
+        TextField(
+            value = kelas,
+            onValueChange = { kelas = it },
+            label = { Text("Kelas") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        )
+        TextField(
+            value = jam,
+            onValueChange = { jam = it },
+            label = { Text("Jam") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        )
+        TextField(
+            value = hari,
+            onValueChange = { hari = it },
+            label = { Text("Hari") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        )
+
+        // Button to submit data
+        Button(
+            onClick = {
+                submitDataToDatabasePelajaran(name, kelas,jam,hari,navController)
             },
             modifier = Modifier
                 .align(Alignment.CenterHorizontally)
@@ -1917,6 +1993,35 @@ private fun submitDataToDatabase(name: String, description: String, imageUrl: St
         "nama" to name,
         "keterangan" to description,
         "imageUrl" to imageUrl
+    )
+
+    // Set the data for the document
+    documentRef.set(data)
+        .addOnSuccessListener {
+            // Document successfully written
+            Log.d("Firestore", "DocumentSnapshot successfully written!")
+            navController.popBackStack()
+        }
+        .addOnFailureListener { e ->
+            // Handle any errors that may occur while writing the document
+            Log.w("Firestore", "Error writing document", e)
+        }
+}
+private fun submitDataToDatabasePelajaran(name: String, kelas:String,jam:String ,hari:String,
+                                 navController: NavController) {
+    // Access the Firestore collection where you want to store the data
+    val firestore = Firebase.firestore
+    val collectionRef = firestore.collection("jadwalPelajaran")
+
+    // Create a new document with a unique ID
+    val documentRef = collectionRef.document()
+
+    // Create a data object to store the fields
+    val data = hashMapOf(
+        "nama" to name,
+        "kelas" to kelas,
+        "jam" to jam,
+        "hari" to hari,
     )
 
     // Set the data for the document
