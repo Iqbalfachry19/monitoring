@@ -180,6 +180,15 @@ sealed interface Screen {
 
     @Serializable
     data object DataRekapan : Screen
+
+    @Serializable
+    data object TambahGuru : Screen
+
+    @Serializable
+    data object TambahStaff : Screen
+
+    @Serializable
+    data object TambahSiswa: Screen
 }
 data class CardItem<T>(
     val title: String,
@@ -239,17 +248,19 @@ class MainActivity : ComponentActivity() {
                     composable<Screen.DataRekapan> {
                         DataRekapan(navController)
                     }
-                    composable("tambahGuru") {
+                    composable<Screen.TambahGuru> {
                         TambahGuru(navController)
                     }
-                    composable("tambahStaff") {
+                    composable<Screen.TambahStaff> {
                         TambahStaff(navController)
                     }
-                    composable("tambahSiswa") {
+                    composable<Screen.TambahSiswa> {
                         TambahSiswa(navController)
                     }
                     composable<Screen.TeacherDashboard> {
-                        TeacherDashboard()
+                        ScreenWithScaffold(navController) {
+                            TeacherDashboard(navController,it)
+                        }
                     }
                 }
             }
@@ -287,14 +298,14 @@ fun ScreenWithScaffold(navController: NavController, content: @Composable (Paddi
             unselectedIcon = Icons.Outlined.Home,
             hasNews =false
         ),
-        NavigationItem(
-            route = Screen.Search,
-
-            title= "Search",
-            selectedIcon = Icons.Filled.Search,
-            unselectedIcon = Icons.Outlined.Search,
-            hasNews =false
-        ),
+//        NavigationItem(
+//            route = Screen.Search,
+//
+//            title= "Search",
+//            selectedIcon = Icons.Filled.Search,
+//            unselectedIcon = Icons.Outlined.Search,
+//            hasNews =false
+//        ),
         NavigationItem(
             route = Screen.Settings,
 
@@ -374,18 +385,52 @@ fun LoginPage(navController: NavController) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var isLoggedIn by rememberSaveable { mutableStateOf(false) }
+    // Function to check user role and navigate
+    fun checkUserRoleAndNavigate(userId: String) {
+        val usersRef = FirebaseFirestore.getInstance().collection("user")
+        usersRef.document(userId).get()
+            .addOnSuccessListener { document ->
+                if (document != null) {
+                    val role = document.getString("role")
+                    when (role) {
+                        "admin" -> {
+                            navController.navigate(Screen.AdminDashboard) {
+                                popUpTo(Screen.Login) { inclusive = true }
+                            }
+                        }
+                        "guru" -> {
+                            navController.navigate(Screen.TeacherDashboard) {
+                                popUpTo(Screen.Login) { inclusive = true }
+                            }
+                        }
+                        else -> {
+                            scope.launch {
+                                snackbarHostState.showSnackbar("Unauthorized access")
+                            }
+                        }
+                    }
+                } else {
+                    scope.launch {
+                        snackbarHostState.showSnackbar("User document not found")
+                    }
+                }
+            }
+            .addOnFailureListener {
+                scope.launch {
+                    snackbarHostState.showSnackbar("Error fetching user role")
+                }
+            }
+    }
 
     // Check if the user is already logged in
     LaunchedEffect(auth) {
-        if (auth.currentUser != null) {
+        auth.currentUser?.let { user ->
             isLoggedIn = true
+            checkUserRoleAndNavigate(user.uid)
         }
     }
-    if (isLoggedIn) {
-        navController.navigate(Screen.AdminDashboard) {
-            popUpTo(Screen.Login) { inclusive = true }
-        }
-    } else {
+
+        if (!isLoggedIn) {
         Scaffold(
             snackbarHost = { SnackbarHost(snackbarHostState) },
 //            floatingActionButton = {
@@ -739,13 +784,18 @@ fun SearchPage(navController: NavController,it: PaddingValues){
 }
 @Composable
 fun SettingsPage(navController: NavController,it: PaddingValues){
-    Button(onClick = {
-        val auth = Firebase.auth
-        auth.signOut()
-        navController.navigate(Screen.Login) {
-            popUpTo(Screen.AdminDashboard) { inclusive = true }
-        }
-    }){Text(text = "Logout")}
+    Column(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(text = "Settings", style = MaterialTheme.typography.headlineLarge, color = Color(0xFFE3FEF7))
+
+        Button(onClick = {
+            val auth = Firebase.auth
+            auth.signOut()
+            navController.navigate(Screen.Login) {
+                popUpTo(Screen.AdminDashboard) { inclusive = true }
+            }
+        }){Text(text = "Logout")}
+    }
+
 }
 @OptIn(ExperimentalCoilApi::class)
 @Composable
@@ -1371,7 +1421,7 @@ fun DataPerkembangan(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(text = "Data Nilai dan Peringkat Siswa", style = MaterialTheme.typography.headlineLarge, color = Color(0xFFE3FEF7), textAlign = TextAlign.Center)
+            Text(text = "Data Perkembangan Nilai", style = MaterialTheme.typography.headlineLarge, color = Color(0xFFE3FEF7), textAlign = TextAlign.Center)
             Spacer(modifier = Modifier.height(16.dp))
             // Display the data fetched from Firestore
             dataList.forEach { (nama, matapelajaran, peringkat) ->
@@ -1485,7 +1535,7 @@ fun DataRekapan(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(text = "Data Nilai dan Peringkat Siswa", style = MaterialTheme.typography.headlineLarge, color = Color(0xFFE3FEF7), textAlign = TextAlign.Center)
+            Text(text = "Data Rekapan Kehadiran Siswa", style = MaterialTheme.typography.headlineLarge, color = Color(0xFFE3FEF7), textAlign = TextAlign.Center)
             Spacer(modifier = Modifier.height(16.dp))
             // Display the data fetched from Firestore
             dataList.forEach { (nama, matapelajaran, peringkat) ->
@@ -1907,47 +1957,167 @@ fun uploadImageToFirebase(uri: Uri, callback: (String) -> Unit) {
 
 @Composable
 fun TeacherDashboard(
-
+navController: NavController,
+it: PaddingValues
 ) {
+    var selectedItemIndex by rememberSaveable {
+        mutableStateOf(0)
+    }
+
+
+//    val items = listOf(
+//
+//        NavigationBottomItem(
+//            title= "Data Guru",
+//            selectedIcon = Icons.Filled.Person,
+//            unselectedIcon = Icons.Outlined.Person,
+//            hasNews =false
+//        ),
+//
+//        NavigationBottomItem(
+//            title= "Data Staff",
+//            selectedIcon = Icons.Filled.Person,
+//            unselectedIcon = Icons.Outlined.Person
+//            ,
+//            hasNews =false
+//        ),
+//        NavigationBottomItem(
+//            title= "Data Siswa",
+//            selectedIcon = Icons.Filled.Person,
+//            unselectedIcon = Icons.Outlined.Person,
+//            hasNews =false
+//        ),
+//        NavigationItem(
+//            title= "Data \nJadwal \nPelajaran",
+//            selectedIcon = Icons.Filled.Person,
+//            unselectedIcon = Icons.Outlined.Person,
+//            hasNews =false
+//        ),
+//        NavigationItem(
+//            title= "Data \nJadwal Ujian",
+//            selectedIcon = Icons.Filled.Person,
+//            unselectedIcon = Icons.Outlined.Person,
+//            hasNews =false
+//        ),NavigationItem(
+//            title= "Data \nNilai \ndan \nPeringkat\n Siswa",
+//            selectedIcon = Icons.Filled.Person,
+//            unselectedIcon = Icons.Outlined.Person,
+//            hasNews =false
+//        ),NavigationItem(
+//            title= "Data \nPerkembangan \nNilai",
+//            selectedIcon = Icons.Filled.Person,
+//            unselectedIcon = Icons.Outlined.Person,
+//            hasNews =false
+//        ),NavigationItem(
+//            title= "Data \nRekapan \nKehadiran Siswa",
+//            selectedIcon = Icons.Filled.Person,
+//            unselectedIcon = Icons.Outlined.Person,
+//            hasNews =false
+//        ),
+//    )
+
+
+//        Row {
+//
+//            if(showNavigationRail){
+//                NavigationSideBar(items = items, selectedItemIndex =selectedItemIndex, onNavigate = {selectedItemIndex = it},padding=it )
+//
+//            }
+
+    // Implement admin dashboard UI
     Column(
         modifier = Modifier
-            .padding(16.dp)
-            .fillMaxSize(),
+            .fillMaxSize()
+            .padding(it)
+        ,
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(text = "Dashboard Guru", style = MaterialTheme.typography.bodyLarge)
-        Spacer(modifier = Modifier.height(16.dp))
-        Button(onClick = {}) {
-            Text(text = "Data Guru")
+        Row(verticalAlignment = Alignment.CenterVertically,){
+            Text(text = "Dashboard Guru", style = MaterialTheme.typography.headlineLarge, color = Color(0xFFE3FEF7))
+            Spacer(modifier = Modifier.width(65.dp))
+            Icon(
+                imageVector = Icons.Filled.AccountCircle,
+                contentDescription = "Person",
+                modifier=Modifier.size(50.dp),
+                tint = Color(0xFFE3FEF7)
+            )
         }
         Spacer(modifier = Modifier.height(8.dp))
-        Button(onClick = {}) {
-            Text(text = "Data Staff")
+        val cards= listOf(CardItem(
+            title = "Data Guru",
+            route = Screen.DataGuru
+        ),
+            CardItem(
+                title = "Data Staff",
+                route = Screen.DataStaff
+            ),
+            CardItem(
+                title = "Data Siswa",
+                route = Screen.DataSiswa
+            ),
+            CardItem(
+                title = "Data Jadwal Pelajaran",
+                route =Screen.DataJadwalPelajaran,
+                icon = Icons.Filled.DateRange
+            ),
+            CardItem(
+                title = "Data Jadwal Ujian",
+                route =Screen.DataJadwalUjian,
+                icon = Icons.Filled.DateRange
+            ),
+            CardItem(
+                title = "Data Nilai dan Peringkat Siswa",
+                route =Screen.DataNilai,
+                icon = Icons.Filled.Star
+            ),
+            CardItem(
+                title = "Data Perkembangan Nilai",
+                route =Screen.DataPerkembangan,
+                icon = Icons.Filled.Star
+            ),
+            CardItem(
+                title = "Data Rekapan Kehadiran Siswa",
+                route =Screen.DataRekapan,
+                icon = Icons.Filled.Face
+            ),
+        )
+        LazyVerticalGrid(
+            columns = GridCells.Adaptive(minSize = 200.dp)
+        ) {
+            items(cards) {
+                Card(
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.tertiary,
+
+                        ),
+                    modifier = Modifier
+                        .size(width = 200.dp, height = 100.dp)
+                        .clickable { navController.navigate(it.route) }
+                        .padding(8.dp)
+                ) {
+                    Column(
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        it.icon?.let { it1 ->
+                            Icon(
+                                imageVector = it1,
+                                contentDescription = "Person"
+                            )
+                        }
+                        Text(
+                            text = it.title,
+                            textAlign = TextAlign.Center
+                        )
+                    }   }
+            }
+
         }
-        Spacer(modifier = Modifier.height(8.dp))
-        Button(onClick = {}) {
-            Text(text = "Data Siswa")
-        }
-        Spacer(modifier = Modifier.height(8.dp))
-        Button(onClick = {}) {
-            Text(text = "Data Jadwal Pelajaran")
-        }
-        Spacer(modifier = Modifier.height(8.dp))
-        Button(onClick = {}) {
-            Text(text = "Data Jadwal Ujian")
-        }
-        Spacer(modifier = Modifier.height(8.dp))
-        Button(onClick = {}) {
-            Text(text = "Data Nilai dan Peringkat Siswa")
-        }
-        Spacer(modifier = Modifier.height(8.dp))
-        Button(onClick = {}) {
-            Text(text = "Data Pekembangan Nilai")
-        }
-        Spacer(modifier = Modifier.height(8.dp))
-        Button(onClick = {}) {
-            Text(text = "Data Rekapan Kehadiran Siswa")
-        }
+
     }
+//
+
+
 }
