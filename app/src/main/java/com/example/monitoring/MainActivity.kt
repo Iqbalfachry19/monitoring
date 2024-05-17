@@ -126,6 +126,7 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
+import kotlinx.serialization.Serializable
 import java.util.UUID
 
 data class NavigationItem(
@@ -139,7 +140,8 @@ data class NavigationItem(
 data class Quadruple<T, U, V, W>(val first: T, val second: U, val third: V, val fourth: W)
 data class Quintuple<T, U, V, W,X>(val first: T, val second: U, val third: V, val fourth: W, val fifth:X)
 data class Nilai<T, U, V>(val nama: T, val mataPelajaranList: U, val peringkat:V)
-
+@Serializable
+object Login
 data class CardItem(
     val title: String,
     val route:String,
@@ -154,8 +156,8 @@ class MainActivity : ComponentActivity() {
                 // A surface container using the 'background' color from the theme
                 val navController = rememberNavController()
 
-                NavHost(navController, startDestination = "login") {
-                    composable("login") {
+                NavHost(navController, startDestination = Login) {
+                    composable<Login> {
                         LoginPage(navController)
                     }
                     composable("adminDashboard") {
