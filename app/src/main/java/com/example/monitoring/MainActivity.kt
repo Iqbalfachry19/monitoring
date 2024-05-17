@@ -1372,7 +1372,7 @@ fun DataNilai(
 
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            text = peringkat,
+                            text = "Peringkat $peringkat",
                             style = MaterialTheme.typography.bodyLarge,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis
@@ -1487,7 +1487,7 @@ fun DataPerkembangan(
 
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            text = peringkat,
+                            text = "Peringkat $peringkat",
                             style = MaterialTheme.typography.bodyLarge,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis
@@ -1601,7 +1601,7 @@ fun DataRekapan(
 
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            text = peringkat,
+                            text = "peringkat $peringkat",
                             style = MaterialTheme.typography.bodyLarge,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis
@@ -2029,20 +2029,14 @@ fun TambahNilai(
     var mataPelajaran by remember { mutableStateOf("") }
     var nilai by remember { mutableStateOf("") }
     var peringkat by remember { mutableStateOf("") }
-
-    val context = LocalContext.current
-
-
+    var mataPelajaranList by remember { mutableStateOf(listOf<Map<String, String>>()) }
 
     Column(modifier = Modifier.fillMaxSize()) {
-        Text(text="Tambah Data Nilai dan Peringkat Siswa", modifier = Modifier
-            .align(Alignment.CenterHorizontally))
-        // Display the selected image
+        Text(
+            text = "Tambah Data Nilai dan Peringkat Siswa",
+            modifier = Modifier.align(Alignment.CenterHorizontally).padding(16.dp)
+        )
 
-        // Button to select image
-
-
-        // Text field for name
         TextField(
             value = name,
             onValueChange = { name = it },
@@ -2052,15 +2046,15 @@ fun TambahNilai(
                 .padding(16.dp)
         )
 
-        // Text field for description
         TextField(
             value = mataPelajaran,
-            onValueChange = {mataPelajaran = it },
+            onValueChange = { mataPelajaran = it },
             label = { Text("Mata Pelajaran") },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp)
         )
+
         TextField(
             value = nilai,
             onValueChange = { nilai = it },
@@ -2069,6 +2063,35 @@ fun TambahNilai(
                 .fillMaxWidth()
                 .padding(16.dp)
         )
+
+        Button(
+            onClick = {
+                if (mataPelajaran.isNotBlank() && nilai.isNotBlank()) {
+                    val newEntry = mapOf("nama" to mataPelajaran, "nilai" to nilai)
+                    mataPelajaranList = mataPelajaranList + newEntry
+                    mataPelajaran = ""
+                    nilai = ""
+                }
+            },
+            modifier = Modifier
+                .align(Alignment.CenterHorizontally)
+                .padding(16.dp)
+        ) {
+            Text("Tambah Mata Pelajaran")
+        }
+
+        if (mataPelajaranList.isNotEmpty()) {
+            Column {
+                Text("Daftar Mata Pelajaran:", modifier = Modifier.padding(16.dp))
+                mataPelajaranList.forEach { item ->
+                    Text(
+                        text = "${item["nama"]} - ${item["nilai"]}",
+                        modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 8.dp)
+                    )
+                }
+            }
+        }
+
         TextField(
             value = peringkat,
             onValueChange = { peringkat = it },
@@ -2078,11 +2101,9 @@ fun TambahNilai(
                 .padding(16.dp)
         )
 
-
-        // Button to submit data
         Button(
             onClick = {
-                submitDataToDatabaseNilai(name, mataPelajaran,nilai,peringkat,navController)
+                submitDataToDatabaseNilai(name, mataPelajaranList, peringkat, navController)
             },
             modifier = Modifier
                 .align(Alignment.CenterHorizontally)
@@ -2092,6 +2113,7 @@ fun TambahNilai(
         }
     }
 }
+
 @OptIn(ExperimentalCoilApi::class)
 @Composable
 fun TambahJadwalUjian(
@@ -2346,11 +2368,11 @@ private fun submitDataToDatabase(name: String, description: String, imageUrl: St
             Log.w("Firestore", "Error writing document", e)
         }
 }
-private fun submitDataToDatabaseNilai(name: String,mataPelajaran:String,nilai:String ,peringkat:String,
+private fun submitDataToDatabaseNilai(name: String,mataPelajaran: List<Map<String, String>>,peringkat:String,
                                       navController: NavController) {
     // Access the Firestore collection where you want to store the data
     val firestore = Firebase.firestore
-    val collectionRef = firestore.collection("jadwalUjian")
+    val collectionRef = firestore.collection("nilai")
 
     // Create a new document with a unique ID
     val documentRef = collectionRef.document()
@@ -2358,9 +2380,8 @@ private fun submitDataToDatabaseNilai(name: String,mataPelajaran:String,nilai:St
     // Create a data object to store the fields
     val data = hashMapOf(
         "nama" to name,
-        "kelas" to mataPelajaran,
-        "jam" to nilai,
-        "hari" to peringkat,
+        "mata_pelajaran" to mataPelajaran,
+        "peringkat" to peringkat,
 
     )
 
