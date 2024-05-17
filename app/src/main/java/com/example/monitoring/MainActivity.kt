@@ -200,6 +200,9 @@ sealed interface Screen {
 
     @Serializable
     data object TambahPerkembangan: Screen
+
+    @Serializable
+    data object TambahRekapan: Screen
 }
 data class CardItem<T>(
     val title: String,
@@ -279,6 +282,9 @@ class MainActivity : ComponentActivity() {
                     }
                     composable<Screen.TambahPerkembangan> {
                         TambahPerkembangan(navController)
+                    }
+                    composable<Screen.TambahRekapan> {
+                        TambahRekapan(navController)
                     }
                     composable<Screen.TeacherDashboard> {
                         ScreenWithScaffold(navController) {
@@ -1545,7 +1551,7 @@ fun DataRekapan(
                 onClick = {
                     // show snackbar as a suspend function
 
-                    navController.navigate("tambahNilai")
+                    navController.navigate(Screen.TambahRekapan)
                 }
                 , containerColor = Color(0xFF77B0AA) ) { Text("+", fontSize = 24.sp, color = Color(0xFFE3FEF7)) }
         },
@@ -1854,6 +1860,86 @@ fun TambahJadwalPelajaran(
         }
     }
 }
+
+@OptIn(ExperimentalCoilApi::class)
+@Composable
+fun TambahRekapan(
+    navController: NavController
+) {
+    var name by remember { mutableStateOf("") }
+    var kelas by remember { mutableStateOf("") }
+    var jam by remember { mutableStateOf("") }
+    var hari by remember { mutableStateOf("") }
+    var tanggal by remember { mutableStateOf("") }
+    val context = LocalContext.current
+
+
+
+    Column(modifier = Modifier.fillMaxSize()) {
+        Text(text="Tambah Data Jadwal Pelajaran", modifier = Modifier
+            .align(Alignment.CenterHorizontally))
+        // Display the selected image
+
+        // Button to select image
+
+
+        // Text field for name
+        TextField(
+            value = name,
+            onValueChange = { name = it },
+            label = { Text("Nama Mata Pelajaran") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        )
+
+        // Text field for description
+        TextField(
+            value = kelas,
+            onValueChange = { kelas = it },
+            label = { Text("Kelas") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        )
+        TextField(
+            value = jam,
+            onValueChange = { jam = it },
+            label = { Text("Jam") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        )
+        TextField(
+            value = hari,
+            onValueChange = { hari = it },
+            label = { Text("Hari") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        )
+        TextField(
+            value = tanggal,
+            onValueChange = { name = it },
+            label = { Text("Nama Mata Pelajaran") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        )
+
+        // Button to submit data
+        Button(
+            onClick = {
+                submitDataToDatabaseUjian(name, kelas,jam,hari,tanggal,navController)
+            },
+            modifier = Modifier
+                .align(Alignment.CenterHorizontally)
+                .padding(16.dp)
+        ) {
+            Text("Submit")
+        }
+    }
+}
 @OptIn(ExperimentalCoilApi::class)
 @Composable
 fun TambahPerkembangan(
@@ -1933,6 +2019,7 @@ fun TambahPerkembangan(
         }
     }
 }
+
 @OptIn(ExperimentalCoilApi::class)
 @Composable
 fun TambahNilai(
