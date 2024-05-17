@@ -12,6 +12,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -802,7 +803,7 @@ fun DataSiswa(
 
                     navController.navigate("tambahSiswa")
                 }
-            ) { Text("+", fontSize = 24.sp) }
+                , containerColor = Color(0xFF77B0AA) ) { Text("+", fontSize = 24.sp, color = Color(0xFFE3FEF7)) }
         },
     ) { innerPadding ->
 
@@ -813,7 +814,8 @@ fun DataSiswa(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(text = "Data Siswa", style = MaterialTheme.typography.bodyLarge)
+
+            Text(text = "Data Siswa", style = MaterialTheme.typography.headlineLarge, color = Color(0xFFE3FEF7))
             Spacer(modifier = Modifier.height(16.dp))
             // Display the data fetched from Firestore
             dataList.forEach { (name,keterangan, imageUrl) ->
@@ -821,26 +823,42 @@ fun DataSiswa(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.padding(8.dp)
                 ) {
-                    Image(
-                        painter = rememberImagePainter(imageUrl),
-                        contentDescription = null,
-                        modifier = Modifier.size(50.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Column {
-                        Text(text = name, style = MaterialTheme.typography.bodySmall)
-                        Spacer(modifier = Modifier.height(4.dp))
+                    Card(
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.tertiary,
 
-                        Text(
-                            text = keterangan,
-                            style = MaterialTheme.typography.bodyLarge,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
+                            ),
+                        modifier = Modifier
+                            .size(width = 200.dp, height = 120.dp)
+                            .clickable {  }
+                            .padding(8.dp)
+                    ) {
+                        Image(
+                            painter = rememberImagePainter(imageUrl),
+                            contentDescription = null,
+                            modifier = Modifier.size(50.dp)
                         )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Column {
+                            Text(
+                                text = name,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = Color(0xFFE3FEF7)
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+
+                            Text(
+                                text = keterangan,
+                                style = MaterialTheme.typography.bodyLarge,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                color = Color(0xFFE3FEF7)
+                            )
+                        }
                     }
                 }
-                Divider()
             }
+
         }
     }
 }
@@ -890,7 +908,7 @@ fun DataJadwalPelajaran(
 
                     navController.navigate("tambahJadwalPelajaran")
                 }
-            ) { Text("+", fontSize = 24.sp) }
+                , containerColor = Color(0xFF77B0AA) ) { Text("+", fontSize = 24.sp, color = Color(0xFFE3FEF7)) }
         },
     ) { innerPadding ->
 
@@ -901,7 +919,7 @@ fun DataJadwalPelajaran(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(text = "Data Jadwal Pelajaran", style = MaterialTheme.typography.bodyLarge)
+            Text(text = "Data Jadwal Pelajaran", style = MaterialTheme.typography.headlineLarge, color = Color(0xFFE3FEF7))
             Spacer(modifier = Modifier.height(16.dp))
             // Display the data fetched from Firestore
             dataList.forEach { (nama,jam,kelas,hari) ->
@@ -910,36 +928,46 @@ fun DataJadwalPelajaran(
                     modifier = Modifier.padding(8.dp)
                 ) {
 
+                    Card(
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.tertiary,
 
-                    Column {
-                        Text(text = nama, style = MaterialTheme.typography.bodySmall)
-                        Spacer(modifier = Modifier.height(4.dp))
+                            ),
 
-                        Text(
-                            text = kelas,
-                            style = MaterialTheme.typography.bodyLarge,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
+                        modifier = Modifier
+                            .size(width = 200.dp, height = 120.dp)
+                            .clickable { }
+                            .padding(8.dp)
+                    ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center,modifier = Modifier.fillMaxSize()) {
+                            Text(text = nama, style = MaterialTheme.typography.bodySmall)
+                            Spacer(modifier = Modifier.height(4.dp))
 
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            text = jam,
-                            style = MaterialTheme.typography.bodyLarge,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            text = hari,
-                            style = MaterialTheme.typography.bodyLarge,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
+                            Text(
+                                text = kelas,
+                                style = MaterialTheme.typography.bodyLarge,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
 
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = jam,
+                                style = MaterialTheme.typography.bodyLarge,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = hari,
+                                style = MaterialTheme.typography.bodyLarge,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+
+                        }
                     }
                 }
-                Divider()
             }
         }
     }
@@ -989,9 +1017,9 @@ fun DataJadwalUjian(
                 onClick = {
                     // show snackbar as a suspend function
 
-                    navController.navigate("tambahJadwalPelajaran")
+                    navController.navigate("tambahJadwalUjian")
                 }
-            ) { Text("+", fontSize = 24.sp) }
+                , containerColor = Color(0xFF77B0AA) ) { Text("+", fontSize = 24.sp, color = Color(0xFFE3FEF7)) }
         },
     ) { innerPadding ->
 
@@ -1002,7 +1030,7 @@ fun DataJadwalUjian(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(text = "Data Jadwal Ujian", style = MaterialTheme.typography.bodyLarge)
+            Text(text = "Data Jadwal Ujian", style = MaterialTheme.typography.headlineLarge, color = Color(0xFFE3FEF7))
             Spacer(modifier = Modifier.height(16.dp))
             // Display the data fetched from Firestore
             dataList.forEach { (nama,jam,kelas,hari,tanggal) ->
@@ -1011,42 +1039,61 @@ fun DataJadwalUjian(
                     modifier = Modifier.padding(8.dp)
                 ) {
 
+                    Card(
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.tertiary,
 
-                    Column {
-                        Text(text = nama, style = MaterialTheme.typography.bodySmall)
-                        Spacer(modifier = Modifier.height(4.dp))
+                            ),
 
-                        Text(
-                            text = kelas,
-                            style = MaterialTheme.typography.bodyLarge,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
+                        modifier = Modifier
+                            .size(width = 200.dp, height = 120.dp)
+                            .clickable { }
+                            .padding(8.dp)
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center,
+                            modifier = Modifier.fillMaxSize()
+                        ) {
 
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            text = jam,
-                            style = MaterialTheme.typography.bodyLarge,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            text = hari,
-                            style = MaterialTheme.typography.bodyLarge,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            text = tanggal,
-                            style = MaterialTheme.typography.bodyLarge,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
+
+                            Text(
+                                text = nama,
+                                style = MaterialTheme.typography.bodyLarge,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+
+                            Text(
+                                text = kelas,
+                                style = MaterialTheme.typography.bodyLarge,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+
+                            Text(
+                                text = jam,
+                                style = MaterialTheme.typography.bodyLarge,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+
+                            Text(
+                                text = hari,
+                                style = MaterialTheme.typography.bodyLarge,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+
+                            Text(
+                                text = tanggal,
+                                style = MaterialTheme.typography.bodyLarge,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
                     }
                 }
-                Divider()
             }
         }
     }
@@ -1102,9 +1149,9 @@ fun DataNilai(
                 onClick = {
                     // show snackbar as a suspend function
 
-                    navController.navigate("tambahStaff")
+                    navController.navigate("tambahNilai")
                 }
-            ) { Text("+", fontSize = 24.sp) }
+                , containerColor = Color(0xFF77B0AA) ) { Text("+", fontSize = 24.sp, color = Color(0xFFE3FEF7)) }
         },
     ) { innerPadding ->
 
@@ -1115,24 +1162,39 @@ fun DataNilai(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(text = "Data Nilai dan Peringkat Siswa", style = MaterialTheme.typography.bodyLarge)
+            Text(text = "Data Nilai dan Peringkat Siswa", style = MaterialTheme.typography.headlineLarge, color = Color(0xFFE3FEF7), textAlign = TextAlign.Center)
             Spacer(modifier = Modifier.height(16.dp))
             // Display the data fetched from Firestore
-            dataList.forEach { (nama,matapelajaran,peringkat) ->
+            dataList.forEach { (nama, matapelajaran, peringkat) ->
 
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Column {
+                Card(
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.tertiary,
+
+                        ),
+
+                    modifier = Modifier
+                        .size(width = 200.dp, height = 120.dp)
+                        .clickable { }
+                        .padding(8.dp)
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center,
+                        modifier = Modifier.fillMaxSize()
+                    ) {
                         Text(text = nama, style = MaterialTheme.typography.bodySmall)
                         Spacer(modifier = Modifier.height(4.dp))
 
 
 
-                            matapelajaran.forEach { (pelajaran, nilai) ->
-                                Text(
-                                    text = "$pelajaran: $nilai",
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    maxLines = 1
-                                )}
+                        matapelajaran.forEach { (pelajaran, nilai) ->
+                            Text(
+                                text = "$pelajaran: $nilai",
+                                style = MaterialTheme.typography.bodyLarge,
+                                maxLines = 1
+                            )
+                        }
 
 
                         Spacer(modifier = Modifier.height(4.dp))
@@ -1144,11 +1206,12 @@ fun DataNilai(
                         )
                     }
 
-                Divider()
+                }
+            }
             }
         }
     }
-}
+
 @OptIn(ExperimentalCoilApi::class)
 @Composable
 fun DataPerkembangan(
@@ -1200,9 +1263,9 @@ fun DataPerkembangan(
                 onClick = {
                     // show snackbar as a suspend function
 
-                    navController.navigate("tambahStaff")
+                    navController.navigate("tambahGuru")
                 }
-            ) { Text("+", fontSize = 24.sp) }
+                , containerColor = Color(0xFF77B0AA) ) { Text("+", fontSize = 24.sp, color = Color(0xFFE3FEF7)) }
         },
     ) { innerPadding ->
 
@@ -1390,7 +1453,7 @@ fun DataStaff(
 
                     navController.navigate("tambahStaff")
                 }
-            ) { Text("+", fontSize = 24.sp) }
+                , containerColor = Color(0xFF77B0AA) ) { Text("+", fontSize = 24.sp, color = Color(0xFFE3FEF7)) }
         },
     ) { innerPadding ->
 
@@ -1401,7 +1464,8 @@ fun DataStaff(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(text = "Data Staff", style = MaterialTheme.typography.bodyLarge)
+
+            Text(text = "Data Staff", style = MaterialTheme.typography.headlineLarge, color = Color(0xFFE3FEF7))
             Spacer(modifier = Modifier.height(16.dp))
             // Display the data fetched from Firestore
             dataList.forEach { (name,keterangan, imageUrl) ->
@@ -1409,26 +1473,42 @@ fun DataStaff(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.padding(8.dp)
                 ) {
-                    Image(
-                        painter = rememberImagePainter(imageUrl),
-                        contentDescription = null,
-                        modifier = Modifier.size(50.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Column {
-                        Text(text = name, style = MaterialTheme.typography.bodySmall)
-                        Spacer(modifier = Modifier.height(4.dp))
+                    Card(
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.tertiary,
 
-                        Text(
-                            text = keterangan,
-                            style = MaterialTheme.typography.bodyLarge,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
+                            ),
+                        modifier = Modifier
+                            .size(width = 200.dp, height = 120.dp)
+                            .clickable {  }
+                            .padding(8.dp)
+                    ) {
+                        Image(
+                            painter = rememberImagePainter(imageUrl),
+                            contentDescription = null,
+                            modifier = Modifier.size(50.dp)
                         )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Column {
+                            Text(
+                                text = name,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = Color(0xFFE3FEF7)
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+
+                            Text(
+                                text = keterangan,
+                                style = MaterialTheme.typography.bodyLarge,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                color = Color(0xFFE3FEF7)
+                            )
+                        }
                     }
                 }
-                Divider()
             }
+
         }
     }
 }
