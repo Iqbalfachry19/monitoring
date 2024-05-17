@@ -1711,8 +1711,9 @@ fun TambahSiswa(
     }
 
 
-    Column(modifier = Modifier.fillMaxSize()) {
-        Text(text="Tambah Data Siswa", modifier = Modifier
+    Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
+
+    Text(text="Tambah Data Siswa", modifier = Modifier
             .align(Alignment.CenterHorizontally))
         // Display the selected image
         imageDownloadUrl?.let { imageUrl ->
@@ -1853,7 +1854,7 @@ fun TambahStaff(
     }
 
 
-    Column(modifier = Modifier.fillMaxSize()) {
+    Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
         // Display the selected image
         Text(text="Tambah Data Staff", modifier = Modifier
             .align(Alignment.CenterHorizontally))
@@ -1864,6 +1865,7 @@ fun TambahStaff(
                 modifier = Modifier
                     .size(150.dp) // Adjust the size as needed
                     .padding(16.dp) // Add padding for better layout
+                      ,  alignment = Alignment.Center
             )
         }
 
@@ -1924,8 +1926,9 @@ fun TambahGuru(
     }
 
 
-    Column(modifier = Modifier.fillMaxSize()) {
-        // Display the selected image
+    Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
+
+    // Display the selected image
         Text(text="Tambah Data Guru", modifier = Modifier
             .align(Alignment.CenterHorizontally))
         imageDownloadUrl?.let { imageUrl ->
@@ -1935,6 +1938,7 @@ fun TambahGuru(
                 modifier = Modifier
                     .size(150.dp) // Adjust the size as needed
                     .padding(16.dp) // Add padding for better layout
+                , alignment = Alignment.Center
             )
         }
 
