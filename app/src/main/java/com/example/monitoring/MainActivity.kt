@@ -35,6 +35,8 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Face
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Menu
@@ -203,6 +205,9 @@ sealed interface Screen {
 
     @Serializable
     data object TambahRekapan: Screen
+
+    @Serializable
+    data class EditGuru(val id:String): Screen
 }
 data class CardItem<T>(
     val title: String,
@@ -285,6 +290,11 @@ class MainActivity : ComponentActivity() {
                     }
                     composable<Screen.TambahRekapan> {
                         TambahRekapan(navController)
+                    }
+                    composable<Screen.EditGuru> {
+                            backStackEntry ->
+                        val id = backStackEntry.toRoute<Screen.EditGuru>().id
+                        EditGuru(navController,id)
                     }
                     composable<Screen.TeacherDashboard> {
                         ScreenWithScaffold(navController) {
@@ -830,10 +840,10 @@ fun SettingsPage(navController: NavController,it: PaddingValues){
 @Composable
 fun DataGuruPage(
     navController: NavController
-){
+) {
 
     val firestore = FirebaseFirestore.getInstance()
-    val dataList = remember { mutableStateListOf<Triple<String, String, String>>() }
+    val dataList = remember { mutableStateListOf<Quadruple<String, String, String, String>>() }
 
 
     DisposableEffect(Unit) {
@@ -855,81 +865,108 @@ fun DataGuruPage(
                 val keterangan = document.getString("keterangan") ?: ""
                 val imageUrl = document.getString("imageUrl") ?: ""
                 // Here you can collect more fields as needed
-                dataList.add(Triple(name, keterangan, imageUrl))
+                dataList.add(Quadruple(document.id, name, keterangan, imageUrl))
             }
         }
         onDispose {
             listenerRegistration.remove()
         }
     }
-Scaffold(
-    floatingActionButton = {
+    Scaffold(
+        floatingActionButton = {
 
-        ExtendedFloatingActionButton(
-            onClick = {
-                // show snackbar as a suspend function
+            ExtendedFloatingActionButton(
+                onClick = {
+                    // show snackbar as a suspend function
 
-navController.navigate(Screen.TambahGuru)
+                    navController.navigate(Screen.TambahGuru)
+                }, containerColor = Color(0xFF77B0AA)) {
+                Text(
+                    "+",
+                    fontSize = 24.sp,
+                    color = Color(0xFFE3FEF7)
+                )
             }
-        , containerColor = Color(0xFF77B0AA) ) { Text("+", fontSize = 24.sp, color = Color(0xFFE3FEF7)) }
-    },
-) { innerPadding ->
+        },
+    ) { innerPadding ->
 
-    Column(
-        modifier = Modifier
-            .padding(innerPadding)
-            .fillMaxSize(),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
+        Column(
+            modifier = Modifier
+                .padding(innerPadding)
+                .fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
 
-        Text(text = "Data Guru", style = MaterialTheme.typography.headlineLarge, color = Color(0xFFE3FEF7))
-        Spacer(modifier = Modifier.height(16.dp))
-        // Display the data fetched from Firestore
-        dataList.forEach { (name,keterangan, imageUrl) ->
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(8.dp)
-            ) {
-                Card(
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.tertiary,
-
-                        ),
-                    modifier = Modifier
-                        .size(width = 200.dp, height = 120.dp)
-                        .clickable { }
-                        .padding(8.dp)
+            Text(
+                text = "Data Guru",
+                style = MaterialTheme.typography.headlineLarge,
+                color = Color(0xFFE3FEF7)
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            // Display the data fetched from Firestore
+            dataList.forEach { (id, name, keterangan, imageUrl) ->
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(8.dp)
                 ) {
-                    Image(
-                        painter = rememberImagePainter(imageUrl),
-                        contentDescription = null,
-                        modifier = Modifier.size(50.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Column {
-                        Text(
-                            text = name,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = Color(0xFFE3FEF7)
-                        )
-                        Spacer(modifier = Modifier.height(4.dp))
+                    Card(
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.tertiary,
 
-                        Text(
-                            text = keterangan,
-                            style = MaterialTheme.typography.bodyLarge,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                            color = Color(0xFFE3FEF7)
+                            ),
+                        modifier = Modifier
+                            .size(width = 200.dp, height = 120.dp)
+                            .clickable { }
+                            .padding(8.dp)
+                    ) {
+                        Image(
+                            painter = rememberImagePainter(imageUrl),
+                            contentDescription = null,
+                            modifier = Modifier.size(50.dp)
                         )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Column {
+                            Text(
+                                text = name,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = Color(0xFFE3FEF7)
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+
+                            Text(
+                                text = keterangan,
+                                style = MaterialTheme.typography.bodyLarge,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                color = Color(0xFFE3FEF7)
+                            )
+                        }
+                    }
+                    IconButton(
+                        onClick = {
+                            // Navigate to Edit screen with the document id
+                            navController.navigate(Screen.EditGuru(id))
+                        }
+                    ) {
+                        Icon(Icons.Default.Edit, contentDescription = "Edit", tint = Color.Gray)
+                    }
+                    IconButton(
+                        onClick = {
+                            // Delete the document from Firestore
+                            firestore.collection("guru").document(id).delete()
+                        }
+                    ) {
+                        Icon(Icons.Default.Delete, contentDescription = "Delete", tint = Color.Red)
                     }
                 }
             }
-            }
-
         }
+
     }
+
 }
+
 
 @OptIn(ExperimentalCoilApi::class)
 @Composable
@@ -2339,7 +2376,114 @@ fun TambahGuru(
     }
 }
 
+@OptIn(ExperimentalCoilApi::class)
+@Composable
+fun EditGuru(
+    navController: NavController,
+    guruId: String
+) {
+    val firestore = FirebaseFirestore.getInstance()
+    var name by remember { mutableStateOf("") }
+    var description by remember { mutableStateOf("") }
+    var imageDownloadUrl by remember { mutableStateOf<String?>(null) }
+    val context = LocalContext.current
+    val getContent = rememberLauncherForActivityResult(contract = ActivityResultContracts.GetContent()) { uri ->
+        uri?.let {
+            uploadImageToFirebase(it) { downloadUrl ->
+                imageDownloadUrl = downloadUrl
+            }
+        }
+    }
 
+    // Fetch existing data from Firestore
+    LaunchedEffect(guruId) {
+        val document = firestore.collection("guru").document(guruId).get().await()
+        name = document.getString("nama") ?: ""
+        description = document.getString("keterangan") ?: ""
+        imageDownloadUrl = document.getString("imageUrl")
+    }
+
+    Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
+
+        Text(text="Edit Data Guru", modifier = Modifier.align(Alignment.CenterHorizontally))
+
+        // Display the selected image
+        imageDownloadUrl?.let { imageUrl ->
+            Image(
+                painter = rememberImagePainter(imageUrl),
+                contentDescription = null,
+                modifier = Modifier
+                    .size(150.dp)
+                    .padding(16.dp),
+                alignment = Alignment.Center
+            )
+        }
+
+        // Button to select image
+        Button(onClick = { getContent.launch("image/*") }, modifier = Modifier.align(Alignment.CenterHorizontally)) {
+            Text("Select Image")
+        }
+
+        // Text field for name
+        TextField(
+            value = name,
+            onValueChange = { name = it },
+            label = { Text("Nama") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        )
+
+        // Text field for description
+        TextField(
+            value = description,
+            onValueChange = { description = it },
+            label = { Text("Keterangan") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        )
+
+        // Button to submit data
+        Button(
+            onClick = {
+                submitDataToDatabase(name, description, imageDownloadUrl, navController, guruId, data = "guru")
+            },
+            modifier = Modifier
+                .align(Alignment.CenterHorizontally)
+                .padding(16.dp)
+        ) {
+            Text("Save Changes")
+        }
+    }
+}
+
+// Function to submit data to Firestore
+fun submitDataToDatabase(
+    name: String,
+    description: String,
+    imageUrl: String?,
+    navController: NavController,
+    documentId: String,
+    data: String
+) {
+    val firestore = FirebaseFirestore.getInstance()
+    val dataMap = hashMapOf(
+        "nama" to name,
+        "keterangan" to description,
+        "imageUrl" to imageUrl
+    )
+
+    firestore.collection(data).document(documentId).set(dataMap)
+        .addOnSuccessListener {
+            // Navigate back to the list screen after a successful update
+            navController.popBackStack()
+        }
+        .addOnFailureListener { e ->
+            // Handle any errors
+            Log.e("EditGuru", "Error updating document", e)
+        }
+}
 private fun submitDataToDatabase(name: String, description: String, imageUrl: String?,
                                  navController: NavController,data:String) {
     // Access the Firestore collection where you want to store the data
