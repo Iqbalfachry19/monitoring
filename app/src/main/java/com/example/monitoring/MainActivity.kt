@@ -48,6 +48,7 @@ import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.BottomAppBar
@@ -208,7 +209,27 @@ sealed interface Screen {
 
     @Serializable
     data class EditGuru(val id:String): Screen
+
+    @Serializable
+    data class EditStaff(val id:String): Screen
+
+    @Serializable
+    data class EditSiswa(val id:String): Screen
+    @Serializable
+    data class EditJadwalPelajaran(val id:String): Screen
+    @Serializable
+    data class EditJadwalUjian(val id:String): Screen
+
+    @Serializable
+    data class EditNilai(val id:String): Screen
+    @Serializable
+    data class EditPerkembangan(val id:String): Screen
+
+    @Serializable
+    data class EditRekapan(val id:String): Screen
+
 }
+
 data class CardItem<T>(
     val title: String,
     val route:T,
@@ -294,6 +315,16 @@ class MainActivity : ComponentActivity() {
                     composable<Screen.EditGuru> {
                             backStackEntry ->
                         val id = backStackEntry.toRoute<Screen.EditGuru>().id
+                        EditGuru(navController,id)
+                    }
+                    composable<Screen.EditSiswa> {
+                            backStackEntry ->
+                        val id = backStackEntry.toRoute<Screen.EditSiswa>().id
+                        EditGuru(navController,id)
+                    }
+                    composable<Screen.EditStaff> {
+                            backStackEntry ->
+                        val id = backStackEntry.toRoute<Screen.EditStaff>().id
                         EditGuru(navController,id)
                     }
                     composable<Screen.TeacherDashboard> {
@@ -844,6 +875,8 @@ fun DataGuruPage(
 
     val firestore = FirebaseFirestore.getInstance()
     val dataList = remember { mutableStateListOf<Quadruple<String, String, String, String>>() }
+    var showDialog by remember { mutableStateOf(false) }
+    var documentIdToDelete by remember { mutableStateOf<String?>(null) }
 
 
     DisposableEffect(Unit) {
@@ -871,6 +904,33 @@ fun DataGuruPage(
         onDispose {
             listenerRegistration.remove()
         }
+    }
+
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = { showDialog = false },
+            title = { Text(text = "Confirm Deletion") },
+            text = { Text("Are you sure you want to delete this item?") },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        documentIdToDelete?.let { id ->
+                            firestore.collection("guru").document(id).delete()
+                        }
+                        showDialog = false
+                    }
+                ) {
+                    Text("Delete")
+                }
+            },
+            dismissButton = {
+                Button(
+                    onClick = { showDialog = false }
+                ) {
+                    Text("Cancel")
+                }
+            }
+        )
     }
     Scaffold(
         floatingActionButton = {
@@ -953,9 +1013,10 @@ fun DataGuruPage(
                     }
                     IconButton(
                         onClick = {
-                            // Delete the document from Firestore
-                            firestore.collection("guru").document(id).delete()
-                        }
+
+                                documentIdToDelete = id
+                                showDialog = true
+                                }
                     ) {
                         Icon(Icons.Default.Delete, contentDescription = "Delete", tint = Color.Red)
                     }
@@ -975,8 +1036,9 @@ fun DataSiswa(
 ){
 
     val firestore = FirebaseFirestore.getInstance()
-    val dataList = remember { mutableStateListOf<Triple<String, String, String>>() }
-
+    val dataList = remember { mutableStateListOf<Quadruple<String,String, String, String>>() }
+    var showDialog by remember { mutableStateOf(false) }
+    var documentIdToDelete by remember { mutableStateOf<String?>(null) }
 
     DisposableEffect(Unit) {
         val collectionRef = firestore.collection("siswa")
@@ -997,12 +1059,38 @@ fun DataSiswa(
                 val keterangan = document.getString("keterangan") ?: ""
                 val imageUrl = document.getString("imageUrl") ?: ""
                 // Here you can collect more fields as needed
-                dataList.add(Triple(name, keterangan, imageUrl))
+                dataList.add(Quadruple(document.id,name, keterangan, imageUrl))
             }
         }
         onDispose {
             listenerRegistration.remove()
         }
+    }
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = { showDialog = false },
+            title = { Text(text = "Confirm Deletion") },
+            text = { Text("Are you sure you want to delete this item?") },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        documentIdToDelete?.let { id ->
+                            firestore.collection("siswa").document(id).delete()
+                        }
+                        showDialog = false
+                    }
+                ) {
+                    Text("Delete")
+                }
+            },
+            dismissButton = {
+                Button(
+                    onClick = { showDialog = false }
+                ) {
+                    Text("Cancel")
+                }
+            }
+        )
     }
     Scaffold(
         floatingActionButton = {
@@ -1028,7 +1116,7 @@ fun DataSiswa(
             Text(text = "Data Siswa", style = MaterialTheme.typography.headlineLarge, color = Color(0xFFE3FEF7))
             Spacer(modifier = Modifier.height(16.dp))
             // Display the data fetched from Firestore
-            dataList.forEach { (name,keterangan, imageUrl) ->
+            dataList.forEach { (id,name,keterangan, imageUrl) ->
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.padding(8.dp)
@@ -1065,6 +1153,23 @@ fun DataSiswa(
                                 color = Color(0xFFE3FEF7)
                             )
                         }
+                    }
+                    IconButton(
+                        onClick = {
+                            // Navigate to Edit screen with the document id
+                            navController.navigate(Screen.EditSiswa(id))
+                        }
+                    ) {
+                        Icon(Icons.Default.Edit, contentDescription = "Edit", tint = Color.Gray)
+                    }
+                    IconButton(
+                        onClick = {
+
+                                documentIdToDelete = id
+                                showDialog = true
+                            }
+                    ) {
+                        Icon(Icons.Default.Delete, contentDescription = "Delete", tint = Color.Red)
                     }
                 }
             }
@@ -1657,7 +1762,9 @@ fun DataStaffPage(
 ){
 
     val firestore = FirebaseFirestore.getInstance()
-    val dataList = remember { mutableStateListOf<Triple<String, String, String>>() }
+    val dataList = remember { mutableStateListOf<Quadruple<String,String, String, String>>() }
+    var showDialog by remember { mutableStateOf(false) }
+    var documentIdToDelete by remember { mutableStateOf<String?>(null) }
 
 
     DisposableEffect(Unit) {
@@ -1679,12 +1786,38 @@ fun DataStaffPage(
                 val keterangan = document.getString("keterangan") ?: ""
                 val imageUrl = document.getString("imageUrl") ?: ""
                 // Here you can collect more fields as needed
-                dataList.add(Triple(name, keterangan, imageUrl))
+                dataList.add(Quadruple(document.id,name, keterangan, imageUrl))
             }
         }
         onDispose {
             listenerRegistration.remove()
         }
+    }
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = { showDialog = false },
+            title = { Text(text = "Confirm Deletion") },
+            text = { Text("Are you sure you want to delete this item?") },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        documentIdToDelete?.let { id ->
+                            firestore.collection("staff").document(id).delete()
+                        }
+                        showDialog = false
+                    }
+                ) {
+                    Text("Delete")
+                }
+            },
+            dismissButton = {
+                Button(
+                    onClick = { showDialog = false }
+                ) {
+                    Text("Cancel")
+                }
+            }
+        )
     }
     Scaffold(
         floatingActionButton = {
@@ -1710,7 +1843,7 @@ fun DataStaffPage(
             Text(text = "Data Staff", style = MaterialTheme.typography.headlineLarge, color = Color(0xFFE3FEF7))
             Spacer(modifier = Modifier.height(16.dp))
             // Display the data fetched from Firestore
-            dataList.forEach { (name,keterangan, imageUrl) ->
+            dataList.forEach { (id,name,keterangan, imageUrl) ->
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.padding(8.dp)
@@ -1747,6 +1880,23 @@ fun DataStaffPage(
                                 color = Color(0xFFE3FEF7)
                             )
                         }
+                    }
+                    IconButton(
+                        onClick = {
+                            // Navigate to Edit screen with the document id
+                            navController.navigate(Screen.EditStaff(id))
+                        }
+                    ) {
+                        Icon(Icons.Default.Edit, contentDescription = "Edit", tint = Color.Gray)
+                    }
+                    IconButton(
+                        onClick = {
+
+                            documentIdToDelete = id
+                            showDialog = true
+                        }
+                    ) {
+                        Icon(Icons.Default.Delete, contentDescription = "Delete", tint = Color.Red)
                     }
                 }
             }
