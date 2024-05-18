@@ -151,13 +151,13 @@ sealed interface Screen {
     data object Login : Screen
 
     @Serializable
-    data object TeacherDashboard : Screen
+    data class TeacherDashboard(val role: String) : Screen
 
     @Serializable
-    data object Settings : Screen
+    data class Settings(val role: String) : Screen
 
     @Serializable
-    data object AdminDashboard : Screen
+    data class AdminDashboard(val role:String) : Screen
 
     @Serializable
     data object Search : Screen
@@ -169,7 +169,7 @@ sealed interface Screen {
     data object DataStaff : Screen
 
     @Serializable
-    data object DataSiswa : Screen
+    data class DataSiswa(val role: String) : Screen
 
     @Serializable
     data object DataJadwalPelajaran : Screen
@@ -249,19 +249,18 @@ class MainActivity : ComponentActivity() {
                         LoginPage(navController)
                     }
                     composable<Screen.AdminDashboard> {
-                        ScreenWithScaffold(navController) {
-                            AdminDashboardPage(navController,it)
+                            backStackEntry ->
+                        val role = backStackEntry.toRoute<Screen.AdminDashboard>().role
+                        ScreenWithScaffold(navController,role) {
+                            AdminDashboardPage(navController,it,role)
                         }
                     }
-                    composable<Screen.Search> {
 
-                        ScreenWithScaffold(navController) {
-                            SearchPage(navController,it)
-                        }
-                    }
                     composable<Screen.Settings>{
-                        ScreenWithScaffold(navController) {
-                            SettingsPage(navController,it)
+                            backStackEntry ->
+                        val role = backStackEntry.toRoute<Screen.Settings>().role
+                        ScreenWithScaffold(navController,role) {
+                            SettingsPage(navController,it,role)
                         }
                     }
                     composable<Screen.DataGuru> {
@@ -271,7 +270,9 @@ class MainActivity : ComponentActivity() {
                         DataStaffPage(navController)
                     }
                     composable<Screen.DataSiswa> {
-                        DataSiswa(navController)
+                            backStackEntry ->
+                        val role = backStackEntry.toRoute<Screen.DataSiswa>().role
+                        DataSiswa(navController,role)
                     }
                     composable<Screen.DataJadwalPelajaran> {
                         DataJadwalPelajaran(navController)
@@ -328,8 +329,10 @@ class MainActivity : ComponentActivity() {
                         EditStaff(navController,id)
                     }
                     composable<Screen.TeacherDashboard> {
-                        ScreenWithScaffold(navController) {
-                            TeacherDashboard(navController,it)
+                            backStackEntry ->
+                        val role = backStackEntry.toRoute<Screen.TeacherDashboard>().role
+                        ScreenWithScaffold(navController,role) {
+                            TeacherDashboard(navController,it,role)
                         }
                     }
                 }
@@ -337,21 +340,22 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
-fun NavBackStackEntry?.fromRoute(): Screen {
+fun NavBackStackEntry?.fromRoute(role: String): Screen {
     this?.destination?.route?.substringBefore("?")?.substringBefore("/")
         ?.substringAfterLast(".")?.let {
             when (it) {
-                Screen.AdminDashboard::class.simpleName -> return Screen.AdminDashboard
-                Screen.Search::class.simpleName -> return Screen.Search
-                Screen.Settings::class.simpleName -> return Screen.Settings
-                else -> return Screen.AdminDashboard
+                Screen.TeacherDashboard::class.simpleName -> return Screen.TeacherDashboard(role)
+
+                Screen.AdminDashboard::class.simpleName -> return Screen.AdminDashboard(role)
+                Screen.Settings::class.simpleName -> return Screen.Settings(role)
+                else -> return Screen.AdminDashboard(role)
             }
         }
-    return Screen.AdminDashboard
+    return Screen.AdminDashboard(role)
 }
 @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
 @Composable
-fun ScreenWithScaffold(navController: NavController, content: @Composable (PaddingValues) -> Unit) {
+fun ScreenWithScaffold(navController: NavController,role: String, content: @Composable (PaddingValues) -> Unit) {
     // Wrap the content with Scaffold
     var selectedItemIndex1 by rememberSaveable {
         mutableStateOf(0)
@@ -361,7 +365,7 @@ fun ScreenWithScaffold(navController: NavController, content: @Composable (Paddi
     val showNavigationRail = windowClass.widthSizeClass == WindowWidthSizeClass.Compact
     val items1 = listOf(
         NavigationItem(
-            route = Screen.AdminDashboard,
+            route = if (role == "admin") Screen.AdminDashboard(role) else Screen.TeacherDashboard(role) ,
 
             title= "Home",
             selectedIcon = Icons.Filled.Home,
@@ -377,7 +381,7 @@ fun ScreenWithScaffold(navController: NavController, content: @Composable (Paddi
 //            hasNews =false
 //        ),
         NavigationItem(
-            route = Screen.Settings,
+            route = Screen.Settings(role),
 
             title= "Settings",
             selectedIcon = Icons.Filled.Settings,
@@ -389,7 +393,7 @@ fun ScreenWithScaffold(navController: NavController, content: @Composable (Paddi
         )
 
     val navBackStackEntry by navController.currentBackStackEntryAsState()
-    val currentRoute = navBackStackEntry.fromRoute()
+    val currentRoute = navBackStackEntry.fromRoute(role)
     Scaffold (
         bottomBar = {
             if(showNavigationRail){
@@ -464,22 +468,22 @@ fun LoginPage(navController: NavController) {
                     val role = document.getString("role")
                     when (role) {
                         "admin" -> {
-                            navController.navigate(Screen.AdminDashboard) {
+                            navController.navigate(Screen.AdminDashboard(role)) {
                                 popUpTo(Screen.Login) { inclusive = true }
                             }
                         }
                         "guru 4" -> {
-                            navController.navigate(Screen.TeacherDashboard) {
+                            navController.navigate(Screen.TeacherDashboard(role)) {
                                 popUpTo(Screen.Login) { inclusive = true }
                             }
                         }
                         "guru 5" -> {
-                            navController.navigate(Screen.TeacherDashboard) {
+                            navController.navigate(Screen.TeacherDashboard(role)) {
                                 popUpTo(Screen.Login) { inclusive = true }
                             }
                         }
                         "guru 6" -> {
-                            navController.navigate(Screen.TeacherDashboard) {
+                            navController.navigate(Screen.TeacherDashboard(role)) {
                                 popUpTo(Screen.Login) { inclusive = true }
                             }
                         }
@@ -700,7 +704,7 @@ Icon(imageVector = if(selected) item.selectedIcon else item.unselectedIcon,
 }
 @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
 @Composable
-fun AdminDashboardPage(navController: NavController,it:PaddingValues) {
+fun AdminDashboardPage(navController: NavController,it:PaddingValues,role: String) {
 
     var selectedItemIndex by rememberSaveable {
         mutableStateOf(0)
@@ -796,7 +800,8 @@ fun AdminDashboardPage(navController: NavController,it:PaddingValues) {
                     ),
                             CardItem(
                             title = "Data Siswa",
-                                route = Screen.DataSiswa
+                                route = Screen.DataSiswa(role),
+
                 ),
                     CardItem(
                         title = "Data Jadwal Pelajaran",
@@ -872,7 +877,7 @@ fun SearchPage(navController: NavController,it: PaddingValues){
     Text(text = "Search")
 }
 @Composable
-fun SettingsPage(navController: NavController,it: PaddingValues){
+fun SettingsPage(navController: NavController,it: PaddingValues,role:String){
     Column(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
         Text(text = "Settings", style = MaterialTheme.typography.headlineLarge, color = Color(0xFFE3FEF7))
 
@@ -880,7 +885,7 @@ fun SettingsPage(navController: NavController,it: PaddingValues){
             val auth = Firebase.auth
             auth.signOut()
             navController.navigate(Screen.Login) {
-                popUpTo(Screen.AdminDashboard) { inclusive = true }
+                popUpTo(Screen.AdminDashboard(role)) { inclusive = true }
             }
         }){Text(text = "Logout")}
     }
@@ -1051,7 +1056,8 @@ fun DataGuruPage(
 @OptIn(ExperimentalCoilApi::class)
 @Composable
 fun DataSiswa(
-    navController: NavController
+    navController: NavController,
+    role: String
 ){
 
     val firestore = FirebaseFirestore.getInstance()
@@ -1136,6 +1142,13 @@ fun DataSiswa(
             Spacer(modifier = Modifier.height(16.dp))
             // Display the data fetched from Firestore
             dataList.forEach { (id,name,keterangan, imageUrl) ->
+                val canEdit = when (role) {
+                    "admin" -> true
+                    "guru 4" -> keterangan == "kelas 4"
+                    "guru 5" -> keterangan == "kelas 5"
+                    "guru 6" -> keterangan == "kelas 6"
+                    else -> false
+                }
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.padding(8.dp)
@@ -1173,22 +1186,30 @@ fun DataSiswa(
                             )
                         }
                     }
-                    IconButton(
-                        onClick = {
-                            // Navigate to Edit screen with the document id
-                            navController.navigate(Screen.EditSiswa(id))
+                    if (canEdit) {
+                        IconButton(
+                            onClick = {
+                                // Navigate to Edit screen with the document id
+                                navController.navigate(Screen.EditSiswa(id))
+                            }
+                        ) {
+                            Icon(Icons.Default.Edit, contentDescription = "Edit", tint = Color.Gray)
                         }
-                    ) {
-                        Icon(Icons.Default.Edit, contentDescription = "Edit", tint = Color.Gray)
                     }
-                    IconButton(
-                        onClick = {
+                    if (role == "admin") {
+                        IconButton(
+                            onClick = {
 
                                 documentIdToDelete = id
                                 showDialog = true
                             }
-                    ) {
-                        Icon(Icons.Default.Delete, contentDescription = "Delete", tint = Color.Red)
+                        ) {
+                            Icon(
+                                Icons.Default.Delete,
+                                contentDescription = "Delete",
+                                tint = Color.Red
+                            )
+                        }
                     }
                 }
             }
@@ -2959,7 +2980,8 @@ fun uploadImageToFirebase(uri: Uri, callback: (String) -> Unit) {
 @Composable
 fun TeacherDashboard(
 navController: NavController,
-it: PaddingValues
+it: PaddingValues,
+role: String
 ) {
     var selectedItemIndex by rememberSaveable {
         mutableStateOf(0)
@@ -3055,7 +3077,7 @@ it: PaddingValues
             ),
             CardItem(
                 title = "Data Siswa",
-                route = Screen.DataSiswa
+                route = Screen.DataSiswa(role)
             ),
             CardItem(
                 title = "Data Jadwal Pelajaran",
