@@ -320,12 +320,12 @@ class MainActivity : ComponentActivity() {
                     composable<Screen.EditSiswa> {
                             backStackEntry ->
                         val id = backStackEntry.toRoute<Screen.EditSiswa>().id
-                        EditGuru(navController,id)
+                        EditSiswa(navController,id)
                     }
                     composable<Screen.EditStaff> {
                             backStackEntry ->
                         val id = backStackEntry.toRoute<Screen.EditStaff>().id
-                        EditGuru(navController,id)
+                        EditStaff(navController,id)
                     }
                     composable<Screen.TeacherDashboard> {
                         ScreenWithScaffold(navController) {
@@ -2528,6 +2528,88 @@ fun TambahGuru(
 
 @OptIn(ExperimentalCoilApi::class)
 @Composable
+fun EditStaff(
+    navController: NavController,
+    guruId: String
+) {
+    val firestore = FirebaseFirestore.getInstance()
+    var name by remember { mutableStateOf("") }
+    var description by remember { mutableStateOf("") }
+    var imageDownloadUrl by remember { mutableStateOf<String?>(null) }
+    val context = LocalContext.current
+    val getContent = rememberLauncherForActivityResult(contract = ActivityResultContracts.GetContent()) { uri ->
+        uri?.let {
+            uploadImageToFirebase(it) { downloadUrl ->
+                imageDownloadUrl = downloadUrl
+            }
+        }
+    }
+
+    // Fetch existing data from Firestore
+    LaunchedEffect(guruId) {
+        val document = firestore.collection("staff").document(guruId).get().await()
+        name = document.getString("nama") ?: ""
+        description = document.getString("keterangan") ?: ""
+        imageDownloadUrl = document.getString("imageUrl")
+    }
+
+    Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
+
+        Text(text="Edit Data Staff", modifier = Modifier.align(Alignment.CenterHorizontally))
+
+        // Display the selected image
+        imageDownloadUrl?.let { imageUrl ->
+            Image(
+                painter = rememberImagePainter(imageUrl),
+                contentDescription = null,
+                modifier = Modifier
+                    .size(150.dp)
+                    .padding(16.dp),
+                alignment = Alignment.Center
+            )
+        }
+
+        // Button to select image
+        Button(onClick = { getContent.launch("image/*") }, modifier = Modifier.align(Alignment.CenterHorizontally)) {
+            Text("Select Image")
+        }
+
+        // Text field for name
+        TextField(
+            value = name,
+            onValueChange = { name = it },
+            label = { Text("Nama") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        )
+
+        // Text field for description
+        TextField(
+            value = description,
+            onValueChange = { description = it },
+            label = { Text("Keterangan") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        )
+
+        // Button to submit data
+        Button(
+            onClick = {
+                submitDataToDatabase(name, description, imageDownloadUrl, navController, guruId, data = "staff")
+            },
+            modifier = Modifier
+                .align(Alignment.CenterHorizontally)
+                .padding(16.dp)
+        ) {
+            Text("Save Changes")
+        }
+    }
+}
+
+@OptIn(ExperimentalCoilApi::class)
+@Composable
 fun EditGuru(
     navController: NavController,
     guruId: String
@@ -2598,6 +2680,87 @@ fun EditGuru(
         Button(
             onClick = {
                 submitDataToDatabase(name, description, imageDownloadUrl, navController, guruId, data = "guru")
+            },
+            modifier = Modifier
+                .align(Alignment.CenterHorizontally)
+                .padding(16.dp)
+        ) {
+            Text("Save Changes")
+        }
+    }
+}
+@OptIn(ExperimentalCoilApi::class)
+@Composable
+fun EditSiswa(
+    navController: NavController,
+    guruId: String
+) {
+    val firestore = FirebaseFirestore.getInstance()
+    var name by remember { mutableStateOf("") }
+    var description by remember { mutableStateOf("") }
+    var imageDownloadUrl by remember { mutableStateOf<String?>(null) }
+    val context = LocalContext.current
+    val getContent = rememberLauncherForActivityResult(contract = ActivityResultContracts.GetContent()) { uri ->
+        uri?.let {
+            uploadImageToFirebase(it) { downloadUrl ->
+                imageDownloadUrl = downloadUrl
+            }
+        }
+    }
+
+    // Fetch existing data from Firestore
+    LaunchedEffect(guruId) {
+        val document = firestore.collection("siswa").document(guruId).get().await()
+        name = document.getString("nama") ?: ""
+        description = document.getString("keterangan") ?: ""
+        imageDownloadUrl = document.getString("imageUrl")
+    }
+
+    Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
+
+        Text(text="Edit Data Siswa", modifier = Modifier.align(Alignment.CenterHorizontally))
+
+        // Display the selected image
+        imageDownloadUrl?.let { imageUrl ->
+            Image(
+                painter = rememberImagePainter(imageUrl),
+                contentDescription = null,
+                modifier = Modifier
+                    .size(150.dp)
+                    .padding(16.dp),
+                alignment = Alignment.Center
+            )
+        }
+
+        // Button to select image
+        Button(onClick = { getContent.launch("image/*") }, modifier = Modifier.align(Alignment.CenterHorizontally)) {
+            Text("Select Image")
+        }
+
+        // Text field for name
+        TextField(
+            value = name,
+            onValueChange = { name = it },
+            label = { Text("Nama") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        )
+
+        // Text field for description
+        TextField(
+            value = description,
+            onValueChange = { description = it },
+            label = { Text("Keterangan") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        )
+
+        // Button to submit data
+        Button(
+            onClick = {
+                submitDataToDatabase(name, description, imageDownloadUrl, navController, guruId, data = "siswa")
             },
             modifier = Modifier
                 .align(Alignment.CenterHorizontally)
