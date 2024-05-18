@@ -468,7 +468,17 @@ fun LoginPage(navController: NavController) {
                                 popUpTo(Screen.Login) { inclusive = true }
                             }
                         }
-                        "guru" -> {
+                        "guru 4" -> {
+                            navController.navigate(Screen.TeacherDashboard) {
+                                popUpTo(Screen.Login) { inclusive = true }
+                            }
+                        }
+                        "guru 5" -> {
+                            navController.navigate(Screen.TeacherDashboard) {
+                                popUpTo(Screen.Login) { inclusive = true }
+                            }
+                        }
+                        "guru 6" -> {
                             navController.navigate(Screen.TeacherDashboard) {
                                 popUpTo(Screen.Login) { inclusive = true }
                             }
@@ -587,12 +597,21 @@ fun LoginPage(navController: NavController) {
                                                                     inclusive = true
                                                                 }
                                                             }
-                                                        } else if (role == "guru") {
+                                                        } else if(role ==   "guru 4"){
                                                             navController.navigate(Screen.TeacherDashboard) {
-                                                                popUpTo(Screen.Login) {
-                                                                    inclusive = true
-                                                                }
+                                                                popUpTo(Screen.Login) { inclusive = true }
                                                             }
+                                                        }
+                                                        else if(role ==   "guru 5") {
+                                                            navController.navigate(Screen.TeacherDashboard) {
+                                                                popUpTo(Screen.Login) { inclusive = true }
+                                                            }
+                                                        }
+                                                        else if(role ==   "guru 6") {
+                                                            navController.navigate(Screen.TeacherDashboard) {
+                                                                popUpTo(Screen.Login) { inclusive = true }
+                                                            }
+
 
                                                         } else {
                                                             // User doesn't have required role, show error message
