@@ -145,6 +145,7 @@ data class NavigationItem<T>(
 )
 data class Quadruple<T, U, V, W>(val first: T, val second: U, val third: V, val fourth: W)
 data class Quintuple<T, U, V, W,X>(val first: T, val second: U, val third: V, val fourth: W, val fifth:X)
+data class Sextuple<T, U, V, W,X,Y>(val first: T, val second: U, val third: V, val fourth: W, val fifth:X,val sixth:Y)
 data class Nilai<T, U, V>(val nama: T, val mataPelajaranList: U, val peringkat:V)
 sealed interface Screen {
     @Serializable
@@ -175,7 +176,7 @@ sealed interface Screen {
     data class DataJadwalPelajaran(val role: String) : Screen
 
     @Serializable
-    data object DataJadwalUjian : Screen
+    data class DataJadwalUjian(val role: String)  : Screen
     @Serializable
     data object DataNilai : Screen
     @Serializable
@@ -285,7 +286,10 @@ class MainActivity : ComponentActivity() {
                         DataJadwalPelajaran(navController,role)
                     }
                     composable<Screen.DataJadwalUjian> {
-                        DataJadwalUjian(navController)
+                            backStackEntry ->
+                        val role = backStackEntry.toRoute<Screen.DataJadwalUjian>().role
+
+                        DataJadwalUjian(navController,role)
                     }
                     composable<Screen.DataNilai> {
                         DataNilai(navController)
@@ -339,6 +343,11 @@ class MainActivity : ComponentActivity() {
                             backStackEntry ->
                         val id = backStackEntry.toRoute<Screen.EditJadwalPelajaran>().id
                         EditJadwalPelajaran(navController,id)
+                    }
+                    composable<Screen.EditJadwalUjian> {
+                            backStackEntry ->
+                        val id = backStackEntry.toRoute<Screen.EditJadwalUjian>().id
+                        EditJadwalUjian(navController,id)
                     }
                     composable<Screen.TeacherDashboard> {
                             backStackEntry ->
@@ -822,7 +831,7 @@ fun AdminDashboardPage(navController: NavController,it:PaddingValues,role: Strin
                     ),
                     CardItem(
                         title = "Data Jadwal Ujian",
-                        route =Screen.DataJadwalUjian,
+                        route =Screen.DataJadwalUjian(role),
                         icon = Icons.Filled.DateRange
                     ),
                     CardItem(
@@ -1403,11 +1412,15 @@ fun DataJadwalPelajaran(
 @OptIn(ExperimentalCoilApi::class)
 @Composable
 fun DataJadwalUjian(
-    navController: NavController
+    navController: NavController,
+    role: String
 ){
 
     val firestore = FirebaseFirestore.getInstance()
-    val dataList = remember { mutableStateListOf<Quintuple<String, String, String,String,String>>() }
+    val dataList = remember { mutableStateListOf<Sextuple<String,String, String, String,String,String>>() }
+    var showDialog by remember { mutableStateOf(false) }
+    var documentIdToDelete by remember { mutableStateOf<String?>(null) }
+
 
 
     DisposableEffect(Unit) {
@@ -1431,12 +1444,38 @@ fun DataJadwalUjian(
                 val hari = document.getString("hari") ?: ""
                 val tanggal = document.getString("tanggal") ?: ""
                 // Here you can collect more fields as needed
-                dataList.add(Quintuple(nama,jam,kelas,hari,tanggal))
+                dataList.add(Sextuple(document.id,nama,jam,kelas,hari,tanggal))
             }
         }
         onDispose {
             listenerRegistration.remove()
         }
+    }
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = { showDialog = false },
+            title = { Text(text = "Confirm Deletion") },
+            text = { Text("Are you sure you want to delete this item?") },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        documentIdToDelete?.let { id ->
+                            firestore.collection("jadwalUjian").document(id).delete()
+                        }
+                        showDialog = false
+                    }
+                ) {
+                    Text("Delete")
+                }
+            },
+            dismissButton = {
+                Button(
+                    onClick = { showDialog = false }
+                ) {
+                    Text("Cancel")
+                }
+            }
+        )
     }
     Scaffold(
         floatingActionButton = {
@@ -1461,7 +1500,7 @@ fun DataJadwalUjian(
             Text(text = "Data Jadwal Ujian", style = MaterialTheme.typography.headlineLarge, color = Color(0xFFE3FEF7))
             Spacer(modifier = Modifier.height(16.dp))
             // Display the data fetched from Firestore
-            dataList.forEach { (nama,jam,kelas,hari,tanggal) ->
+            dataList.forEach { (id,nama,jam,kelas,hari,tanggal) ->
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.padding(8.dp)
@@ -1518,6 +1557,30 @@ fun DataJadwalUjian(
                                 style = MaterialTheme.typography.bodyLarge,
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis
+                            )
+                        }
+                    }
+                    if (role == "admin") {
+                        IconButton(
+                            onClick = {
+                                // Navigate to Edit screen with the document id
+                                navController.navigate(Screen.EditJadwalUjian(id))
+                            }
+                        ) {
+                            Icon(Icons.Default.Edit, contentDescription = "Edit", tint = Color.Gray)
+                        }
+
+                        IconButton(
+                            onClick = {
+
+                                documentIdToDelete = id
+                                showDialog = true
+                            }
+                        ) {
+                            Icon(
+                                Icons.Default.Delete,
+                                contentDescription = "Delete",
+                                tint = Color.Red
                             )
                         }
                     }
@@ -2306,8 +2369,8 @@ fun TambahPerkembangan(
         )
         TextField(
             value = tanggal,
-            onValueChange = { name = it },
-            label = { Text("Nama Mata Pelajaran") },
+            onValueChange = { tanggal = it },
+            label = { Text("Tanggal") },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp)
@@ -2480,8 +2543,8 @@ fun TambahJadwalUjian(
         )
         TextField(
             value = tanggal,
-            onValueChange = { name = it },
-            label = { Text("Nama Mata Pelajaran") },
+            onValueChange = { tanggal = it },
+            label = { Text("Tanggal") },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp)
@@ -2644,6 +2707,13 @@ fun TambahGuru(
             Text("Submit")
         }
     }
+}
+@Composable
+fun EditJadwalUjian(
+    navController: NavController,
+    jadwalId: String
+) {
+
 }
 @Composable
 fun EditJadwalPelajaran(
@@ -3270,7 +3340,7 @@ role: String
             ),
             CardItem(
                 title = "Data Jadwal Ujian",
-                route =Screen.DataJadwalUjian,
+                route =Screen.DataJadwalUjian(role),
                 icon = Icons.Filled.DateRange
             ),
             CardItem(
