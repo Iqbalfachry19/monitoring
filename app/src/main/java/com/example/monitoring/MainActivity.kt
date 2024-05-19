@@ -2732,7 +2732,7 @@ fun EditJadwalUjian(
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
-        Text(text="Edit Data Jadwal Ujian   ", modifier = Modifier.align(Alignment.CenterHorizontally))
+        Text(text="Edit Data Jadwal Ujian", modifier = Modifier.align(Alignment.CenterHorizontally))
 
         // Text field for name
         TextField(
