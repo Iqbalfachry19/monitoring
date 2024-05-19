@@ -2713,7 +2713,88 @@ fun EditJadwalUjian(
     navController: NavController,
     jadwalId: String
 ) {
+    val firestore = FirebaseFirestore.getInstance()
+    var name by remember { mutableStateOf("") }
+    var kelas by remember { mutableStateOf("") }
+    var jam by remember { mutableStateOf("") }
+    var hari by remember { mutableStateOf("") }
+    var tanggal by remember { mutableStateOf("") }
+    val context = LocalContext.current
 
+    // Fetch existing data from Firestore
+    LaunchedEffect(jadwalId) {
+        val document = firestore.collection("jadwalUjian").document(jadwalId).get().await()
+        name = document.getString("nama") ?: ""
+        kelas = document.getString("kelas") ?: ""
+        jam = document.getString("jam") ?: ""
+        hari = document.getString("hari") ?: ""
+        tanggal = document.getString("tanggal") ?: ""
+    }
+
+    Column(modifier = Modifier.fillMaxSize()) {
+        Text(text="Edit Data Jadwal Ujian   ", modifier = Modifier.align(Alignment.CenterHorizontally))
+
+        // Text field for name
+        TextField(
+            value = name,
+            onValueChange = { name = it },
+            label = { Text("Nama Mata Pelajaran") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        )
+
+        // Text field for class
+        TextField(
+            value = kelas,
+            onValueChange = { kelas = it },
+            label = { Text("Kelas") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        )
+
+        // Text field for time
+        TextField(
+            value = jam,
+            onValueChange = { jam = it },
+            label = { Text("Jam") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        )
+
+        // Text field for day
+        TextField(
+            value = hari,
+            onValueChange = { hari = it },
+            label = { Text("Hari") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        )
+        // Text field for day
+        TextField(
+            value = tanggal,
+            onValueChange = { tanggal = it },
+            label = { Text("Tanggal") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        )
+
+        // Button to submit data
+        Button(
+            onClick = {
+                submitUpdatedDataToDatabaseUjian(name, kelas, jam, hari, tanggal, navController, jadwalId)
+            },
+            modifier = Modifier
+                .align(Alignment.CenterHorizontally)
+                .padding(16.dp)
+        ) {
+            Text("Save Changes")
+        }
+    }
 }
 @Composable
 fun EditJadwalPelajaran(
@@ -2793,6 +2874,34 @@ fun EditJadwalPelajaran(
     }
 }
 
+fun submitUpdatedDataToDatabaseUjian(
+    name: String,
+    kelas: String,
+    jam: String,
+    hari: String,
+    tanggal: String,
+    navController: NavController,
+    jadwalId: String
+) {
+    val firestore = FirebaseFirestore.getInstance()
+    val dataMap = hashMapOf(
+        "nama" to name,
+        "kelas" to kelas,
+        "jam" to jam,
+        "hari" to hari,
+        "tanggal" to tanggal
+    )
+
+    firestore.collection("jadwalUjian").document(jadwalId).set(dataMap)
+        .addOnSuccessListener {
+            // Navigate back to the list screen after a successful update
+            navController.popBackStack()
+        }
+        .addOnFailureListener { e ->
+            // Handle any errors
+            Log.e("EditJadwalPelajaran", "Error updating document", e)
+        }
+}
 // Function to submit updated data to Firestore
 fun submitUpdatedDataToDatabasePelajaran(
     name: String,
