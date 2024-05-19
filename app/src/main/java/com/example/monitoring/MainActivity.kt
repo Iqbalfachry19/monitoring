@@ -172,7 +172,7 @@ sealed interface Screen {
     data class DataSiswa(val role: String) : Screen
 
     @Serializable
-    data object DataJadwalPelajaran : Screen
+    data class DataJadwalPelajaran(val role: String) : Screen
 
     @Serializable
     data object DataJadwalUjian : Screen
@@ -279,7 +279,10 @@ class MainActivity : ComponentActivity() {
                         DataSiswa(navController,role)
                     }
                     composable<Screen.DataJadwalPelajaran> {
-                        DataJadwalPelajaran(navController)
+                            backStackEntry ->
+                        val role = backStackEntry.toRoute<Screen.DataJadwalPelajaran>().role
+
+                        DataJadwalPelajaran(navController,role)
                     }
                     composable<Screen.DataJadwalUjian> {
                         DataJadwalUjian(navController)
@@ -331,6 +334,11 @@ class MainActivity : ComponentActivity() {
                             backStackEntry ->
                         val id = backStackEntry.toRoute<Screen.EditStaff>().id
                         EditStaff(navController,id)
+                    }
+                    composable<Screen.EditJadwalPelajaran> {
+                            backStackEntry ->
+                        val id = backStackEntry.toRoute<Screen.EditJadwalPelajaran>().id
+                        EditJadwalPelajaran(navController,id)
                     }
                     composable<Screen.TeacherDashboard> {
                             backStackEntry ->
@@ -809,7 +817,7 @@ fun AdminDashboardPage(navController: NavController,it:PaddingValues,role: Strin
                 ),
                     CardItem(
                         title = "Data Jadwal Pelajaran",
-                        route =Screen.DataJadwalPelajaran,
+                        route =Screen.DataJadwalPelajaran(role),
                         icon = Icons.Filled.DateRange
                     ),
                     CardItem(
@@ -1232,11 +1240,14 @@ fun DataSiswa(
 @OptIn(ExperimentalCoilApi::class)
 @Composable
 fun DataJadwalPelajaran(
-    navController: NavController
+    navController: NavController,
+    role: String
 ){
 
     val firestore = FirebaseFirestore.getInstance()
-    val dataList = remember { mutableStateListOf<Quadruple<String, String, String,String>>() }
+    val dataList = remember { mutableStateListOf<Quintuple<String,String, String, String,String>>() }
+    var showDialog by remember { mutableStateOf(false) }
+    var documentIdToDelete by remember { mutableStateOf<String?>(null) }
 
 
     DisposableEffect(Unit) {
@@ -1259,12 +1270,38 @@ fun DataJadwalPelajaran(
                 val kelas = document.getString("kelas") ?: ""
                 val hari = document.getString("hari") ?: ""
                 // Here you can collect more fields as needed
-                dataList.add(Quadruple(nama,jam,kelas,hari))
+                dataList.add(Quintuple(document.id,nama,jam,kelas,hari))
             }
         }
         onDispose {
             listenerRegistration.remove()
         }
+    }
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = { showDialog = false },
+            title = { Text(text = "Confirm Deletion") },
+            text = { Text("Are you sure you want to delete this item?") },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        documentIdToDelete?.let { id ->
+                            firestore.collection("jadwalPelajaran").document(id).delete()
+                        }
+                        showDialog = false
+                    }
+                ) {
+                    Text("Delete")
+                }
+            },
+            dismissButton = {
+                Button(
+                    onClick = { showDialog = false }
+                ) {
+                    Text("Cancel")
+                }
+            }
+        )
     }
     Scaffold(
         floatingActionButton = {
@@ -1289,7 +1326,7 @@ fun DataJadwalPelajaran(
             Text(text = "Data Jadwal Pelajaran", style = MaterialTheme.typography.headlineLarge, color = Color(0xFFE3FEF7))
             Spacer(modifier = Modifier.height(16.dp))
             // Display the data fetched from Firestore
-            dataList.forEach { (nama,jam,kelas,hari) ->
+            dataList.forEach { (id,nama,jam,kelas,hari) ->
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.padding(8.dp)
@@ -1332,6 +1369,30 @@ fun DataJadwalPelajaran(
                                 overflow = TextOverflow.Ellipsis
                             )
 
+                        }
+                    }
+                    if (role == "admin") {
+                        IconButton(
+                            onClick = {
+                                // Navigate to Edit screen with the document id
+                                navController.navigate(Screen.EditJadwalPelajaran(id))
+                            }
+                        ) {
+                            Icon(Icons.Default.Edit, contentDescription = "Edit", tint = Color.Gray)
+                        }
+
+                        IconButton(
+                            onClick = {
+
+                                documentIdToDelete = id
+                                showDialog = true
+                            }
+                        ) {
+                            Icon(
+                                Icons.Default.Delete,
+                                contentDescription = "Delete",
+                                tint = Color.Red
+                            )
                         }
                     }
                 }
@@ -2584,7 +2645,111 @@ fun TambahGuru(
         }
     }
 }
+@Composable
+fun EditJadwalPelajaran(
+    navController: NavController,
+    jadwalId: String
+) {
+    val firestore = FirebaseFirestore.getInstance()
+    var name by remember { mutableStateOf("") }
+    var kelas by remember { mutableStateOf("") }
+    var jam by remember { mutableStateOf("") }
+    var hari by remember { mutableStateOf("") }
+    val context = LocalContext.current
 
+    // Fetch existing data from Firestore
+    LaunchedEffect(jadwalId) {
+        val document = firestore.collection("jadwalPelajaran").document(jadwalId).get().await()
+        name = document.getString("nama") ?: ""
+        kelas = document.getString("kelas") ?: ""
+        jam = document.getString("jam") ?: ""
+        hari = document.getString("hari") ?: ""
+    }
+
+    Column(modifier = Modifier.fillMaxSize()) {
+        Text(text="Edit Data Jadwal Pelajaran", modifier = Modifier.align(Alignment.CenterHorizontally))
+
+        // Text field for name
+        TextField(
+            value = name,
+            onValueChange = { name = it },
+            label = { Text("Nama Mata Pelajaran") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        )
+
+        // Text field for class
+        TextField(
+            value = kelas,
+            onValueChange = { kelas = it },
+            label = { Text("Kelas") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        )
+
+        // Text field for time
+        TextField(
+            value = jam,
+            onValueChange = { jam = it },
+            label = { Text("Jam") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        )
+
+        // Text field for day
+        TextField(
+            value = hari,
+            onValueChange = { hari = it },
+            label = { Text("Hari") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        )
+
+        // Button to submit data
+        Button(
+            onClick = {
+                submitUpdatedDataToDatabasePelajaran(name, kelas, jam, hari, navController, jadwalId)
+            },
+            modifier = Modifier
+                .align(Alignment.CenterHorizontally)
+                .padding(16.dp)
+        ) {
+            Text("Save Changes")
+        }
+    }
+}
+
+// Function to submit updated data to Firestore
+fun submitUpdatedDataToDatabasePelajaran(
+    name: String,
+    kelas: String,
+    jam: String,
+    hari: String,
+    navController: NavController,
+    jadwalId: String
+) {
+    val firestore = FirebaseFirestore.getInstance()
+    val dataMap = hashMapOf(
+        "nama" to name,
+        "kelas" to kelas,
+        "jam" to jam,
+        "hari" to hari
+    )
+
+    firestore.collection("jadwalPelajaran").document(jadwalId).set(dataMap)
+        .addOnSuccessListener {
+            // Navigate back to the list screen after a successful update
+            navController.popBackStack()
+        }
+        .addOnFailureListener { e ->
+            // Handle any errors
+            Log.e("EditJadwalPelajaran", "Error updating document", e)
+        }
+}
 @OptIn(ExperimentalCoilApi::class)
 @Composable
 fun EditStaff(
@@ -3100,7 +3265,7 @@ role: String
             ),
             CardItem(
                 title = "Data Jadwal Pelajaran",
-                route =Screen.DataJadwalPelajaran,
+                route =Screen.DataJadwalPelajaran(role),
                 icon = Icons.Filled.DateRange
             ),
             CardItem(
