@@ -163,10 +163,10 @@ sealed interface Screen {
     data object Search : Screen
 
     @Serializable
-    data object DataGuru : Screen
+    data class DataGuru(val role:String) : Screen
 
     @Serializable
-    data object DataStaff : Screen
+    data class DataStaff(val role:String) : Screen
 
     @Serializable
     data class DataSiswa(val role: String) : Screen
@@ -264,10 +264,14 @@ class MainActivity : ComponentActivity() {
                         }
                     }
                     composable<Screen.DataGuru> {
-                        DataGuruPage(navController)
+                            backStackEntry ->
+                        val role = backStackEntry.toRoute<Screen.DataGuru>().role
+                        DataGuruPage(navController,role)
                     }
                     composable<Screen.DataStaff> {
-                        DataStaffPage(navController)
+                            backStackEntry ->
+                        val role = backStackEntry.toRoute<Screen.DataStaff>().role
+                        DataStaffPage(navController,role)
                     }
                     composable<Screen.DataSiswa> {
                             backStackEntry ->
@@ -596,23 +600,23 @@ fun LoginPage(navController: NavController) {
                                                     if (document != null) {
                                                         val role = document.getString("role")
                                                         if (role == "admin") {
-                                                            navController.navigate(Screen.AdminDashboard) {
+                                                            navController.navigate(Screen.AdminDashboard(role)) {
                                                                 popUpTo(Screen.Login) {
                                                                     inclusive = true
                                                                 }
                                                             }
                                                         } else if(role ==   "guru 4"){
-                                                            navController.navigate(Screen.TeacherDashboard) {
+                                                            navController.navigate(Screen.TeacherDashboard(role)) {
                                                                 popUpTo(Screen.Login) { inclusive = true }
                                                             }
                                                         }
                                                         else if(role ==   "guru 5") {
-                                                            navController.navigate(Screen.TeacherDashboard) {
+                                                            navController.navigate(Screen.TeacherDashboard(role)) {
                                                                 popUpTo(Screen.Login) { inclusive = true }
                                                             }
                                                         }
                                                         else if(role ==   "guru 6") {
-                                                            navController.navigate(Screen.TeacherDashboard) {
+                                                            navController.navigate(Screen.TeacherDashboard(role)) {
                                                                 popUpTo(Screen.Login) { inclusive = true }
                                                             }
 
@@ -792,11 +796,11 @@ fun AdminDashboardPage(navController: NavController,it:PaddingValues,role: Strin
                 Spacer(modifier = Modifier.height(8.dp))
                 val cards= listOf(CardItem(
                     title = "Data Guru",
-                    route = Screen.DataGuru
+                    route = Screen.DataGuru(role)
                 ),
                     CardItem(
                         title = "Data Staff",
-                        route = Screen.DataStaff
+                        route = Screen.DataStaff(role)
                     ),
                             CardItem(
                             title = "Data Siswa",
@@ -894,7 +898,8 @@ fun SettingsPage(navController: NavController,it: PaddingValues,role:String){
 @OptIn(ExperimentalCoilApi::class)
 @Composable
 fun DataGuruPage(
-    navController: NavController
+    navController: NavController,
+    role: String
 ) {
 
     val firestore = FirebaseFirestore.getInstance()
@@ -1027,6 +1032,7 @@ fun DataGuruPage(
                             )
                         }
                     }
+                    if (role == "admin") {
                     IconButton(
                         onClick = {
                             // Navigate to Edit screen with the document id
@@ -1035,14 +1041,20 @@ fun DataGuruPage(
                     ) {
                         Icon(Icons.Default.Edit, contentDescription = "Edit", tint = Color.Gray)
                     }
-                    IconButton(
-                        onClick = {
+
+                        IconButton(
+                            onClick = {
 
                                 documentIdToDelete = id
                                 showDialog = true
-                                }
-                    ) {
-                        Icon(Icons.Default.Delete, contentDescription = "Delete", tint = Color.Red)
+                            }
+                        ) {
+                            Icon(
+                                Icons.Default.Delete,
+                                contentDescription = "Delete",
+                                tint = Color.Red
+                            )
+                        }
                     }
                 }
             }
@@ -1798,7 +1810,8 @@ fun DataRekapan(
 @OptIn(ExperimentalCoilApi::class)
 @Composable
 fun DataStaffPage(
-    navController: NavController
+    navController: NavController,
+    role: String
 ){
 
     val firestore = FirebaseFirestore.getInstance()
@@ -1921,22 +1934,28 @@ fun DataStaffPage(
                             )
                         }
                     }
-                    IconButton(
-                        onClick = {
-                            // Navigate to Edit screen with the document id
-                            navController.navigate(Screen.EditStaff(id))
+                    if (role == "admin") {
+                        IconButton(
+                            onClick = {
+                                // Navigate to Edit screen with the document id
+                                navController.navigate(Screen.EditStaff(id))
+                            }
+                        ) {
+                            Icon(Icons.Default.Edit, contentDescription = "Edit", tint = Color.Gray)
                         }
-                    ) {
-                        Icon(Icons.Default.Edit, contentDescription = "Edit", tint = Color.Gray)
-                    }
-                    IconButton(
-                        onClick = {
+                        IconButton(
+                            onClick = {
 
-                            documentIdToDelete = id
-                            showDialog = true
+                                documentIdToDelete = id
+                                showDialog = true
+                            }
+                        ) {
+                            Icon(
+                                Icons.Default.Delete,
+                                contentDescription = "Delete",
+                                tint = Color.Red
+                            )
                         }
-                    ) {
-                        Icon(Icons.Default.Delete, contentDescription = "Delete", tint = Color.Red)
                     }
                 }
             }
@@ -3069,11 +3088,11 @@ role: String
         Spacer(modifier = Modifier.height(8.dp))
         val cards= listOf(CardItem(
             title = "Data Guru",
-            route = Screen.DataGuru
+            route = Screen.DataGuru(role)
         ),
             CardItem(
                 title = "Data Staff",
-                route = Screen.DataStaff
+                route = Screen.DataStaff(role)
             ),
             CardItem(
                 title = "Data Siswa",
