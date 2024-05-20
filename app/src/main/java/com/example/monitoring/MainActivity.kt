@@ -1005,87 +1005,91 @@ fun DataGuruPage(
         },
     ) { innerPadding ->
 
-        Column(
+        LazyColumn(
             modifier = Modifier
                 .padding(innerPadding)
                 .fillMaxSize(),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-
-            Text(
-                text = "Data Guru",
-                style = MaterialTheme.typography.headlineLarge,
-                color = Color(0xFFE3FEF7)
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-            // Display the data fetched from Firestore
-            dataList.forEach { (id, name, keterangan, imageUrl) ->
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(8.dp)
-                ) {
-                    Card(
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.tertiary,
-
-                            ),
-                        modifier = Modifier
-                            .size(width = 200.dp, height = 120.dp)
-                            .clickable { }
-                            .padding(8.dp)
+            item {
+                Text(
+                    text = "Data Guru",
+                    style = MaterialTheme.typography.headlineLarge,
+                    color = Color(0xFFE3FEF7)
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                // Display the data fetched from Firestore
+                dataList.forEach { (id, name, keterangan, imageUrl) ->
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(8.dp)
                     ) {
-                        Image(
-                            painter = rememberImagePainter(imageUrl),
-                            contentDescription = null,
-                            modifier = Modifier.size(50.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Column {
-                            Text(
-                                text = name,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = Color(0xFFE3FEF7)
-                            )
-                            Spacer(modifier = Modifier.height(4.dp))
+                        Card(
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.tertiary,
 
-                            Text(
-                                text = keterangan,
-                                style = MaterialTheme.typography.bodyLarge,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                                color = Color(0xFFE3FEF7)
-                            )
-                        }
-                    }
-                    if (role == "admin") {
-                    IconButton(
-                        onClick = {
-                            // Navigate to Edit screen with the document id
-                            navController.navigate(Screen.EditGuru(id))
-                        }
-                    ) {
-                        Icon(Icons.Default.Edit, contentDescription = "Edit", tint = Color.Gray)
-                    }
-
-                        IconButton(
-                            onClick = {
-
-                                documentIdToDelete = id
-                                showDialog = true
-                            }
+                                ),
+                            modifier = Modifier
+                                .size(width = 200.dp, height = 120.dp)
+                                .clickable { }
+                                .padding(8.dp)
                         ) {
-                            Icon(
-                                Icons.Default.Delete,
-                                contentDescription = "Delete",
-                                tint = Color.Red
+                            Image(
+                                painter = rememberImagePainter(imageUrl),
+                                contentDescription = null,
+                                modifier = Modifier.size(50.dp)
                             )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Column {
+                                Text(
+                                    text = name,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = Color(0xFFE3FEF7)
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+
+                                Text(
+                                    text = keterangan,
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                    color = Color(0xFFE3FEF7)
+                                )
+                            }
+                        }
+                        if (role == "admin") {
+                            IconButton(
+                                onClick = {
+                                    // Navigate to Edit screen with the document id
+                                    navController.navigate(Screen.EditGuru(id))
+                                }
+                            ) {
+                                Icon(
+                                    Icons.Default.Edit,
+                                    contentDescription = "Edit",
+                                    tint = Color.Gray
+                                )
+                            }
+
+                            IconButton(
+                                onClick = {
+
+                                    documentIdToDelete = id
+                                    showDialog = true
+                                }
+                            ) {
+                                Icon(
+                                    Icons.Default.Delete,
+                                    contentDescription = "Delete",
+                                    tint = Color.Red
+                                )
+                            }
                         }
                     }
                 }
             }
         }
-
     }
 
 }
@@ -1168,90 +1172,94 @@ fun DataSiswa(
         },
     ) { innerPadding ->
 
-        Column(
+        LazyColumn(
             modifier = Modifier
                 .padding(innerPadding)
                 .fillMaxSize(),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+item {
+    Text(
+        text = "Data Siswa",
+        style = MaterialTheme.typography.headlineLarge,
+        color = Color(0xFFE3FEF7)
+    )
+    Spacer(modifier = Modifier.height(16.dp))
+    // Display the data fetched from Firestore
+    dataList.forEach { (id, name, keterangan, imageUrl) ->
+        val canEdit = when (role) {
+            "admin" -> true
+            "guru 4" -> keterangan == "kelas 4"
+            "guru 5" -> keterangan == "kelas 5"
+            "guru 6" -> keterangan == "kelas 6"
+            else -> false
+        }
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(8.dp)
+        ) {
+            Card(
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.tertiary,
 
-            Text(text = "Data Siswa", style = MaterialTheme.typography.headlineLarge, color = Color(0xFFE3FEF7))
-            Spacer(modifier = Modifier.height(16.dp))
-            // Display the data fetched from Firestore
-            dataList.forEach { (id,name,keterangan, imageUrl) ->
-                val canEdit = when (role) {
-                    "admin" -> true
-                    "guru 4" -> keterangan == "kelas 4"
-                    "guru 5" -> keterangan == "kelas 5"
-                    "guru 6" -> keterangan == "kelas 6"
-                    else -> false
-                }
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(8.dp)
-                ) {
-                    Card(
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.tertiary,
+                    ),
+                modifier = Modifier
+                    .size(width = 200.dp, height = 120.dp)
+                    .clickable { }
+                    .padding(8.dp)
+            ) {
+                Image(
+                    painter = rememberImagePainter(imageUrl),
+                    contentDescription = null,
+                    modifier = Modifier.size(50.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Column {
+                    Text(
+                        text = name,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Color(0xFFE3FEF7)
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
 
-                            ),
-                        modifier = Modifier
-                            .size(width = 200.dp, height = 120.dp)
-                            .clickable { }
-                            .padding(8.dp)
-                    ) {
-                        Image(
-                            painter = rememberImagePainter(imageUrl),
-                            contentDescription = null,
-                            modifier = Modifier.size(50.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Column {
-                            Text(
-                                text = name,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = Color(0xFFE3FEF7)
-                            )
-                            Spacer(modifier = Modifier.height(4.dp))
-
-                            Text(
-                                text = keterangan,
-                                style = MaterialTheme.typography.bodyLarge,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                                color = Color(0xFFE3FEF7)
-                            )
-                        }
-                    }
-                    if (canEdit) {
-                        IconButton(
-                            onClick = {
-                                // Navigate to Edit screen with the document id
-                                navController.navigate(Screen.EditSiswa(id))
-                            }
-                        ) {
-                            Icon(Icons.Default.Edit, contentDescription = "Edit", tint = Color.Gray)
-                        }
-                    }
-                    if (role == "admin") {
-                        IconButton(
-                            onClick = {
-
-                                documentIdToDelete = id
-                                showDialog = true
-                            }
-                        ) {
-                            Icon(
-                                Icons.Default.Delete,
-                                contentDescription = "Delete",
-                                tint = Color.Red
-                            )
-                        }
-                    }
+                    Text(
+                        text = keterangan,
+                        style = MaterialTheme.typography.bodyLarge,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        color = Color(0xFFE3FEF7)
+                    )
                 }
             }
+            if (canEdit) {
+                IconButton(
+                    onClick = {
+                        // Navigate to Edit screen with the document id
+                        navController.navigate(Screen.EditSiswa(id))
+                    }
+                ) {
+                    Icon(Icons.Default.Edit, contentDescription = "Edit", tint = Color.Gray)
+                }
+            }
+            if (role == "admin") {
+                IconButton(
+                    onClick = {
 
+                        documentIdToDelete = id
+                        showDialog = true
+                    }
+                ) {
+                    Icon(
+                        Icons.Default.Delete,
+                        contentDescription = "Delete",
+                        tint = Color.Red
+                    )
+                }
+            }
+        }
+    }
+}
         }
     }
 }
@@ -1334,13 +1342,14 @@ fun DataJadwalPelajaran(
         },
     ) { innerPadding ->
 
-        Column(
+        LazyColumn(
             modifier = Modifier
                 .padding(innerPadding)
                 .fillMaxSize(),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            item{
             Text(text = "Data Jadwal Pelajaran", style = MaterialTheme.typography.headlineLarge, color = Color(0xFFE3FEF7))
             Spacer(modifier = Modifier.height(16.dp))
             // Display the data fetched from Firestore
@@ -1414,6 +1423,7 @@ fun DataJadwalPelajaran(
                         }
                     }
                 }
+            }
             }
         }
     }
@@ -1499,17 +1509,18 @@ fun DataJadwalUjian(
         },
     ) { innerPadding ->
 
-        Column(
+        LazyColumn(
             modifier = Modifier
                 .padding(innerPadding)
                 .fillMaxSize(),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            item{
             Text(text = "Data Jadwal Ujian", style = MaterialTheme.typography.headlineLarge, color = Color(0xFFE3FEF7))
             Spacer(modifier = Modifier.height(16.dp))
             // Display the data fetched from Firestore
-            dataList.forEach { (id,nama,jam,kelas,hari,tanggal) ->
+            dataList.forEach { (id, nama, jam, kelas, hari, tanggal) ->
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.padding(8.dp)
@@ -1594,6 +1605,7 @@ fun DataJadwalUjian(
                         }
                     }
                 }
+            }
             }
         }
     }
@@ -1684,89 +1696,100 @@ fun DataNilai(
         },
     ) { innerPadding ->
 
-        Column(
+        LazyColumn(
             modifier = Modifier
                 .padding(innerPadding)
                 .fillMaxSize(),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(text = "Data Nilai dan Peringkat Siswa", style = MaterialTheme.typography.headlineLarge, color = Color(0xFFE3FEF7), textAlign = TextAlign.Center)
-            Spacer(modifier = Modifier.height(16.dp))
-            // Display the data fetched from Firestore
-            dataList.forEach { (id,nama, matapelajaran, peringkat) ->
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(8.dp)
-                ) {
-
-                    Card(
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.tertiary,
-
-                            ),
-
-                        modifier = Modifier
-                            .size(width = 200.dp, height = 120.dp)
-                            .clickable { }
-                            .padding(8.dp)
+            item {
+                Text(
+                    text = "Data Nilai dan Peringkat Siswa",
+                    style = MaterialTheme.typography.headlineLarge,
+                    color = Color(0xFFE3FEF7),
+                    textAlign = TextAlign.Center
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                // Display the data fetched from Firestore
+                dataList.forEach { (id, nama, matapelajaran, peringkat) ->
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(8.dp)
                     ) {
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.Center,
-                            modifier = Modifier.fillMaxSize()
+
+                        Card(
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.tertiary,
+
+                                ),
+
+                            modifier = Modifier
+                                .size(width = 200.dp, height = 120.dp)
+                                .clickable { }
+                                .padding(8.dp)
                         ) {
-                            Text(text = nama, style = MaterialTheme.typography.bodySmall)
-                            Spacer(modifier = Modifier.height(4.dp))
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.Center,
+                                modifier = Modifier.fillMaxSize()
+                            ) {
+                                Text(text = nama, style = MaterialTheme.typography.bodySmall)
+                                Spacer(modifier = Modifier.height(4.dp))
 
 
 
-                            matapelajaran.forEach { (pelajaran, nilai) ->
+                                matapelajaran.forEach { (pelajaran, nilai) ->
+                                    Text(
+                                        text = "$pelajaran: $nilai",
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        maxLines = 1
+                                    )
+                                }
+
+
+                                Spacer(modifier = Modifier.height(4.dp))
                                 Text(
-                                    text = "$pelajaran: $nilai",
+                                    text = "Peringkat $peringkat",
                                     style = MaterialTheme.typography.bodyLarge,
-                                    maxLines = 1
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
                                 )
                             }
 
-
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Text(
-                                text = "Peringkat $peringkat",
-                                style = MaterialTheme.typography.bodyLarge,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
-                            )
                         }
-
-                    }
-                    if (role == "admin") {
-                        IconButton(
-                            onClick = {
-                                // Navigate to Edit screen with the document id
-                                navController.navigate(Screen.EditNilai(id))
+                        if (role == "admin") {
+                            IconButton(
+                                onClick = {
+                                    // Navigate to Edit screen with the document id
+                                    navController.navigate(Screen.EditNilai(id))
+                                }
+                            ) {
+                                Icon(
+                                    Icons.Default.Edit,
+                                    contentDescription = "Edit",
+                                    tint = Color.Gray
+                                )
                             }
-                        ) {
-                            Icon(Icons.Default.Edit, contentDescription = "Edit", tint = Color.Gray)
-                        }
 
-                        IconButton(
-                            onClick = {
+                            IconButton(
+                                onClick = {
 
-                                documentIdToDelete = id
-                                showDialog = true
+                                    documentIdToDelete = id
+                                    showDialog = true
+                                }
+                            ) {
+                                Icon(
+                                    Icons.Default.Delete,
+                                    contentDescription = "Delete",
+                                    tint = Color.Red
+                                )
                             }
-                        ) {
-                            Icon(
-                                Icons.Default.Delete,
-                                contentDescription = "Delete",
-                                tint = Color.Red
-                            )
                         }
                     }
                 }
             }
-            }
+        }
         }
     }
 
@@ -1828,13 +1851,14 @@ fun DataPerkembangan(
         },
     ) { innerPadding ->
 
-        Column(
+        LazyColumn(
             modifier = Modifier
                 .padding(innerPadding)
                 .fillMaxSize(),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            item{
             Text(text = "Data Perkembangan Nilai", style = MaterialTheme.typography.headlineLarge, color = Color(0xFFE3FEF7), textAlign = TextAlign.Center)
             Spacer(modifier = Modifier.height(16.dp))
             // Display the data fetched from Firestore
@@ -1878,7 +1902,7 @@ fun DataPerkembangan(
                             overflow = TextOverflow.Ellipsis
                         )
                     }
-
+                }
                 }
             }
         }
@@ -1942,13 +1966,14 @@ fun DataRekapan(
         },
     ) { innerPadding ->
 
-        Column(
+        LazyColumn(
             modifier = Modifier
                 .padding(innerPadding)
                 .fillMaxSize(),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            item{
             Text(text = "Data Rekapan Kehadiran Siswa", style = MaterialTheme.typography.headlineLarge, color = Color(0xFFE3FEF7), textAlign = TextAlign.Center)
             Spacer(modifier = Modifier.height(16.dp))
             // Display the data fetched from Firestore
@@ -1992,7 +2017,7 @@ fun DataRekapan(
                             overflow = TextOverflow.Ellipsis
                         )
                     }
-
+                    }
                 }
             }
         }
@@ -2076,81 +2101,89 @@ fun DataStaffPage(
         },
     ) { innerPadding ->
 
-        Column(
+        LazyColumn(
             modifier = Modifier
                 .padding(innerPadding)
                 .fillMaxSize(),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-
-            Text(text = "Data Staff", style = MaterialTheme.typography.headlineLarge, color = Color(0xFFE3FEF7))
-            Spacer(modifier = Modifier.height(16.dp))
-            // Display the data fetched from Firestore
-            dataList.forEach { (id,name,keterangan, imageUrl) ->
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(8.dp)
-                ) {
-                    Card(
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.tertiary,
-
-                            ),
-                        modifier = Modifier
-                            .size(width = 200.dp, height = 120.dp)
-                            .clickable { }
-                            .padding(8.dp)
+            item {
+                Text(
+                    text = "Data Staff",
+                    style = MaterialTheme.typography.headlineLarge,
+                    color = Color(0xFFE3FEF7)
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                // Display the data fetched from Firestore
+                dataList.forEach { (id, name, keterangan, imageUrl) ->
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(8.dp)
                     ) {
-                        Image(
-                            painter = rememberImagePainter(imageUrl),
-                            contentDescription = null,
-                            modifier = Modifier.size(50.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Column {
-                            Text(
-                                text = name,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = Color(0xFFE3FEF7)
-                            )
-                            Spacer(modifier = Modifier.height(4.dp))
+                        Card(
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.tertiary,
 
-                            Text(
-                                text = keterangan,
-                                style = MaterialTheme.typography.bodyLarge,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                                color = Color(0xFFE3FEF7)
-                            )
-                        }
-                    }
-                    if (role == "admin") {
-                        IconButton(
-                            onClick = {
-                                // Navigate to Edit screen with the document id
-                                navController.navigate(Screen.EditStaff(id))
-                            }
+                                ),
+                            modifier = Modifier
+                                .size(width = 200.dp, height = 120.dp)
+                                .clickable { }
+                                .padding(8.dp)
                         ) {
-                            Icon(Icons.Default.Edit, contentDescription = "Edit", tint = Color.Gray)
-                        }
-                        IconButton(
-                            onClick = {
+                            Image(
+                                painter = rememberImagePainter(imageUrl),
+                                contentDescription = null,
+                                modifier = Modifier.size(50.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Column {
+                                Text(
+                                    text = name,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = Color(0xFFE3FEF7)
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
 
-                                documentIdToDelete = id
-                                showDialog = true
+                                Text(
+                                    text = keterangan,
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                    color = Color(0xFFE3FEF7)
+                                )
                             }
-                        ) {
-                            Icon(
-                                Icons.Default.Delete,
-                                contentDescription = "Delete",
-                                tint = Color.Red
-                            )
+                        }
+                        if (role == "admin") {
+                            IconButton(
+                                onClick = {
+                                    // Navigate to Edit screen with the document id
+                                    navController.navigate(Screen.EditStaff(id))
+                                }
+                            ) {
+                                Icon(
+                                    Icons.Default.Edit,
+                                    contentDescription = "Edit",
+                                    tint = Color.Gray
+                                )
+                            }
+                            IconButton(
+                                onClick = {
+
+                                    documentIdToDelete = id
+                                    showDialog = true
+                                }
+                            ) {
+                                Icon(
+                                    Icons.Default.Delete,
+                                    contentDescription = "Delete",
+                                    tint = Color.Red
+                                )
+                            }
                         }
                     }
                 }
             }
-
         }
     }
 }
