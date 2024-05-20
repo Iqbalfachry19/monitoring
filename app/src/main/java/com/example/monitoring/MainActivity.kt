@@ -4,29 +4,23 @@ import android.app.Activity
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -40,40 +34,29 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Face
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.Home
-import androidx.compose.material.icons.outlined.Person
-import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
-import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Divider
 import androidx.compose.material3.ExtendedFloatingActionButton
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.NavigationBarItemColors
 import androidx.compose.material3.NavigationBarItemDefaults
-import androidx.compose.material3.NavigationRail
-import androidx.compose.material3.NavigationRailItem
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
@@ -92,21 +75,16 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.modifier.modifierLocalConsumer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.zIndex
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavController
-import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -116,19 +94,12 @@ import coil.annotation.ExperimentalCoilApi
 import coil.compose.rememberImagePainter
 import com.example.monitoring.ui.theme.MonitoringTheme
 import com.google.firebase.Firebase
-import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.firestore
 import com.google.firebase.storage.storage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.channels.awaitClose
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.channelFlow
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import kotlinx.serialization.Serializable
@@ -161,8 +132,6 @@ sealed interface Screen {
     @Serializable
     data class AdminDashboard(val role:String) : Screen
 
-    @Serializable
-    data object Search : Screen
 
     @Serializable
     data class DataGuru(val role:String) : Screen
@@ -386,10 +355,7 @@ fun NavBackStackEntry?.fromRoute(role: String): Screen {
 @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
 @Composable
 fun ScreenWithScaffold(navController: NavController,role: String, content: @Composable (PaddingValues) -> Unit) {
-    // Wrap the content with Scaffold
-    var selectedItemIndex1 by rememberSaveable {
-        mutableStateOf(0)
-    }
+
     val activity = LocalContext.current as Activity
     val windowClass = calculateWindowSizeClass(activity)
     val showNavigationRail = windowClass.widthSizeClass == WindowWidthSizeClass.Compact
@@ -484,7 +450,6 @@ fun LoginPage(navController: NavController) {
     // Implement login UI using Jetpack Compose components
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
-    val context = LocalContext.current
     val auth = Firebase.auth
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -680,65 +645,62 @@ fun LoginPage(navController: NavController) {
         )
     }
 }
-@Composable
-fun NavigationSideBar(
-    items: List<NavigationItem<Objects>>,
-    selectedItemIndex:Int,
-    onNavigate:(Int)-> Unit,
-    padding:PaddingValues
-){
-NavigationRail(  modifier = Modifier
-    .background(MaterialTheme.colorScheme.inverseOnSurface)
-    .offset(x = (-1).dp)
-    .padding(padding)) {
-Column(            modifier = Modifier.fillMaxHeight(),
-    verticalArrangement = Arrangement.spacedBy(12.dp, Alignment.Bottom)
-) {
-
-
-    items.forEachIndexed { index, item ->
-        NavigationRailItem(
-            selected = selectedItemIndex == index,
-            onClick = { onNavigate(index) },
-            icon = {
-                NavigationIcon(
-                    item = item,
-                    selected = selectedItemIndex == index
-                )
-            },
-            label = { Text(text = item.title, textAlign = TextAlign.Center ) })
-    }
-}
-}
-}
-@Composable
-fun NavigationIcon(
-    item:NavigationItem<Objects>,
-    selected:Boolean
-){
-    BadgedBox(
-        badge = {
-            if(item.badgeCount != null){
-                Badge{
-                    Text(text = item.badgeCount.toString())
-                }
-            } else if(item.hasNews){
-                Badge()
-            }
-        }
-    ){
-Icon(imageVector = if(selected) item.selectedIcon else item.unselectedIcon,
-    contentDescription = item.title
-    )
-    }
-}
+//@Composable
+//fun NavigationSideBar(
+//    items: List<NavigationItem<Objects>>,
+//    selectedItemIndex:Int,
+//    onNavigate:(Int)-> Unit,
+//    padding:PaddingValues
+//){
+//NavigationRail(  modifier = Modifier
+//    .background(MaterialTheme.colorScheme.inverseOnSurface)
+//    .offset(x = (-1).dp)
+//    .padding(padding)) {
+//Column(            modifier = Modifier.fillMaxHeight(),
+//    verticalArrangement = Arrangement.spacedBy(12.dp, Alignment.Bottom)
+//) {
+//
+//
+//    items.forEachIndexed { index, item ->
+//        NavigationRailItem(
+//            selected = selectedItemIndex == index,
+//            onClick = { onNavigate(index) },
+//            icon = {
+//                NavigationIcon(
+//                    item = item,
+//                    selected = selectedItemIndex == index
+//                )
+//            },
+//            label = { Text(text = item.title, textAlign = TextAlign.Center ) })
+//    }
+//}
+//}
+//}
+//@Composable
+//fun NavigationIcon(
+//    item:NavigationItem<Objects>,
+//    selected:Boolean
+//){
+//    BadgedBox(
+//        badge = {
+//            if(item.badgeCount != null){
+//                Badge{
+//                    Text(text = item.badgeCount.toString())
+//                }
+//            } else if(item.hasNews){
+//                Badge()
+//            }
+//        }
+//    ){
+//Icon(imageVector = if(selected) item.selectedIcon else item.unselectedIcon,
+//    contentDescription = item.title
+//    )
+//    }
+//}
 @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
 @Composable
 fun AdminDashboardPage(navController: NavController,it:PaddingValues,role: String) {
 
-    var selectedItemIndex by rememberSaveable {
-        mutableStateOf(0)
-    }
 
 
 //    val items = listOf(
@@ -902,13 +864,10 @@ fun AdminDashboardPage(navController: NavController,it:PaddingValues,role: Strin
 
 
 }
-@Composable
-fun SearchPage(navController: NavController,it: PaddingValues){
-    Text(text = "Search")
-}
+
 @Composable
 fun SettingsPage(navController: NavController,it: PaddingValues,role:String){
-    Column(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
+    Column(modifier = Modifier.fillMaxSize().padding(it), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
         Text(text = "Settings", style = MaterialTheme.typography.headlineLarge, color = Color(0xFFE3FEF7))
 
         Button(onClick = {
