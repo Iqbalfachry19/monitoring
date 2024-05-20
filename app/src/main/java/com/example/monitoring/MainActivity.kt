@@ -4,6 +4,7 @@ import android.app.Activity
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
@@ -146,7 +147,7 @@ data class NavigationItem<T>(
 data class Quadruple<T, U, V, W>(val first: T, val second: U, val third: V, val fourth: W)
 data class Quintuple<T, U, V, W,X>(val first: T, val second: U, val third: V, val fourth: W, val fifth:X)
 data class Sextuple<T, U, V, W,X,Y>(val first: T, val second: U, val third: V, val fourth: W, val fifth:X,val sixth:Y)
-data class Nilai<T, U, V>(val nama: T, val mataPelajaranList: U, val peringkat:V)
+data class Nilai<T, U, V, W>(val id:T,val nama: U, val mataPelajaranList: V, val peringkat:W)
 sealed interface Screen {
     @Serializable
     data object Login : Screen
@@ -178,7 +179,7 @@ sealed interface Screen {
     @Serializable
     data class DataJadwalUjian(val role: String)  : Screen
     @Serializable
-    data object DataNilai : Screen
+    data class DataNilai(val role: String) : Screen
     @Serializable
     data object DataPerkembangan : Screen
 
@@ -292,7 +293,10 @@ class MainActivity : ComponentActivity() {
                         DataJadwalUjian(navController,role)
                     }
                     composable<Screen.DataNilai> {
-                        DataNilai(navController)
+                            backStackEntry ->
+                        val role = backStackEntry.toRoute<Screen.DataNilai>().role
+
+                        DataNilai(navController,role)
                     }
                     composable<Screen.DataPerkembangan>{
                         DataPerkembangan(navController)
@@ -348,6 +352,11 @@ class MainActivity : ComponentActivity() {
                             backStackEntry ->
                         val id = backStackEntry.toRoute<Screen.EditJadwalUjian>().id
                         EditJadwalUjian(navController,id)
+                    }
+                    composable<Screen.EditNilai> {
+                            backStackEntry ->
+                        val id = backStackEntry.toRoute<Screen.EditNilai>().id
+                        EditNilai(navController,id)
                     }
                     composable<Screen.TeacherDashboard> {
                             backStackEntry ->
@@ -836,7 +845,7 @@ fun AdminDashboardPage(navController: NavController,it:PaddingValues,role: Strin
                     ),
                     CardItem(
                         title = "Data Nilai dan Peringkat Siswa",
-                        route =Screen.DataNilai,
+                        route =Screen.DataNilai(role),
                         icon = Icons.Filled.Star
                     ),
                     CardItem(
@@ -1592,11 +1601,14 @@ fun DataJadwalUjian(
 @OptIn(ExperimentalCoilApi::class)
 @Composable
 fun DataNilai(
-    navController: NavController
+    navController: NavController,
+    role: String
 ){
 
     val firestore = FirebaseFirestore.getInstance()
-    val dataList = remember { mutableStateListOf<Nilai<String, List<Pair<String, String>>,String>>() }
+    val dataList = remember { mutableStateListOf<Nilai<String,String, List<Pair<String, String>>,String>>() }
+    var showDialog by remember { mutableStateOf(false) }
+    var documentIdToDelete by remember { mutableStateOf<String?>(null) }
 
 
     DisposableEffect(Unit) {
@@ -1626,12 +1638,38 @@ fun DataNilai(
                 }
                 val peringkat = document.getString("peringkat") ?: ""
                 // Here you can collect more fields as needed
-                dataList.add(Nilai(nama, mataPelajaranList,peringkat))
+                dataList.add(Nilai(document.id,nama, mataPelajaranList,peringkat))
             }
         }
         onDispose {
             listenerRegistration.remove()
         }
+    }
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = { showDialog = false },
+            title = { Text(text = "Confirm Deletion") },
+            text = { Text("Are you sure you want to delete this item?") },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        documentIdToDelete?.let { id ->
+                            firestore.collection("nilai").document(id).delete()
+                        }
+                        showDialog = false
+                    }
+                ) {
+                    Text("Delete")
+                }
+            },
+            dismissButton = {
+                Button(
+                    onClick = { showDialog = false }
+                ) {
+                    Text("Cancel")
+                }
+            }
+        )
     }
     Scaffold(
         floatingActionButton = {
@@ -1656,47 +1694,76 @@ fun DataNilai(
             Text(text = "Data Nilai dan Peringkat Siswa", style = MaterialTheme.typography.headlineLarge, color = Color(0xFFE3FEF7), textAlign = TextAlign.Center)
             Spacer(modifier = Modifier.height(16.dp))
             // Display the data fetched from Firestore
-            dataList.forEach { (nama, matapelajaran, peringkat) ->
-
-                Card(
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.tertiary,
-
-                        ),
-
-                    modifier = Modifier
-                        .size(width = 200.dp, height = 120.dp)
-                        .clickable { }
-                        .padding(8.dp)
+            dataList.forEach { (id,nama, matapelajaran, peringkat) ->
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(8.dp)
                 ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center,
-                        modifier = Modifier.fillMaxSize()
+
+                    Card(
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.tertiary,
+
+                            ),
+
+                        modifier = Modifier
+                            .size(width = 200.dp, height = 120.dp)
+                            .clickable { }
+                            .padding(8.dp)
                     ) {
-                        Text(text = nama, style = MaterialTheme.typography.bodySmall)
-                        Spacer(modifier = Modifier.height(4.dp))
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center,
+                            modifier = Modifier.fillMaxSize()
+                        ) {
+                            Text(text = nama, style = MaterialTheme.typography.bodySmall)
+                            Spacer(modifier = Modifier.height(4.dp))
 
 
 
-                        matapelajaran.forEach { (pelajaran, nilai) ->
+                            matapelajaran.forEach { (pelajaran, nilai) ->
+                                Text(
+                                    text = "$pelajaran: $nilai",
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    maxLines = 1
+                                )
+                            }
+
+
+                            Spacer(modifier = Modifier.height(4.dp))
                             Text(
-                                text = "$pelajaran: $nilai",
+                                text = "Peringkat $peringkat",
                                 style = MaterialTheme.typography.bodyLarge,
-                                maxLines = 1
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
                             )
                         }
 
-
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            text = "Peringkat $peringkat",
-                            style = MaterialTheme.typography.bodyLarge,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
                     }
+                    if (role == "admin") {
+                        IconButton(
+                            onClick = {
+                                // Navigate to Edit screen with the document id
+                                navController.navigate(Screen.EditNilai(id))
+                            }
+                        ) {
+                            Icon(Icons.Default.Edit, contentDescription = "Edit", tint = Color.Gray)
+                        }
 
+                        IconButton(
+                            onClick = {
+
+                                documentIdToDelete = id
+                                showDialog = true
+                            }
+                        ) {
+                            Icon(
+                                Icons.Default.Delete,
+                                contentDescription = "Delete",
+                                tint = Color.Red
+                            )
+                        }
+                    }
                 }
             }
             }
@@ -1711,7 +1778,7 @@ fun DataPerkembangan(
 
 
     val firestore = FirebaseFirestore.getInstance()
-    val dataList = remember { mutableStateListOf<Nilai<String, List<Pair<String, String>>,String>>() }
+    val dataList = remember { mutableStateListOf<Nilai<String,String, List<Pair<String, String>>,String>>() }
 
 
     DisposableEffect(Unit) {
@@ -1741,7 +1808,7 @@ fun DataPerkembangan(
                 }
                 val peringkat = document.getString("peringkat") ?: ""
                 // Here you can collect more fields as needed
-                dataList.add(Nilai(nama, mataPelajaranList,peringkat))
+                dataList.add(Nilai(document.id,nama, mataPelajaranList,peringkat))
             }
         }
         onDispose {
@@ -1771,7 +1838,7 @@ fun DataPerkembangan(
             Text(text = "Data Perkembangan Nilai", style = MaterialTheme.typography.headlineLarge, color = Color(0xFFE3FEF7), textAlign = TextAlign.Center)
             Spacer(modifier = Modifier.height(16.dp))
             // Display the data fetched from Firestore
-            dataList.forEach { (nama, matapelajaran, peringkat) ->
+            dataList.forEach { (id,nama, matapelajaran, peringkat) ->
 
                 Card(
                     colors = CardDefaults.cardColors(
@@ -1825,7 +1892,7 @@ fun DataRekapan(
 
 
     val firestore = FirebaseFirestore.getInstance()
-    val dataList = remember { mutableStateListOf<Nilai<String, List<Pair<String, String>>,String>>() }
+    val dataList = remember { mutableStateListOf<Nilai<String,String, List<Pair<String, String>>,String>>() }
 
 
     DisposableEffect(Unit) {
@@ -1855,7 +1922,7 @@ fun DataRekapan(
                 }
                 val peringkat = document.getString("peringkat") ?: ""
                 // Here you can collect more fields as needed
-                dataList.add(Nilai(nama, mataPelajaranList,peringkat))
+                dataList.add(Nilai(document.id,nama, mataPelajaranList,peringkat))
             }
         }
         onDispose {
@@ -1885,7 +1952,7 @@ fun DataRekapan(
             Text(text = "Data Rekapan Kehadiran Siswa", style = MaterialTheme.typography.headlineLarge, color = Color(0xFFE3FEF7), textAlign = TextAlign.Center)
             Spacer(modifier = Modifier.height(16.dp))
             // Display the data fetched from Firestore
-            dataList.forEach { (nama, matapelajaran, peringkat) ->
+            dataList.forEach { (id,nama, matapelajaran, peringkat) ->
 
                 Card(
                     colors = CardDefaults.cardColors(
@@ -2400,6 +2467,8 @@ fun TambahNilai(
     var nilai by remember { mutableStateOf("") }
     var peringkat by remember { mutableStateOf("") }
     var mataPelajaranList by remember { mutableStateOf(listOf<Map<String, String>>()) }
+    var isEditing by remember { mutableStateOf(false) }
+    var editingIndex by remember { mutableStateOf(-1) }
 
     Column(modifier = Modifier.fillMaxSize()) {
         Text(
@@ -2416,48 +2485,86 @@ fun TambahNilai(
                 .padding(16.dp)
         )
 
-        TextField(
-            value = mataPelajaran,
-            onValueChange = { mataPelajaran = it },
-            label = { Text("Mata Pelajaran") },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-        )
-
-        TextField(
-            value = nilai,
-            onValueChange = { nilai = it },
-            label = { Text("Nilai") },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-        )
-
-        Button(
-            onClick = {
-                if (mataPelajaran.isNotBlank() && nilai.isNotBlank()) {
-                    val newEntry = mapOf("nama" to mataPelajaran, "nilai" to nilai)
-                    mataPelajaranList = mataPelajaranList + newEntry
-                    mataPelajaran = ""
-                    nilai = ""
+        if (isEditing) {
+            EditNilai(
+                mataPelajaranList = mataPelajaranList,
+                index = editingIndex,
+                onDone = { updatedEntry ->
+                    mataPelajaranList = mataPelajaranList.toMutableList().apply {
+                        set(editingIndex, updatedEntry)
+                    }
+                    isEditing = false
+                    editingIndex = -1
                 }
-            },
-            modifier = Modifier
-                .align(Alignment.CenterHorizontally)
-                .padding(16.dp)
-        ) {
-            Text("Tambah Mata Pelajaran")
+            )
+        } else {
+            TextField(
+                value = mataPelajaran,
+                onValueChange = { mataPelajaran = it },
+                label = { Text("Mata Pelajaran") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+            )
+
+            TextField(
+                value = nilai,
+                onValueChange = { nilai = it },
+                label = { Text("Nilai") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+            )
+
+            Button(
+                onClick = {
+                    if (mataPelajaran.isNotBlank() && nilai.isNotBlank()) {
+                        val newEntry = mapOf("nama" to mataPelajaran, "nilai" to nilai)
+                        mataPelajaranList = mataPelajaranList + newEntry
+                        mataPelajaran = ""
+                        nilai = ""
+                    }
+                },
+                modifier = Modifier
+                    .align(Alignment.CenterHorizontally)
+                    .padding(16.dp)
+            ) {
+                Text("Tambah Mata Pelajaran")
+            }
         }
 
         if (mataPelajaranList.isNotEmpty()) {
             Column {
                 Text("Daftar Mata Pelajaran:", modifier = Modifier.padding(16.dp))
-                mataPelajaranList.forEach { item ->
-                    Text(
-                        text = "${item["nama"]} - ${item["nilai"]}",
-                        modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 8.dp)
-                    )
+                mataPelajaranList.forEachIndexed { index, item ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            text = "${item["nama"]} - ${item["nilai"]}",
+                        )
+                        Row {
+
+
+                            Button(onClick = {
+                                isEditing = true
+                                editingIndex = index
+                            }) {
+                                Text("Edit")
+                            }
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Button(onClick = {
+                                mataPelajaranList = mataPelajaranList.toMutableList().apply {
+                                    removeAt(index)
+                                }
+                            }) {
+                                Text("Delete")
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -2483,7 +2590,52 @@ fun TambahNilai(
         }
     }
 }
+@Composable
+fun EditNilai(
+    mataPelajaranList: List<Map<String, String>>,
+    index: Int,
+    onDone: (Map<String, String>) -> Unit
+) {
+    var mataPelajaran by remember { mutableStateOf(mataPelajaranList[index]["nama"] ?: "") }
+    var nilai by remember { mutableStateOf(mataPelajaranList[index]["nilai"] ?: "") }
 
+    Column(modifier = Modifier.fillMaxSize()) {
+        Text(
+            text = "Edit Data Nilai",
+            modifier = Modifier.align(Alignment.CenterHorizontally).padding(16.dp)
+        )
+
+        TextField(
+            value = mataPelajaran,
+            onValueChange = { mataPelajaran = it },
+            label = { Text("Mata Pelajaran") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        )
+
+        TextField(
+            value = nilai,
+            onValueChange = { nilai = it },
+            label = { Text("Nilai") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        )
+
+        Button(
+            onClick = {
+                val updatedEntry = mapOf("nama" to mataPelajaran, "nilai" to nilai)
+                onDone(updatedEntry)
+            },
+            modifier = Modifier
+                .align(Alignment.CenterHorizontally)
+                .padding(16.dp)
+        ) {
+            Text("Simpan Perubahan")
+        }
+    }
+}
 @OptIn(ExperimentalCoilApi::class)
 @Composable
 fun TambahJadwalUjian(
@@ -2708,6 +2860,181 @@ fun TambahGuru(
         }
     }
 }
+@Composable
+fun EditNilai(
+    navController: NavController,
+    nilaiId: String
+) {
+    val firestore = FirebaseFirestore.getInstance()
+    var name by remember { mutableStateOf("") }
+    var mataPelajaran by remember { mutableStateOf("") }
+    var nilai by remember { mutableStateOf("") }
+    var peringkat by remember { mutableStateOf("") }
+    var mataPelajaranList by remember { mutableStateOf(listOf<Map<String, String>>()) }
+    var isEditing by remember { mutableStateOf(false) }
+    var editingIndex by remember { mutableStateOf(-1) }
+    val context = LocalContext.current
+
+    // Fetch existing data from Firestore
+    LaunchedEffect(nilaiId) {
+        val document = firestore.collection("nilai").document(nilaiId).get().await()
+        name = document.getString("nama") ?: ""
+        peringkat = document.getString("peringkat") ?: ""
+        val mataPelajaranArray = document.get("mata_pelajaran") as? List<Map<String, String>>
+        mataPelajaranList = mataPelajaranArray ?: listOf()
+    }
+
+    Column(modifier = Modifier.fillMaxSize()) {
+        Text(
+            text = "Edit Data Nilai dan Peringkat",
+            modifier = Modifier.align(Alignment.CenterHorizontally).padding(16.dp)
+        )
+
+        // Text field for student name
+        TextField(
+            value = name,
+            onValueChange = { name = it },
+            label = { Text("Nama Siswa") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        )
+
+        // Display list of mata pelajaran with edit option
+        if (mataPelajaranList.isNotEmpty()) {
+            Column {
+                Text("Daftar Mata Pelajaran:", modifier = Modifier.padding(16.dp))
+                mataPelajaranList.forEachIndexed { index, item ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            text = "${item["nama"]} - ${item["nilai"]}",
+                        )
+                        Row {
+                            Button(onClick = {
+                                isEditing = true
+                                editingIndex = index
+                                mataPelajaran = item["nama"] ?: ""
+                                nilai = item["nilai"] ?: ""
+                            }) {
+                                Text("Edit")
+                            }
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Button(onClick = {
+                                mataPelajaranList = mataPelajaranList.toMutableList().apply {
+                                    removeAt(index)
+                                }
+                            }) {
+                                Text("Delete")
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Form fields for mata pelajaran and nilai
+        TextField(
+            value = mataPelajaran,
+            onValueChange = { mataPelajaran = it },
+            label = { Text("Mata Pelajaran") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        )
+
+        TextField(
+            value = nilai,
+            onValueChange = { nilai = it },
+            label = { Text("Nilai") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        )
+
+        // Button to save or update mata pelajaran
+        Button(
+            onClick = {
+                if (mataPelajaran.isNotBlank() && nilai.isNotBlank()) {
+                    val newEntry = mapOf("nama" to mataPelajaran, "nilai" to nilai)
+                    if (isEditing && editingIndex >= 0) {
+                        mataPelajaranList = mataPelajaranList.toMutableList().apply {
+                            this[editingIndex] = newEntry
+                        }
+                        isEditing = false
+                        editingIndex = -1
+                    } else {
+                        mataPelajaranList = mataPelajaranList + newEntry
+                    }
+                    mataPelajaran = ""
+                    nilai = ""
+                }
+            },
+            modifier = Modifier
+                .align(Alignment.CenterHorizontally)
+                .padding(16.dp)
+        ) {
+            Text(if (isEditing) "Update Mata Pelajaran" else "Tambah Mata Pelajaran")
+        }
+
+        // Text field for peringkat
+        TextField(
+            value = peringkat,
+            onValueChange = { peringkat = it },
+            label = { Text("Peringkat") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        )
+
+        // Button to submit data
+        Button(
+            onClick = {
+                SubmitUpdatedDataToDatabaseNilai(name, mataPelajaranList, peringkat, navController, nilaiId)
+            },
+            modifier = Modifier
+                .align(Alignment.CenterHorizontally)
+                .padding(16.dp)
+        ) {
+            Text("Save Changes")
+        }
+    }
+}
+
+
+
+fun SubmitUpdatedDataToDatabaseNilai(
+    name: String,
+    mataPelajaranList: List<Map<String, String>>,
+    peringkat: String,
+    navController: NavController,
+    nilaiId: String
+) {
+    val firestore = FirebaseFirestore.getInstance()
+
+    // Update the Firestore document with the new data
+    firestore.collection("nilai").document(nilaiId)
+        .update(
+            mapOf(
+                "nama" to name,
+                "mata_pelajaran" to mataPelajaranList,
+                "peringkat" to peringkat
+            )
+        )
+        .addOnSuccessListener {
+            // Navigate back after successful update
+            navController.popBackStack()
+        }
+        .addOnFailureListener { e ->
+            // Handle the error
+            Log.e("EditNilai", "Error updating document", e)
+                   }
+}
+
 @Composable
 fun EditJadwalUjian(
     navController: NavController,
@@ -3454,7 +3781,7 @@ role: String
             ),
             CardItem(
                 title = "Data Nilai dan Peringkat Siswa",
-                route =Screen.DataNilai,
+                route =Screen.DataNilai(role),
                 icon = Icons.Filled.Star
             ),
             CardItem(
