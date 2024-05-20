@@ -66,6 +66,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -103,7 +104,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import kotlinx.serialization.Serializable
-import java.util.Objects
 import java.util.UUID
 
 data class NavigationItem<T>(
@@ -207,7 +207,7 @@ data class CardItem<T>(
     val icon:ImageVector?=Icons.Filled.Person,
 )
 class MainActivity : ComponentActivity() {
-    @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -325,6 +325,16 @@ class MainActivity : ComponentActivity() {
                     composable<Screen.EditNilai> {
                             backStackEntry ->
                         val id = backStackEntry.toRoute<Screen.EditNilai>().id
+                        EditNilai(navController,id)
+                    }
+                    composable<Screen.EditPerkembangan> {
+                            backStackEntry ->
+                        val id = backStackEntry.toRoute<Screen.EditPerkembangan>().id
+                        EditNilai(navController,id)
+                    }
+                    composable<Screen.EditRekapan> {
+                            backStackEntry ->
+                        val id = backStackEntry.toRoute<Screen.EditRekapan>().id
                         EditNilai(navController,id)
                     }
                     composable<Screen.TeacherDashboard> {
@@ -460,8 +470,7 @@ fun LoginPage(navController: NavController) {
         usersRef.document(userId).get()
             .addOnSuccessListener { document ->
                 if (document != null) {
-                    val role = document.getString("role")
-                    when (role) {
+                    when (val role = document.getString("role")) {
                         "admin" -> {
                             navController.navigate(Screen.AdminDashboard(role)) {
                                 popUpTo(Screen.Login) { inclusive = true }
@@ -590,32 +599,36 @@ fun LoginPage(navController: NavController) {
                                                 .addOnSuccessListener { document ->
                                                     if (document != null) {
                                                         val role = document.getString("role")
-                                                        if (role == "admin") {
-                                                            navController.navigate(Screen.AdminDashboard(role)) {
-                                                                popUpTo(Screen.Login) {
-                                                                    inclusive = true
+                                                        when (role) {
+                                                            "admin" -> {
+                                                                navController.navigate(Screen.AdminDashboard(role)) {
+                                                                    popUpTo(Screen.Login) {
+                                                                        inclusive = true
+                                                                    }
                                                                 }
                                                             }
-                                                        } else if(role ==   "guru 4"){
-                                                            navController.navigate(Screen.TeacherDashboard(role)) {
-                                                                popUpTo(Screen.Login) { inclusive = true }
+                                                            "guru 4" -> {
+                                                                navController.navigate(Screen.TeacherDashboard(role)) {
+                                                                    popUpTo(Screen.Login) { inclusive = true }
+                                                                }
                                                             }
-                                                        }
-                                                        else if(role ==   "guru 5") {
-                                                            navController.navigate(Screen.TeacherDashboard(role)) {
-                                                                popUpTo(Screen.Login) { inclusive = true }
+                                                            "guru 5" -> {
+                                                                navController.navigate(Screen.TeacherDashboard(role)) {
+                                                                    popUpTo(Screen.Login) { inclusive = true }
+                                                                }
                                                             }
-                                                        }
-                                                        else if(role ==   "guru 6") {
-                                                            navController.navigate(Screen.TeacherDashboard(role)) {
-                                                                popUpTo(Screen.Login) { inclusive = true }
-                                                            }
+                                                            "guru 6" -> {
+                                                                navController.navigate(Screen.TeacherDashboard(role)) {
+                                                                    popUpTo(Screen.Login) { inclusive = true }
+                                                                }
 
 
-                                                        } else {
-                                                            // User doesn't have required role, show error message
-                                                            CoroutineScope(Dispatchers.Main).launch {
-                                                                snackbarHostState.showSnackbar("Unauthorized access")
+                                                            }
+                                                            else -> {
+                                                                // User doesn't have required role, show error message
+                                                                CoroutineScope(Dispatchers.Main).launch {
+                                                                    snackbarHostState.showSnackbar("Unauthorized access")
+                                                                }
                                                             }
                                                         }
                                                     } else {
@@ -697,7 +710,7 @@ fun LoginPage(navController: NavController) {
 //    )
 //    }
 //}
-@OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
+
 @Composable
 fun AdminDashboardPage(navController: NavController,it:PaddingValues,role: String) {
 
@@ -771,7 +784,7 @@ fun AdminDashboardPage(navController: NavController,it:PaddingValues,role: Strin
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically,){
+                Row(verticalAlignment = Alignment.CenterVertically){
                     Text(text = "Dashboard Admin", style = MaterialTheme.typography.headlineLarge, color = Color(0xFFE3FEF7))
                     Spacer(modifier = Modifier.width(65.dp))
                     Icon(
@@ -1222,7 +1235,7 @@ item {
         }
     }
 }
-@OptIn(ExperimentalCoilApi::class)
+
 @Composable
 fun DataJadwalPelajaran(
     navController: NavController,
@@ -1387,7 +1400,7 @@ fun DataJadwalPelajaran(
         }
     }
 }
-@OptIn(ExperimentalCoilApi::class)
+
 @Composable
 fun DataJadwalUjian(
     navController: NavController,
@@ -1569,7 +1582,7 @@ fun DataJadwalUjian(
         }
     }
 }
-@OptIn(ExperimentalCoilApi::class)
+
 @Composable
 fun DataNilai(
     navController: NavController,
@@ -1752,7 +1765,7 @@ fun DataNilai(
         }
     }
 
-@OptIn(ExperimentalCoilApi::class)
+
 @Composable
 fun DataPerkembangan(
     navController: NavController
@@ -1867,7 +1880,7 @@ fun DataPerkembangan(
         }
     }
 }
-@OptIn(ExperimentalCoilApi::class)
+
 @Composable
 fun DataRekapan(
     navController: NavController
@@ -2154,7 +2167,6 @@ fun TambahSiswa(
     var name by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
     var imageDownloadUrl by remember { mutableStateOf<String?>(null) }
-    val context = LocalContext.current
     val getContent = rememberLauncherForActivityResult(contract = ActivityResultContracts.GetContent()) { uri ->
         uri?.let {
             uploadImageToFirebase(it) { downloadUrl ->
@@ -2208,7 +2220,7 @@ fun TambahSiswa(
         // Button to submit data
         Button(
             onClick = {
-                submitDataToDatabase(name, description, imageDownloadUrl,navController,data= "siswa")
+                submitDataToDatabase(name, description, imageDownloadUrl,navController,dataId= "siswa")
             },
             modifier = Modifier
                 .align(Alignment.CenterHorizontally)
@@ -2219,7 +2231,7 @@ fun TambahSiswa(
     }
 }
 
-@OptIn(ExperimentalCoilApi::class)
+
 @Composable
 fun TambahJadwalPelajaran(
     navController: NavController
@@ -2228,7 +2240,6 @@ fun TambahJadwalPelajaran(
     var kelas by remember { mutableStateOf("") }
     var jam by remember { mutableStateOf("") }
     var hari by remember { mutableStateOf("") }
-    val context = LocalContext.current
 
 
 
@@ -2290,7 +2301,7 @@ fun TambahJadwalPelajaran(
     }
 }
 
-@OptIn(ExperimentalCoilApi::class)
+
 @Composable
 fun TambahRekapan(
     navController: NavController
@@ -2300,7 +2311,6 @@ fun TambahRekapan(
     var jam by remember { mutableStateOf("") }
     var hari by remember { mutableStateOf("") }
     var tanggal by remember { mutableStateOf("") }
-    val context = LocalContext.current
 
 
 
@@ -2349,7 +2359,7 @@ fun TambahRekapan(
         )
         TextField(
             value = tanggal,
-            onValueChange = { name = it },
+            onValueChange = { tanggal = it },
             label = { Text("Tanggal") },
             modifier = Modifier
                 .fillMaxWidth()
@@ -2369,7 +2379,7 @@ fun TambahRekapan(
         }
     }
 }
-@OptIn(ExperimentalCoilApi::class)
+
 @Composable
 fun TambahPerkembangan(
     navController: NavController
@@ -2379,7 +2389,6 @@ fun TambahPerkembangan(
     var jam by remember { mutableStateOf("") }
     var hari by remember { mutableStateOf("") }
     var tanggal by remember { mutableStateOf("") }
-    val context = LocalContext.current
 
 
 
@@ -2449,7 +2458,7 @@ fun TambahPerkembangan(
     }
 }
 
-@OptIn(ExperimentalCoilApi::class)
+
 @Composable
 fun TambahNilai(
     navController: NavController
@@ -2460,7 +2469,7 @@ fun TambahNilai(
     var peringkat by remember { mutableStateOf("") }
     var mataPelajaranList by remember { mutableStateOf(listOf<Map<String, String>>()) }
     var isEditing by remember { mutableStateOf(false) }
-    var editingIndex by remember { mutableStateOf(-1) }
+    var editingIndex by remember { mutableIntStateOf(-1) }
 
     Column(modifier = Modifier.fillMaxSize()) {
         Text(
@@ -2628,7 +2637,7 @@ fun EditNilai(
         }
     }
 }
-@OptIn(ExperimentalCoilApi::class)
+
 @Composable
 fun TambahJadwalUjian(
     navController: NavController
@@ -2638,7 +2647,6 @@ fun TambahJadwalUjian(
     var jam by remember { mutableStateOf("") }
     var hari by remember { mutableStateOf("") }
     var tanggal by remember { mutableStateOf("") }
-    val context = LocalContext.current
 
 
 
@@ -2715,7 +2723,6 @@ fun TambahStaff(
     var name by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
     var imageDownloadUrl by remember { mutableStateOf<String?>(null) }
-    val context = LocalContext.current
     val getContent = rememberLauncherForActivityResult(contract = ActivityResultContracts.GetContent()) { uri ->
         uri?.let {
             uploadImageToFirebase(it) { downloadUrl ->
@@ -2769,7 +2776,7 @@ fun TambahStaff(
         // Button to submit data
         Button(
             onClick = {
-                submitDataToDatabase(name, description, imageDownloadUrl,navController,data= "staff")
+                submitDataToDatabase(name, description, imageDownloadUrl,navController,dataId= "staff")
             },
             modifier = Modifier
                 .align(Alignment.CenterHorizontally)
@@ -2787,7 +2794,6 @@ fun TambahGuru(
     var name by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
     var imageDownloadUrl by remember { mutableStateOf<String?>(null) }
-    val context = LocalContext.current
     val getContent = rememberLauncherForActivityResult(contract = ActivityResultContracts.GetContent()) { uri ->
         uri?.let {
             uploadImageToFirebase(it) { downloadUrl ->
@@ -2842,7 +2848,7 @@ fun TambahGuru(
         // Button to submit data
         Button(
             onClick = {
-                submitDataToDatabase(name, description, imageDownloadUrl,navController,data= "guru")
+                submitDataToDatabase(name, description, imageDownloadUrl,navController,dataId= "guru")
             },
             modifier = Modifier
                 .align(Alignment.CenterHorizontally)
@@ -2864,8 +2870,7 @@ fun EditNilai(
     var peringkat by remember { mutableStateOf("") }
     var mataPelajaranList by remember { mutableStateOf(listOf<Map<String, String>>()) }
     var isEditing by remember { mutableStateOf(false) }
-    var editingIndex by remember { mutableStateOf(-1) }
-    val context = LocalContext.current
+    var editingIndex by remember { mutableIntStateOf(-1) }
 
     // Fetch existing data from Firestore
     LaunchedEffect(nilaiId) {
@@ -2986,7 +2991,7 @@ fun EditNilai(
         // Button to submit data
         Button(
             onClick = {
-                SubmitUpdatedDataToDatabaseNilai(name, mataPelajaranList, peringkat, navController, nilaiId)
+                submitUpdatedDataToDatabaseNilai(name, mataPelajaranList, peringkat, navController, nilaiId)
             },
             modifier = Modifier
                 .align(Alignment.CenterHorizontally)
@@ -2999,7 +3004,7 @@ fun EditNilai(
 
 
 
-fun SubmitUpdatedDataToDatabaseNilai(
+fun submitUpdatedDataToDatabaseNilai(
     name: String,
     mataPelajaranList: List<Map<String, String>>,
     peringkat: String,
@@ -3038,7 +3043,6 @@ fun EditJadwalUjian(
     var jam by remember { mutableStateOf("") }
     var hari by remember { mutableStateOf("") }
     var tanggal by remember { mutableStateOf("") }
-    val context = LocalContext.current
 
     // Fetch existing data from Firestore
     LaunchedEffect(jadwalId) {
@@ -3125,7 +3129,6 @@ fun EditJadwalPelajaran(
     var kelas by remember { mutableStateOf("") }
     var jam by remember { mutableStateOf("") }
     var hari by remember { mutableStateOf("") }
-    val context = LocalContext.current
 
     // Fetch existing data from Firestore
     LaunchedEffect(jadwalId) {
@@ -3258,7 +3261,6 @@ fun EditStaff(
     var name by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
     var imageDownloadUrl by remember { mutableStateOf<String?>(null) }
-    val context = LocalContext.current
     val getContent = rememberLauncherForActivityResult(contract = ActivityResultContracts.GetContent()) { uri ->
         uri?.let {
             uploadImageToFirebase(it) { downloadUrl ->
@@ -3340,7 +3342,6 @@ fun EditGuru(
     var name by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
     var imageDownloadUrl by remember { mutableStateOf<String?>(null) }
-    val context = LocalContext.current
     val getContent = rememberLauncherForActivityResult(contract = ActivityResultContracts.GetContent()) { uri ->
         uri?.let {
             uploadImageToFirebase(it) { downloadUrl ->
@@ -3421,7 +3422,6 @@ fun EditSiswa(
     var name by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
     var imageDownloadUrl by remember { mutableStateOf<String?>(null) }
-    val context = LocalContext.current
     val getContent = rememberLauncherForActivityResult(contract = ActivityResultContracts.GetContent()) { uri ->
         uri?.let {
             uploadImageToFirebase(it) { downloadUrl ->
@@ -3520,10 +3520,10 @@ fun submitDataToDatabase(
         }
 }
 private fun submitDataToDatabase(name: String, description: String, imageUrl: String?,
-                                 navController: NavController,data:String) {
+                                 navController: NavController,dataId:String) {
     // Access the Firestore collection where you want to store the data
     val firestore = Firebase.firestore
-    val collectionRef = firestore.collection(data)
+    val collectionRef = firestore.collection(dataId)
 
     // Create a new document with a unique ID
     val documentRef = collectionRef.document()
@@ -3642,7 +3642,7 @@ fun uploadImageToFirebase(uri: Uri, callback: (String) -> Unit) {
 
     val uploadTask = imagesRef.putFile(uri)
 
-    uploadTask.addOnSuccessListener { taskSnapshot ->
+    uploadTask.addOnSuccessListener {
         // Image uploaded successfully
         // Now, retrieve the download URL
         imagesRef.downloadUrl.addOnSuccessListener { downloadUri ->
@@ -3665,9 +3665,6 @@ navController: NavController,
 it: PaddingValues,
 role: String
 ) {
-    var selectedItemIndex by rememberSaveable {
-        mutableStateOf(0)
-    }
 
 
 //    val items = listOf(
@@ -3738,7 +3735,7 @@ role: String
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically,){
+        Row(verticalAlignment = Alignment.CenterVertically){
             Text(text = "Dashboard Guru", style = MaterialTheme.typography.headlineLarge, color = Color(0xFFE3FEF7))
             Spacer(modifier = Modifier.width(65.dp))
             Icon(
