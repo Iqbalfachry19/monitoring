@@ -153,7 +153,7 @@ sealed interface Screen {
     data object DataPerkembangan : Screen
 
     @Serializable
-    data object DataRekapan : Screen
+    data class DataRekapan(val role: String) : Screen
 
     @Serializable
     data object TambahGuru : Screen
@@ -271,7 +271,10 @@ class MainActivity : ComponentActivity() {
                         DataPerkembangan(navController)
                     }
                     composable<Screen.DataRekapan> {
-                        DataRekapan(navController)
+                            backStackEntry ->
+                        val role = backStackEntry.toRoute<Screen.DataRekapan>().role
+
+                        DataRekapan(navController,role)
                     }
                     composable<Screen.TambahGuru> {
                         TambahGuru(navController)
@@ -830,7 +833,7 @@ fun AdminDashboardPage(navController: NavController,it:PaddingValues,role: Strin
                     ),
                     CardItem(
                         title = "Data Rekapan Kehadiran Siswa",
-                        route =Screen.DataRekapan,
+                        route =Screen.DataRekapan(role),
                         icon = Icons.Filled.Face
                     ),
                     )
@@ -1882,17 +1885,19 @@ fun DataPerkembangan(
 }
 
 @Composable
-fun DataRekapan(
-    navController: NavController
+fun  DataRekapan(
+    navController: NavController,
+    role: String
 ){
 
-
     val firestore = FirebaseFirestore.getInstance()
-    val dataList = remember { mutableStateListOf<Nilai<String,String, List<Pair<String, String>>,String>>() }
+    val dataList = remember { mutableStateListOf<Quintuple<String,String, String, String,String>>() }
+    var showDialog by remember { mutableStateOf(false) }
+    var documentIdToDelete by remember { mutableStateOf<String?>(null) }
 
 
     DisposableEffect(Unit) {
-        val collectionRef = firestore.collection("nilai")
+        val collectionRef = firestore.collection("absensi")
 
         // Listen for real-time updates to the Firestore collection
         val listenerRegistration = collectionRef.addSnapshotListener { snapshot, error ->
@@ -1907,23 +1912,42 @@ fun DataRekapan(
             // Add the new data to the list
             snapshot?.documents?.forEach { document ->
                 val nama = document.getString("nama") ?: ""
-                val mataPelajaranArray = document.get("mata_pelajaran") as? ArrayList<HashMap<String, String>> ?: arrayListOf()
-
-                // Iterate through each item in the mataPelajaranArray and extract nama and nilai
-                val mataPelajaranList = mutableListOf<Pair<String, String>>()
-                mataPelajaranArray.forEach { mataPelajaranMap ->
-                    val namaPelajaran = mataPelajaranMap["nama"] ?: ""
-                    val nilaiPelajaran = mataPelajaranMap["nilai"] ?: ""
-                    mataPelajaranList.add(Pair(namaPelajaran, nilaiPelajaran))
-                }
-                val peringkat = document.getString("peringkat") ?: ""
+                val tanggal = document.getString("tanggal") ?: ""
+                val kelas = document.getString("kelas") ?: ""
+                val keterangan = document.getString("keterangan") ?: ""
                 // Here you can collect more fields as needed
-                dataList.add(Nilai(document.id,nama, mataPelajaranList,peringkat))
+                dataList.add(Quintuple(document.id,nama,tanggal,kelas,keterangan))
             }
         }
         onDispose {
             listenerRegistration.remove()
         }
+    }
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = { showDialog = false },
+            title = { Text(text = "Confirm Deletion") },
+            text = { Text("Are you sure you want to delete this item?") },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        documentIdToDelete?.let { id ->
+                            firestore.collection("absensi").document(id).delete()
+                        }
+                        showDialog = false
+                    }
+                ) {
+                    Text("Delete")
+                }
+            },
+            dismissButton = {
+                Button(
+                    onClick = { showDialog = false }
+                ) {
+                    Text("Cancel")
+                }
+            }
+        )
     }
     Scaffold(
         floatingActionButton = {
@@ -1946,49 +1970,78 @@ fun DataRekapan(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             item{
-            Text(text = "Data Rekapan Kehadiran Siswa", style = MaterialTheme.typography.headlineLarge, color = Color(0xFFE3FEF7), textAlign = TextAlign.Center)
-            Spacer(modifier = Modifier.height(16.dp))
-            // Display the data fetched from Firestore
-            dataList.forEach { (id,nama, matapelajaran, peringkat) ->
-
-                Card(
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.tertiary,
-
-                        ),
-
-                    modifier = Modifier
-                        .size(width = 200.dp, height = 120.dp)
-                        .clickable { }
-                        .padding(8.dp)
-                ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center,
-                        modifier = Modifier.fillMaxSize()
+                Text(text = "Data Jadwal Pelajaran", style = MaterialTheme.typography.headlineLarge, color = Color(0xFFE3FEF7))
+                Spacer(modifier = Modifier.height(16.dp))
+                // Display the data fetched from Firestore
+                dataList.forEach { (id,nama,jam,kelas,hari) ->
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(8.dp)
                     ) {
-                        Text(text = nama, style = MaterialTheme.typography.bodySmall)
-                        Spacer(modifier = Modifier.height(4.dp))
 
+                        Card(
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.tertiary,
 
+                                ),
 
-                        matapelajaran.forEach { (pelajaran, nilai) ->
-                            Text(
-                                text = "$pelajaran: $nilai",
-                                style = MaterialTheme.typography.bodyLarge,
-                                maxLines = 1
-                            )
+                            modifier = Modifier
+                                .size(width = 200.dp, height = 120.dp)
+                                .clickable { }
+                                .padding(8.dp)
+                        ) {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center,modifier = Modifier.fillMaxSize()) {
+                                Text(text = nama, style = MaterialTheme.typography.bodySmall)
+                                Spacer(modifier = Modifier.height(4.dp))
+
+                                Text(
+                                    text = "kelas $kelas",
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = jam,
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = hari,
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+
+                            }
                         }
+                        if (role == "admin") {
+                            IconButton(
+                                onClick = {
+                                    // Navigate to Edit screen with the document id
+                                    navController.navigate(Screen.EditJadwalPelajaran(id))
+                                }
+                            ) {
+                                Icon(Icons.Default.Edit, contentDescription = "Edit", tint = Color.Gray)
+                            }
 
+                            IconButton(
+                                onClick = {
 
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            text = "peringkat $peringkat",
-                            style = MaterialTheme.typography.bodyLarge,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                    }
+                                    documentIdToDelete = id
+                                    showDialog = true
+                                }
+                            ) {
+                                Icon(
+                                    Icons.Default.Delete,
+                                    contentDescription = "Delete",
+                                    tint = Color.Red
+                                )
+                            }
+                        }
                     }
                 }
             }
@@ -3780,7 +3833,7 @@ role: String
             ),
             CardItem(
                 title = "Data Rekapan Kehadiran Siswa",
-                route =Screen.DataRekapan,
+                route =Screen.DataRekapan(role),
                 icon = Icons.Filled.Face
             ),
         )
