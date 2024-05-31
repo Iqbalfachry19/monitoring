@@ -847,7 +847,7 @@ fun AdminDashboardPage(navController: NavController,it:PaddingValues,role: Strin
                     ),
                     )
                 LazyVerticalGrid(
-                    columns = GridCells.Adaptive(minSize = 200.dp)
+                    columns = GridCells.Fixed(2)
                 ) {
                     items(cards) {
                         Card(
@@ -4279,7 +4279,7 @@ role: String
             ),
         )
         LazyVerticalGrid(
-            columns = GridCells.Adaptive(minSize = 200.dp)
+            columns = GridCells.Fixed(2)
         ) {
             items(cards) {
                 Card(
