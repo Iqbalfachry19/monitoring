@@ -11,6 +11,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -34,6 +35,7 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Face
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Star
@@ -45,6 +47,9 @@ import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -59,6 +64,7 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
@@ -1070,7 +1076,7 @@ fun DataGuruPage(
 }
 
 
-@OptIn(ExperimentalCoilApi::class)
+@OptIn(ExperimentalCoilApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun DataSiswa(
     navController: NavController,
@@ -1081,6 +1087,8 @@ fun DataSiswa(
     val dataList = remember { mutableStateListOf<Quadruple<String,String, String, String>>() }
     var showDialog by remember { mutableStateOf(false) }
     var documentIdToDelete by remember { mutableStateOf<String?>(null) }
+    var selectedFilter by remember { mutableStateOf("All") }
+    var showDropdownMenu by remember { mutableStateOf(false) }
 
     DisposableEffect(Unit) {
         val collectionRef = firestore.collection("siswa")
@@ -1101,7 +1109,7 @@ fun DataSiswa(
                 val keterangan = document.getString("keterangan") ?: ""
                 val imageUrl = document.getString("imageUrl") ?: ""
                 // Here you can collect more fields as needed
-                dataList.add(Quadruple(document.id,name, keterangan, imageUrl))
+                dataList.add(Quadruple(document.id, name, keterangan, imageUrl))
             }
         }
         onDispose {
@@ -1135,17 +1143,66 @@ fun DataSiswa(
         )
     }
     Scaffold(
-        floatingActionButton = {
 
+        floatingActionButton = {
             ExtendedFloatingActionButton(
                 onClick = {
                     // show snackbar as a suspend function
-
                     navController.navigate(Screen.TambahSiswa)
-                }
-                , containerColor = Color(0xFF77B0AA) ) { Text("+", fontSize = 24.sp, color = Color(0xFFE3FEF7)) }
+                },
+                containerColor = Color(0xFF77B0AA)
+            ) { Text("+", fontSize = 24.sp, color = Color(0xFFE3FEF7)) }
         },
     ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .padding(innerPadding)
+                .fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.End,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+            ) {
+                Text("Filter by class: ",
+                    color = Color(0xFFE3FEF7))
+                Box {
+                    IconButton(onClick = { showDropdownMenu = !showDropdownMenu }) {
+                        Icon(Icons.Default.MoreVert, contentDescription = "Filter",tint=
+                         Color(0xFFE3FEF7))
+                    }
+                    DropdownMenu(
+                        expanded = showDropdownMenu,
+                        onDismissRequest = { showDropdownMenu = false }
+                    ) {
+                        DropdownMenuItem(text =  {Text("All")}, onClick = {
+                            selectedFilter = "Semua Kelas"
+                            showDropdownMenu = false
+                        })
+                        DropdownMenuItem(text= {
+                            Text("Kelas 4")
+                        },onClick = {
+                            selectedFilter = "kelas 4"
+                            showDropdownMenu = false
+                        })
+                        DropdownMenuItem(text={
+                            Text("Kelas 5")
+                        },onClick = {
+                            selectedFilter = "kelas 5"
+                            showDropdownMenu = false
+                        })
+                        DropdownMenuItem(text = {
+                            Text("Kelas 6")
+                        },onClick = {
+                            selectedFilter = "kelas 6"
+                            showDropdownMenu = false
+                        })
+                        }
+                    }
+                }
 
         LazyColumn(
             modifier = Modifier
@@ -1154,90 +1211,97 @@ fun DataSiswa(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-item {
-    Text(
-        text = "Data Siswa",
-        style = MaterialTheme.typography.headlineLarge,
-        color = Color(0xFFE3FEF7)
-    )
-    Spacer(modifier = Modifier.height(16.dp))
-    // Display the data fetched from Firestore
-    dataList.forEach { (id, name, keterangan, imageUrl) ->
-        val canEdit = when (role) {
-            "admin" -> true
-            "guru 4" -> keterangan == "kelas 4"
-            "guru 5" -> keterangan == "kelas 5"
-            "guru 6" -> keterangan == "kelas 6"
-            else -> false
-        }
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(8.dp)
-        ) {
-            Card(
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.tertiary,
-
-                    ),
-                modifier = Modifier
-                    .size(width = 200.dp, height = 120.dp)
-                    .clickable { }
-                    .padding(8.dp)
-            ) {
-                Image(
-                    painter = rememberImagePainter(imageUrl),
-                    contentDescription = null,
-                    modifier = Modifier.size(50.dp)
+            item {
+                Text(
+                    text = "Data Siswa",
+                    style = MaterialTheme.typography.headlineLarge,
+                    color = Color(0xFFE3FEF7)
                 )
-                Spacer(modifier = Modifier.width(8.dp))
-                Column {
-                    Text(
-                        text = name,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = Color(0xFFE3FEF7)
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-
-                    Text(
-                        text = keterangan,
-                        style = MaterialTheme.typography.bodyLarge,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        color = Color(0xFFE3FEF7)
-                    )
-                }
-            }
-            if (canEdit) {
-                IconButton(
-                    onClick = {
-                        // Navigate to Edit screen with the document id
-                        navController.navigate(Screen.EditSiswa(id))
+                Spacer(modifier = Modifier.height(16.dp))
+                // Display the data fetched from Firestore
+                dataList.filter {
+                    selectedFilter == "All" || it.third == selectedFilter
+                }.forEach { (id, name, keterangan, imageUrl) ->
+                    val canEdit = when (role) {
+                        "admin" -> true
+                        "guru 4" -> keterangan == "kelas 4"
+                        "guru 5" -> keterangan == "kelas 5"
+                        "guru 6" -> keterangan == "kelas 6"
+                        else -> false
                     }
-                ) {
-                    Icon(Icons.Default.Edit, contentDescription = "Edit", tint = Color.Gray)
-                }
-            }
-            if (role == "admin") {
-                IconButton(
-                    onClick = {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(8.dp)
+                    ) {
+                        Card(
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.tertiary,
 
-                        documentIdToDelete = id
-                        showDialog = true
+                                ),
+                            modifier = Modifier
+                                .size(width = 200.dp, height = 120.dp)
+                                .clickable { }
+                                .padding(8.dp)
+                        ) {
+                            Image(
+                                painter = rememberImagePainter(imageUrl),
+                                contentDescription = null,
+                                modifier = Modifier.size(50.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Column {
+                                Text(
+                                    text = name,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = Color(0xFFE3FEF7)
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+
+                                Text(
+                                    text = keterangan,
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                    color = Color(0xFFE3FEF7)
+                                )
+                            }
+                        }
+                        if (canEdit) {
+                            IconButton(
+                                onClick = {
+                                    // Navigate to Edit screen with the document id
+                                    navController.navigate(Screen.EditSiswa(id))
+                                }
+                            ) {
+                                Icon(
+                                    Icons.Default.Edit,
+                                    contentDescription = "Edit",
+                                    tint = Color.Gray
+                                )
+                            }
+                        }
+                        if (role == "admin") {
+                            IconButton(
+                                onClick = {
+                                    documentIdToDelete = id
+                                    showDialog = true
+                                }
+                            ) {
+                                Icon(
+                                    Icons.Default.Delete,
+                                    contentDescription = "Delete",
+                                    tint = Color.Red
+                                )
+                            }
+                        }
                     }
-                ) {
-                    Icon(
-                        Icons.Default.Delete,
-                        contentDescription = "Delete",
-                        tint = Color.Red
-                    )
+                    }
                 }
             }
         }
     }
 }
-        }
-    }
-}
+
 
 @Composable
 fun DataJadwalPelajaran(
@@ -2361,9 +2425,8 @@ fun TambahRekapan(
 ) {
     var name by remember { mutableStateOf("") }
     var kelas by remember { mutableStateOf("") }
-    var jam by remember { mutableStateOf("") }
-    var hari by remember { mutableStateOf("") }
     var tanggal by remember { mutableStateOf("") }
+    var keterangan by remember { mutableStateOf("") }
 
 
 
@@ -2394,22 +2457,7 @@ fun TambahRekapan(
                 .fillMaxWidth()
                 .padding(16.dp)
         )
-        TextField(
-            value = jam,
-            onValueChange = { jam = it },
-            label = { Text("Jam") },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-        )
-        TextField(
-            value = hari,
-            onValueChange = { hari = it },
-            label = { Text("Hari") },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-        )
+
         TextField(
             value = tanggal,
             onValueChange = { tanggal = it },
@@ -2418,11 +2466,18 @@ fun TambahRekapan(
                 .fillMaxWidth()
                 .padding(16.dp)
         )
-
+        TextField(
+            value = keterangan,
+            onValueChange = { keterangan = it },
+            label = { Text("Keterangan") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        )
         // Button to submit data
         Button(
             onClick = {
-                submitDataToDatabaseUjian(name, kelas,jam,hari,tanggal,navController)
+                submitDataToDatabaseAbsensi(name, kelas,tanggal,keterangan,navController)
             },
             modifier = Modifier
                 .align(Alignment.CenterHorizontally)
@@ -2457,7 +2512,7 @@ fun TambahPerkembangan(
         TextField(
             value = name,
             onValueChange = { name = it },
-            label = { Text("Nama Mata Pelajaran") },
+            label = { Text("Nama Siswa") },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp)
@@ -3719,6 +3774,35 @@ private fun submitDataToDatabaseNilai(name: String,mataPelajaran: List<Map<Strin
         "mata_pelajaran" to mataPelajaran,
         "peringkat" to peringkat,
 
+    )
+
+    // Set the data for the document
+    documentRef.set(data)
+        .addOnSuccessListener {
+            // Document successfully written
+            Log.d("Firestore", "DocumentSnapshot successfully written!")
+            navController.popBackStack()
+        }
+        .addOnFailureListener { e ->
+            // Handle any errors that may occur while writing the document
+            Log.w("Firestore", "Error writing document", e)
+        }
+}
+private fun submitDataToDatabaseAbsensi(name: String, kelas:String,tanggal:String,keterangan: String,
+                                      navController: NavController) {
+    // Access the Firestore collection where you want to store the data
+    val firestore = Firebase.firestore
+    val collectionRef = firestore.collection("jadwalUjian")
+
+    // Create a new document with a unique ID
+    val documentRef = collectionRef.document()
+
+    // Create a data object to store the fields
+    val data = hashMapOf(
+        "nama" to name,
+        "kelas" to kelas,
+        "tanggal" to tanggal,
+        "keterangan" to keterangan
     )
 
     // Set the data for the document
