@@ -836,7 +836,7 @@ fun AdminDashboardPage(navController: NavController,it:PaddingValues,role: Strin
                         icon = Icons.Filled.Star
                     ),
                     CardItem(
-                        title = "Data Jadwal Kegiatan",
+                        title = "Data Kegiatan",
                         route =Screen.DataJadwalKegiatan(role),
                         icon = Icons.Filled.DateRange
                     ),
@@ -1922,7 +1922,7 @@ fun DataJadwalKegiatan(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             item{
-                Text(text = "Data Jadwal Kegiatan", style = MaterialTheme.typography.headlineLarge, color = Color(0xFFE3FEF7))
+                Text(text = "Data Kegiatan", style = MaterialTheme.typography.headlineLarge, color = Color(0xFFE3FEF7))
                 Spacer(modifier = Modifier.height(16.dp))
                 // Display the data fetched from Firestore
                 dataList.forEach { (id,nama,jam,kelas,hari) ->
@@ -2482,7 +2482,7 @@ fun TambahJadwalKegiatan(
 
 
     Column(modifier = Modifier.fillMaxSize()) {
-        Text(text="Tambah Data Jadwal Kegiatan", modifier = Modifier
+        Text(text="Tambah Data Kegiatan", modifier = Modifier
             .align(Alignment.CenterHorizontally))
         // Display the selected image
 
@@ -3549,7 +3549,7 @@ fun EditJadwalKegiatan(
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
-        Text(text="Edit Data Jadwal Kegiatan", modifier = Modifier.align(Alignment.CenterHorizontally))
+        Text(text="Edit Data Kegiatan", modifier = Modifier.align(Alignment.CenterHorizontally))
 
         // Text field for name
         TextField(
@@ -4268,7 +4268,7 @@ role: String
                 icon = Icons.Filled.Star
             ),
             CardItem(
-                title = "Data Jadwal Kegiatan",
+                title = "Data Kegiatan",
                 route =Screen.DataJadwalKegiatan(role),
                 icon = Icons.Filled.DateRange
             ),
