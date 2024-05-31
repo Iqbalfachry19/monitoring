@@ -338,7 +338,7 @@ class MainActivity : ComponentActivity() {
                     composable<Screen.EditRekapan> {
                             backStackEntry ->
                         val id = backStackEntry.toRoute<Screen.EditRekapan>().id
-                        EditNilai(navController,id)
+                        EditRekapan(navController,id)
                     }
                     composable<Screen.TeacherDashboard> {
                             backStackEntry ->
@@ -1970,7 +1970,7 @@ fun  DataRekapan(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             item{
-                Text(text = "Data Jadwal Pelajaran", style = MaterialTheme.typography.headlineLarge, color = Color(0xFFE3FEF7))
+                Text(text = "Data Rekapan Kehadiran Siswa", style = MaterialTheme.typography.headlineLarge, color = Color(0xFFE3FEF7), textAlign = TextAlign.Center)
                 Spacer(modifier = Modifier.height(16.dp))
                 // Display the data fetched from Firestore
                 dataList.forEach { (id,nama,jam,kelas,hari) ->
@@ -2022,7 +2022,7 @@ fun  DataRekapan(
                             IconButton(
                                 onClick = {
                                     // Navigate to Edit screen with the document id
-                                    navController.navigate(Screen.EditJadwalPelajaran(id))
+                                    navController.navigate(Screen.EditRekapan(id))
                                 }
                             ) {
                                 Icon(Icons.Default.Edit, contentDescription = "Edit", tint = Color.Gray)
@@ -3054,8 +3054,112 @@ fun EditNilai(
         }
     }
 }
+@Composable
+fun EditRekapan(
+    navController: NavController,
+    rekapanId: String
+) {
+    val firestore = FirebaseFirestore.getInstance()
+    var name by remember { mutableStateOf("") }
+    var kelas by remember { mutableStateOf("") }
+
+    var tanggal by remember { mutableStateOf("") }
+    var keterangan by remember { mutableStateOf("") }
+    // Fetch existing data from Firestore
+    LaunchedEffect(rekapanId) {
+        val document = firestore.collection("absensi").document(rekapanId).get().await()
+        name = document.getString("nama") ?: ""
+        kelas = document.getString("kelas") ?: ""
+        tanggal = document.getString("tanggal") ?: ""
+        keterangan = document.getString("keterangan") ?: ""
+    }
+
+    Column(modifier = Modifier.fillMaxSize()) {
+        Text(text="Edit Data Rekapan Kehadiran Siswa", modifier = Modifier.align(Alignment.CenterHorizontally))
+
+        // Text field for name
+        TextField(
+            value = name,
+            onValueChange = { name = it },
+            label = { Text("Nama Siswa") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        )
+
+        // Text field for class
+        TextField(
+            value = kelas,
+            onValueChange = { kelas = it },
+            label = { Text("Kelas") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        )
+
+        // Text field for day
+        TextField(
+            value = tanggal,
+            onValueChange = { tanggal = it },
+            label = { Text("Tanggal") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        )
+        TextField(
+            value = keterangan,
+            onValueChange = { keterangan = it },
+            label = { Text("Keterangan") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        )
 
 
+        // Button to submit data
+        Button(
+            onClick = {
+                submitUpdatedDataToDatabaseAbsensi(name, kelas,  tanggal,keterangan, navController, rekapanId)
+            },
+            modifier = Modifier
+                .align(Alignment.CenterHorizontally)
+                .padding(16.dp)
+        ) {
+            Text("Save Changes")
+        }
+    }
+}
+
+
+fun submitUpdatedDataToDatabaseAbsensi(
+    name: String,
+   kelas: String,
+   tanggal: String,
+    keterangan: String,
+    navController: NavController,
+    rekapanId: String
+) {
+    val firestore = FirebaseFirestore.getInstance()
+
+    // Update the Firestore document with the new data
+    firestore.collection("absensi").document(rekapanId)
+        .update(
+            mapOf(
+                "nama" to name,
+                "kelas" to kelas,
+                "tanggal" to tanggal,
+                "keterangan" to keterangan
+            )
+        )
+        .addOnSuccessListener {
+            // Navigate back after successful update
+            navController.popBackStack()
+        }
+        .addOnFailureListener { e ->
+            // Handle the error
+            Log.e("EditNilai", "Error updating document", e)
+        }
+}
 
 fun submitUpdatedDataToDatabaseNilai(
     name: String,
