@@ -13,6 +13,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+
+
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -22,6 +24,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -1700,7 +1703,7 @@ fun DataNilai(
                     val nilaiPelajaran = mataPelajaranMap["nilai"] ?: ""
                     mataPelajaranList.add(Pair(namaPelajaran, nilaiPelajaran))
                 }
-                val semester = document.getString("semeseter") ?: ""
+                val semester = document.getString("semester") ?: ""
                 val kelas = document.getString("kelas") ?: ""
                 val peringkat = document.getString("peringkat") ?: ""
                 // Here you can collect more fields as needed
@@ -1779,7 +1782,8 @@ fun DataNilai(
                                 ),
 
                             modifier = Modifier
-                                .size(width = 200.dp, height = 120.dp)
+                                .width(200.dp)
+                                .wrapContentHeight()
                                 .clickable { }
                                 .padding(8.dp)
                         ) {
@@ -2728,138 +2732,153 @@ fun TambahNilai(
     var isEditing by remember { mutableStateOf(false) }
     var editingIndex by remember { mutableIntStateOf(-1) }
 
-    Column(modifier = Modifier.fillMaxSize()) {
-        Text(
-            text = "Tambah Data Nilai dan Peringkat Siswa",
-            modifier = Modifier.align(Alignment.CenterHorizontally).padding(16.dp)
-        )
+    LazyColumn(modifier = Modifier.fillMaxSize()) {
+        item {
+            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
 
-        TextField(
-            value = name,
-            onValueChange = { name = it },
-            label = { Text("Nama Siswa") },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-        )
-
-        if (isEditing) {
-            EditNilai(
-                mataPelajaranList = mataPelajaranList,
-                index = editingIndex,
-                onDone = { updatedEntry ->
-                    mataPelajaranList = mataPelajaranList.toMutableList().apply {
-                        set(editingIndex, updatedEntry)
-                    }
-                    isEditing = false
-                    editingIndex = -1
-                }
-            )
-        } else {
-            TextField(
-                value = mataPelajaran,
-                onValueChange = { mataPelajaran = it },
-                label = { Text("Mata Pelajaran") },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp)
-            )
-
-            TextField(
-                value = nilai,
-                onValueChange = { nilai = it },
-                label = { Text("Nilai") },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp)
-            )
-
-            Button(
-                onClick = {
-                    if (mataPelajaran.isNotBlank() && nilai.isNotBlank()) {
-                        val newEntry = mapOf("nama" to mataPelajaran, "nilai" to nilai)
-                        mataPelajaranList = mataPelajaranList + newEntry
-                        mataPelajaran = ""
-                        nilai = ""
-                    }
-                },
-                modifier = Modifier
-                    .align(Alignment.CenterHorizontally)
-                    .padding(16.dp)
-            ) {
-                Text("Tambah Mata Pelajaran")
+                Text(
+                    text = "Tambah Data Nilai dan Peringkat Siswa",
+                    modifier = Modifier.padding(16.dp)
+                )
             }
-        }
+            TextField(
+                value = name,
+                onValueChange = { name = it },
+                label = { Text("Nama Siswa") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+            )
 
-        if (mataPelajaranList.isNotEmpty()) {
-            Column {
-                Text("Daftar Mata Pelajaran:", modifier = Modifier.padding(16.dp))
-                mataPelajaranList.forEachIndexed { index, item ->
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 8.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text(
-                            text = "${item["nama"]} - ${item["nilai"]}",
-                        )
-                        Row {
+            if (isEditing) {
+                EditNilai(
+                    mataPelajaranList = mataPelajaranList,
+                    index = editingIndex,
+                    onDone = { updatedEntry ->
+                        mataPelajaranList = mataPelajaranList.toMutableList().apply {
+                            set(editingIndex, updatedEntry)
+                        }
+                        isEditing = false
+                        editingIndex = -1
+                    }
+                )
+            } else {
+                TextField(
+                    value = mataPelajaran,
+                    onValueChange = { mataPelajaran = it },
+                    label = { Text("Mata Pelajaran") },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                )
 
+                TextField(
+                    value = nilai,
+                    onValueChange = { nilai = it },
+                    label = { Text("Nilai") },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                )
+                Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
 
-                            Button(onClick = {
-                                isEditing = true
-                                editingIndex = index
-                            }) {
-                                Text("Edit")
+                    Button(
+                        onClick = {
+                            if (mataPelajaran.isNotBlank() && nilai.isNotBlank()) {
+                                val newEntry = mapOf("nama" to mataPelajaran, "nilai" to nilai)
+                                mataPelajaranList = mataPelajaranList + newEntry
+                                mataPelajaran = ""
+                                nilai = ""
                             }
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Button(onClick = {
-                                mataPelajaranList = mataPelajaranList.toMutableList().apply {
-                                    removeAt(index)
+                        },
+                        modifier = Modifier
+
+                            .padding(16.dp)
+                    ) {
+                        Text("Tambah Mata Pelajaran")
+                    }
+                }
+            }
+
+            if (mataPelajaranList.isNotEmpty()) {
+                Column {
+                    Text("Daftar Mata Pelajaran:", modifier = Modifier.padding(16.dp))
+                    mataPelajaranList.forEachIndexed { index, item ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 8.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(
+                                text = "${item["nama"]} - ${item["nilai"]}",
+                            )
+                            Row {
+
+
+                                Button(onClick = {
+                                    isEditing = true
+                                    editingIndex = index
+                                }) {
+                                    Text("Edit")
                                 }
-                            }) {
-                                Text("Delete")
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Button(onClick = {
+                                    mataPelajaranList = mataPelajaranList.toMutableList().apply {
+                                        removeAt(index)
+                                    }
+                                }) {
+                                    Text("Delete")
+                                }
                             }
                         }
                     }
                 }
             }
-        }
-        TextField(
-            value = semester,
-            onValueChange = { semester = it },
-            label = { Text("Semester") },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-        )
-        TextField(
-            value = kelas,
-            onValueChange = { kelas = it },
-            label = { Text("Kelas") },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-        )
-        TextField(
-            value = peringkat,
-            onValueChange = { peringkat = it },
-            label = { Text("Peringkat") },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-        )
+            TextField(
+                value = semester,
+                onValueChange = { semester = it },
+                label = { Text("Semester") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+            )
+            TextField(
+                value = kelas,
+                onValueChange = { kelas = it },
+                label = { Text("Kelas") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+            )
+            TextField(
+                value = peringkat,
+                onValueChange = { peringkat = it },
+                label = { Text("Peringkat") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+            )
+            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
 
-        Button(
-            onClick = {
-                submitDataToDatabaseNilai(name, mataPelajaranList,semester,kelas, peringkat, navController)
-            },
-            modifier = Modifier
-                .align(Alignment.CenterHorizontally)
-                .padding(16.dp)
-        ) {
-            Text("Submit")
+                Button(
+                    onClick = {
+                        submitDataToDatabaseNilai(
+                            name,
+                            mataPelajaranList,
+                            semester,
+                            kelas,
+                            peringkat,
+                            navController
+                        )
+                    },
+                    modifier = Modifier
+
+                        .padding(16.dp)
+                ) {
+                    Text("Submit")
+                }
+            }
         }
     }
 }
@@ -3151,146 +3170,164 @@ fun EditNilai(
         val document = firestore.collection("nilai").document(nilaiId).get().await()
         name = document.getString("nama") ?: ""
         peringkat = document.getString("peringkat") ?: ""
+        kelas = document.getString("kelas") ?: ""
+        semester = document.getString("semester") ?: ""
         val mataPelajaranArray = document.get("mata_pelajaran") as? List<Map<String, String>>
         mataPelajaranList = mataPelajaranArray ?: listOf()
     }
 
-    Column(modifier = Modifier.fillMaxSize()) {
-        Text(
-            text = "Edit Data Nilai dan Peringkat",
-            modifier = Modifier.align(Alignment.CenterHorizontally).padding(16.dp)
-        )
+    LazyColumn(modifier = Modifier.fillMaxSize()) {
+        item {
+            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
 
-        // Text field for student name
-        TextField(
-            value = name,
-            onValueChange = { name = it },
-            label = { Text("Nama Siswa") },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-        )
+                Text(
+                    text = "Edit Data Nilai dan Peringkat",
+                    modifier = Modifier.padding(16.dp)
+                )
+            }
 
-        // Display list of mata pelajaran with edit option
-        if (mataPelajaranList.isNotEmpty()) {
-            Column {
-                Text("Daftar Mata Pelajaran:", modifier = Modifier.padding(16.dp))
-                mataPelajaranList.forEachIndexed { index, item ->
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 8.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text(
-                            text = "${item["nama"]} - ${item["nilai"]}",
-                        )
-                        Row {
-                            Button(onClick = {
-                                isEditing = true
-                                editingIndex = index
-                                mataPelajaran = item["nama"] ?: ""
-                                nilai = item["nilai"] ?: ""
-                            }) {
-                                Text("Edit")
-                            }
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Button(onClick = {
-                                mataPelajaranList = mataPelajaranList.toMutableList().apply {
-                                    removeAt(index)
+            // Text field for student name
+            TextField(
+                value = name,
+                onValueChange = { name = it },
+                label = { Text("Nama Siswa") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+            )
+
+            // Display list of mata pelajaran with edit option
+            if (mataPelajaranList.isNotEmpty()) {
+                Column {
+                    Text("Daftar Mata Pelajaran:", modifier = Modifier.padding(16.dp))
+                    mataPelajaranList.forEachIndexed { index, item ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 8.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(
+                                text = "${item["nama"]} - ${item["nilai"]}",
+                            )
+                            Row {
+                                Button(onClick = {
+                                    isEditing = true
+                                    editingIndex = index
+                                    mataPelajaran = item["nama"] ?: ""
+                                    nilai = item["nilai"] ?: ""
+                                }) {
+                                    Text("Edit")
                                 }
-                            }) {
-                                Text("Delete")
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Button(onClick = {
+                                    mataPelajaranList = mataPelajaranList.toMutableList().apply {
+                                        removeAt(index)
+                                    }
+                                }) {
+                                    Text("Delete")
+                                }
                             }
                         }
                     }
                 }
             }
-        }
 
-        // Form fields for mata pelajaran and nilai
-        TextField(
-            value = mataPelajaran,
-            onValueChange = { mataPelajaran = it },
-            label = { Text("Mata Pelajaran") },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-        )
+            // Form fields for mata pelajaran and nilai
+            TextField(
+                value = mataPelajaran,
+                onValueChange = { mataPelajaran = it },
+                label = { Text("Mata Pelajaran") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+            )
 
-        TextField(
-            value = nilai,
-            onValueChange = { nilai = it },
-            label = { Text("Nilai") },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-        )
+            TextField(
+                value = nilai,
+                onValueChange = { nilai = it },
+                label = { Text("Nilai") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+            )
 
-        // Button to save or update mata pelajaran
-        Button(
-            onClick = {
-                if (mataPelajaran.isNotBlank() && nilai.isNotBlank()) {
-                    val newEntry = mapOf("nama" to mataPelajaran, "nilai" to nilai)
-                    if (isEditing && editingIndex >= 0) {
-                        mataPelajaranList = mataPelajaranList.toMutableList().apply {
-                            this[editingIndex] = newEntry
+            // Button to save or update mata pelajaran
+            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+
+                Button(
+                    onClick = {
+                        if (mataPelajaran.isNotBlank() && nilai.isNotBlank()) {
+                            val newEntry = mapOf("nama" to mataPelajaran, "nilai" to nilai)
+                            if (isEditing && editingIndex >= 0) {
+                                mataPelajaranList = mataPelajaranList.toMutableList().apply {
+                                    this[editingIndex] = newEntry
+                                }
+                                isEditing = false
+                                editingIndex = -1
+                            } else {
+                                mataPelajaranList = mataPelajaranList + newEntry
+                            }
+                            mataPelajaran = ""
+                            nilai = ""
                         }
-                        isEditing = false
-                        editingIndex = -1
-                    } else {
-                        mataPelajaranList = mataPelajaranList + newEntry
-                    }
-                    mataPelajaran = ""
-                    nilai = ""
-                }
-            },
-            modifier = Modifier
-                .align(Alignment.CenterHorizontally)
-                .padding(16.dp)
-        ) {
-            Text(if (isEditing) "Update Mata Pelajaran" else "Tambah Mata Pelajaran")
-        }
-        // Text field for peringkat
-        TextField(
-            value = semester,
-            onValueChange = {semester = it },
-            label = { Text("Semester") },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-        )
-        // Text field for peringkat
-        TextField(
-            value = kelas,
-            onValueChange = { kelas = it },
-            label = { Text("Kelas") },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-        )
-        // Text field for peringkat
-        TextField(
-            value = peringkat,
-            onValueChange = { peringkat = it },
-            label = { Text("Peringkat") },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-        )
+                    },
+                    modifier = Modifier
 
-        // Button to submit data
-        Button(
-            onClick = {
-                submitUpdatedDataToDatabaseNilai(name, mataPelajaranList,semester,kelas, peringkat, navController, nilaiId)
-            },
-            modifier = Modifier
-                .align(Alignment.CenterHorizontally)
-                .padding(16.dp)
-        ) {
-            Text("Save Changes")
+                        .padding(16.dp)
+                ) {
+                    Text(if (isEditing) "Update Mata Pelajaran" else "Tambah Mata Pelajaran")
+                }
+            }
+            // Text field for peringkat
+            TextField(
+                value = semester,
+                onValueChange = { semester = it },
+                label = { Text("Semester") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+            )
+            // Text field for peringkat
+            TextField(
+                value = kelas,
+                onValueChange = { kelas = it },
+                label = { Text("Kelas") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+            )
+            // Text field for peringkat
+            TextField(
+                value = peringkat,
+                onValueChange = { peringkat = it },
+                label = { Text("Peringkat") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+            )
+
+            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                Button(
+                    onClick = {
+                        submitUpdatedDataToDatabaseNilai(
+                            name,
+                            mataPelajaranList,
+                            semester,
+                            kelas,
+                            peringkat,
+                            navController,
+                            nilaiId
+                        )
+                    },
+                    modifier = Modifier.padding(16.dp)
+                ) {
+                    Text("Save Changes")
+                }
+            }
         }
     }
+
 }
 @Composable
 fun EditRekapan(
