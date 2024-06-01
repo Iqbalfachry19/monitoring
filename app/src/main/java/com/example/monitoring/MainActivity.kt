@@ -1190,7 +1190,7 @@ fun DataSiswa(
                         onDismissRequest = { showDropdownMenu = false }
                     ) {
                         DropdownMenuItem(text =  {Text("All")}, onClick = {
-                            selectedFilter = "Semua Kelas"
+                            selectedFilter = "All"
                             showDropdownMenu = false
                         })
                         DropdownMenuItem(text= {
@@ -1230,8 +1230,10 @@ fun DataSiswa(
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 // Display the data fetched from Firestore
-                dataList.filter {
-                    selectedFilter == "All" || it.third == selectedFilter
+                val filteredList = if (selectedFilter == "All") {
+                    dataList
+                } else {
+                    dataList.filter { it.third == selectedFilter }
                 }.forEach { (id, name, keterangan, imageUrl) ->
                     val canEdit = when (role) {
                         "admin" -> true
