@@ -125,7 +125,7 @@ data class NavigationItem<T>(
 data class Quadruple<T, U, V, W>(val first: T, val second: U, val third: V, val fourth: W)
 data class Quintuple<T, U, V, W,X>(val first: T, val second: U, val third: V, val fourth: W, val fifth:X)
 data class Sextuple<T, U, V, W,X,Y>(val first: T, val second: U, val third: V, val fourth: W, val fifth:X,val sixth:Y)
-data class Nilai<T, U, V, W>(val id:T,val nama: U, val mataPelajaranList: V, val peringkat:W)
+data class Nilai<T, U, V, W,X,Y>(val id:T,val nama: U, val mataPelajaranList: V, val semester:W,val kelas:X, val peringkat:Y)
 sealed interface Screen {
     @Serializable
     data object Login : Screen
@@ -1670,7 +1670,7 @@ fun DataNilai(
 ){
 
     val firestore = FirebaseFirestore.getInstance()
-    val dataList = remember { mutableStateListOf<Nilai<String,String, List<Pair<String, String>>,String>>() }
+    val dataList = remember { mutableStateListOf<Nilai<String,String, List<Pair<String, String>>,String,String,String>>() }
     var showDialog by remember { mutableStateOf(false) }
     var documentIdToDelete by remember { mutableStateOf<String?>(null) }
 
@@ -1700,9 +1700,11 @@ fun DataNilai(
                     val nilaiPelajaran = mataPelajaranMap["nilai"] ?: ""
                     mataPelajaranList.add(Pair(namaPelajaran, nilaiPelajaran))
                 }
+                val semester = document.getString("semeseter") ?: ""
+                val kelas = document.getString("kelas") ?: ""
                 val peringkat = document.getString("peringkat") ?: ""
                 // Here you can collect more fields as needed
-                dataList.add(Nilai(document.id,nama, mataPelajaranList,peringkat))
+                dataList.add(Nilai(document.id,nama, mataPelajaranList,semester, kelas,peringkat))
             }
         }
         onDispose {
@@ -1764,7 +1766,7 @@ fun DataNilai(
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 // Display the data fetched from Firestore
-                dataList.forEach { (id, nama, matapelajaran, peringkat) ->
+                dataList.forEach { (id, nama, matapelajaran, semester,kelas, peringkat) ->
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.padding(8.dp)
@@ -1800,6 +1802,20 @@ fun DataNilai(
                                 }
 
 
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = semester,
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = kelas,
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
                                 Spacer(modifier = Modifier.height(4.dp))
                                 Text(
                                     text = "Peringkat $peringkat",
@@ -2705,6 +2721,8 @@ fun TambahNilai(
     var name by remember { mutableStateOf("") }
     var mataPelajaran by remember { mutableStateOf("") }
     var nilai by remember { mutableStateOf("") }
+    var semester by remember { mutableStateOf("") }
+    var kelas by remember { mutableStateOf("") }
     var peringkat by remember { mutableStateOf("") }
     var mataPelajaranList by remember { mutableStateOf(listOf<Map<String, String>>()) }
     var isEditing by remember { mutableStateOf(false) }
@@ -2808,7 +2826,22 @@ fun TambahNilai(
                 }
             }
         }
-
+        TextField(
+            value = semester,
+            onValueChange = { semester = it },
+            label = { Text("Semester") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        )
+        TextField(
+            value = kelas,
+            onValueChange = { kelas = it },
+            label = { Text("Kelas") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        )
         TextField(
             value = peringkat,
             onValueChange = { peringkat = it },
@@ -2820,7 +2853,7 @@ fun TambahNilai(
 
         Button(
             onClick = {
-                submitDataToDatabaseNilai(name, mataPelajaranList, peringkat, navController)
+                submitDataToDatabaseNilai(name, mataPelajaranList,semester,kelas, peringkat, navController)
             },
             modifier = Modifier
                 .align(Alignment.CenterHorizontally)
@@ -3106,6 +3139,8 @@ fun EditNilai(
     var name by remember { mutableStateOf("") }
     var mataPelajaran by remember { mutableStateOf("") }
     var nilai by remember { mutableStateOf("") }
+    var semester by remember { mutableStateOf("") }
+    var kelas by remember { mutableStateOf("") }
     var peringkat by remember { mutableStateOf("") }
     var mataPelajaranList by remember { mutableStateOf(listOf<Map<String, String>>()) }
     var isEditing by remember { mutableStateOf(false) }
@@ -3216,7 +3251,24 @@ fun EditNilai(
         ) {
             Text(if (isEditing) "Update Mata Pelajaran" else "Tambah Mata Pelajaran")
         }
-
+        // Text field for peringkat
+        TextField(
+            value = semester,
+            onValueChange = {semester = it },
+            label = { Text("Semester") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        )
+        // Text field for peringkat
+        TextField(
+            value = kelas,
+            onValueChange = { kelas = it },
+            label = { Text("Kelas") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        )
         // Text field for peringkat
         TextField(
             value = peringkat,
@@ -3230,7 +3282,7 @@ fun EditNilai(
         // Button to submit data
         Button(
             onClick = {
-                submitUpdatedDataToDatabaseNilai(name, mataPelajaranList, peringkat, navController, nilaiId)
+                submitUpdatedDataToDatabaseNilai(name, mataPelajaranList,semester,kelas, peringkat, navController, nilaiId)
             },
             modifier = Modifier
                 .align(Alignment.CenterHorizontally)
@@ -3350,6 +3402,8 @@ fun submitUpdatedDataToDatabaseAbsensi(
 fun submitUpdatedDataToDatabaseNilai(
     name: String,
     mataPelajaranList: List<Map<String, String>>,
+    semester: String,
+    kelas: String,
     peringkat: String,
     navController: NavController,
     nilaiId: String
@@ -3362,6 +3416,8 @@ fun submitUpdatedDataToDatabaseNilai(
             mapOf(
                 "nama" to name,
                 "mata_pelajaran" to mataPelajaranList,
+                "semester" to semester,
+                "kelas" to kelas,
                 "peringkat" to peringkat
             )
         )
@@ -3992,7 +4048,7 @@ private fun submitDataToDatabase(name: String, description: String, imageUrl: St
             Log.w("Firestore", "Error writing document", e)
         }
 }
-private fun submitDataToDatabaseNilai(name: String,mataPelajaran: List<Map<String, String>>,peringkat:String,
+private fun submitDataToDatabaseNilai(name: String,mataPelajaran: List<Map<String, String>>,semester:String,kelas:String,peringkat:String,
                                       navController: NavController) {
     // Access the Firestore collection where you want to store the data
     val firestore = Firebase.firestore
@@ -4005,6 +4061,8 @@ private fun submitDataToDatabaseNilai(name: String,mataPelajaran: List<Map<Strin
     val data = hashMapOf(
         "nama" to name,
         "mata_pelajaran" to mataPelajaran,
+        "semester" to semester,
+        "kelas" to kelas,
         "peringkat" to peringkat,
 
     )
