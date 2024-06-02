@@ -1260,11 +1260,6 @@ fun DataSiswa(
                                 .clickable { }
                                 .padding(8.dp)
                         ) {
-                            Image(
-                                painter = rememberImagePainter(imageUrl),
-                                contentDescription = null,
-                                modifier = Modifier.size(50.dp)
-                            )
                             Spacer(modifier = Modifier.width(8.dp))
                             Column {
                                 Text(
