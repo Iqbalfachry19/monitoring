@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 
 
+
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -1259,13 +1260,15 @@ fun DataSiswa(
                                 .size(width = 200.dp, height = 120.dp)
                                 .clickable { }
                                 .padding(8.dp)
+                                .align(Alignment.CenterVertically)
                         ) {
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Column {
+
+                            Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center, modifier = Modifier.fillMaxSize()) {
                                 Text(
                                     text = name,
                                     style = MaterialTheme.typography.bodySmall,
-                                    color = Color(0xFFE3FEF7)
+                                    color = Color(0xFFE3FEF7),
+                                    textAlign = TextAlign.Center
                                 )
                                 Spacer(modifier = Modifier.height(4.dp))
 
@@ -2377,21 +2380,9 @@ fun TambahSiswa(
     Text(text="Tambah Data Siswa", modifier = Modifier
             .align(Alignment.CenterHorizontally))
         // Display the selected image
-        imageDownloadUrl?.let { imageUrl ->
-            Image(
-                painter = rememberImagePainter(imageUrl),
-                contentDescription = null,
-                modifier = Modifier
-                    .size(150.dp) // Adjust the size as needed
-                    .padding(16.dp) // Add padding for better layout
-            )
-        }
 
-        // Button to select image
-        Button(onClick = { getContent.launch("image/*") }, modifier = Modifier
-            .align(Alignment.CenterHorizontally)) {
-            Text("Select Image")
-        }
+
+
 
         // Text field for name
         TextField(
@@ -3983,22 +3974,7 @@ fun EditSiswa(
 
         Text(text="Edit Data Siswa", modifier = Modifier.align(Alignment.CenterHorizontally))
 
-        // Display the selected image
-        imageDownloadUrl?.let { imageUrl ->
-            Image(
-                painter = rememberImagePainter(imageUrl),
-                contentDescription = null,
-                modifier = Modifier
-                    .size(150.dp)
-                    .padding(16.dp),
-                alignment = Alignment.Center
-            )
-        }
 
-        // Button to select image
-        Button(onClick = { getContent.launch("image/*") }, modifier = Modifier.align(Alignment.CenterHorizontally)) {
-            Text("Select Image")
-        }
 
         // Text field for name
         TextField(
