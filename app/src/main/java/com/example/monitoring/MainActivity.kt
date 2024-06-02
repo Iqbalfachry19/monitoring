@@ -952,6 +952,7 @@ fun DataGuruPage(
                 // Here you can collect more fields as needed
                 dataList.add(Quadruple(document.id, name, keterangan, imageUrl))
             }
+            dataList.sortBy { it.second }
         }
         onDispose {
             listenerRegistration.remove()
@@ -1127,6 +1128,7 @@ fun DataSiswa(
                 // Here you can collect more fields as needed
                 dataList.add(Quadruple(document.id, name, keterangan, imageUrl))
             }
+            dataList.sortBy { it.second }
         }
         onDispose {
             listenerRegistration.remove()
@@ -2228,6 +2230,7 @@ fun DataStaffPage(
                 // Here you can collect more fields as needed
                 dataList.add(Quadruple(document.id,name, keterangan, imageUrl))
             }
+            dataList.sortBy { it.second }
         }
         onDispose {
             listenerRegistration.remove()
