@@ -4259,8 +4259,9 @@ role: String
             route = Screen.DataGuru(role)
         ),
             CardItem(
-                title = "Data Staff",
-                route = Screen.ExportData(role)
+                title = "Export Data",
+                route = Screen.ExportData(role),
+                icon = Icons.Filled.Share
             ),
             CardItem(
                 title = "Data Siswa",
