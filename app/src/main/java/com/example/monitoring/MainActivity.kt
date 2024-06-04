@@ -1,9 +1,16 @@
 package com.example.monitoring
 
 import android.app.Activity
+import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.graphics.Paint
+import android.graphics.pdf.PdfDocument
 import android.net.Uri
 import android.os.Bundle
+import android.os.Environment
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
@@ -43,6 +50,7 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Settings
@@ -90,12 +98,16 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
@@ -116,6 +128,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import kotlinx.serialization.Serializable
+import java.io.File
+import java.io.FileOutputStream
 import java.util.UUID
 
 data class NavigationItem<T>(
@@ -149,7 +163,7 @@ sealed interface Screen {
     data class DataGuru(val role:String) : Screen
 
     @Serializable
-    data class DataStaff(val role:String) : Screen
+    data class ExportData(val role:String) : Screen
 
     @Serializable
     data class DataSiswa(val role: String) : Screen
@@ -251,10 +265,10 @@ class MainActivity : ComponentActivity() {
                         val role = backStackEntry.toRoute<Screen.DataGuru>().role
                         DataGuruPage(navController,role)
                     }
-                    composable<Screen.DataStaff> {
+                    composable<Screen.ExportData> {
                             backStackEntry ->
-                        val role = backStackEntry.toRoute<Screen.DataStaff>().role
-                        DataStaffPage(navController,role)
+                        val role = backStackEntry.toRoute<Screen.ExportData>().role
+                        ExportData(navController,role)
                     }
                     composable<Screen.DataSiswa> {
                             backStackEntry ->
@@ -825,8 +839,9 @@ fun AdminDashboardPage(navController: NavController,it:PaddingValues,role: Strin
                     route = Screen.DataGuru(role)
                 ),
                     CardItem(
-                        title = "Data Staff",
-                        route = Screen.DataStaff(role)
+                        title = "Export Data",
+                        route = Screen.ExportData(role),
+                        icon = Icons.Filled.Share
                     ),
                             CardItem(
                             title = "Data Siswa",
@@ -2196,169 +2211,80 @@ fun  DataRekapan(
         }
     }
 }
+
 @OptIn(ExperimentalCoilApi::class)
 @Composable
-fun DataStaffPage(
+fun ExportData(
     navController: NavController,
     role: String
 ){
+    val context = LocalContext.current as Activity
+
 
     val firestore = FirebaseFirestore.getInstance()
-    val dataList = remember { mutableStateListOf<Quadruple<String,String, String, String>>() }
-    var showDialog by remember { mutableStateOf(false) }
-    var documentIdToDelete by remember { mutableStateOf<String?>(null) }
+    var staffData by remember { mutableStateOf<List<Map<String, Any>>>(emptyList()) }
 
-
-    DisposableEffect(Unit) {
-        val collectionRef = firestore.collection("staff")
-
-        // Listen for real-time updates to the Firestore collection
-        val listenerRegistration = collectionRef.addSnapshotListener { snapshot, error ->
-            if (error != null) {
-                // Handle error
-                return@addSnapshotListener
-            }
-
-            // Clear the previous data before adding new data
-            dataList.clear()
-
-            // Add the new data to the list
-            snapshot?.documents?.forEach { document ->
-                val name = document.getString("nama") ?: ""
-                val keterangan = document.getString("keterangan") ?: ""
-                val imageUrl = document.getString("imageUrl") ?: ""
-                // Here you can collect more fields as needed
-                dataList.add(Quadruple(document.id,name, keterangan, imageUrl))
-            }
-            dataList.sortBy { it.second }
-        }
-        onDispose {
-            listenerRegistration.remove()
-        }
+    // Fetch existing data from Firestore
+    LaunchedEffect(Unit) {
+        val documents = firestore.collection("siswa").get().await()
+        staffData = documents.map { it.data }
     }
-    if (showDialog) {
-        AlertDialog(
-            onDismissRequest = { showDialog = false },
-            title = { Text(text = "Confirm Deletion") },
-            text = { Text("Are you sure you want to delete this item?") },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        documentIdToDelete?.let { id ->
-                            firestore.collection("staff").document(id).delete()
-                        }
-                        showDialog = false
-                    }
-                ) {
-                    Text("Delete")
-                }
+
+    Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(text="Export Data Siswa", modifier = Modifier.align(Alignment.CenterHorizontally), fontSize = 24.sp, fontWeight = FontWeight.Bold)
+
+
+
+        // Button to export data to PDF
+        Button(
+            onClick = {
+                exportDataToPDF(context, staffData)
             },
-            dismissButton = {
-                Button(
-                    onClick = { showDialog = false }
-                ) {
-                    Text("Cancel")
-                }
-            }
-        )
-    }
-    Scaffold(
-        floatingActionButton = {
-
-            ExtendedFloatingActionButton(
-                onClick = {
-                    // show snackbar as a suspend function
-
-                    navController.navigate(Screen.TambahStaff)
-                }
-                , containerColor = Color(0xFF77B0AA) ) { Text("+", fontSize = 24.sp, color = Color(0xFFE3FEF7)) }
-        },
-    ) { innerPadding ->
-
-        LazyColumn(
             modifier = Modifier
-                .padding(innerPadding)
-                .fillMaxSize(),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
+                .align(Alignment.CenterHorizontally)
+                .padding(16.dp)
         ) {
-            item {
-                Text(
-                    text = "Data Staff",
-                    style = MaterialTheme.typography.headlineLarge,
-                    color = Color(0xFFE3FEF7)
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-                // Display the data fetched from Firestore
-                dataList.forEach { (id, name, keterangan, imageUrl) ->
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.padding(8.dp)
-                    ) {
-                        Card(
-                            colors = CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.tertiary,
-
-                                ),
-                            modifier = Modifier
-                                .size(width = 200.dp, height = 120.dp)
-                                .clickable { }
-                                .padding(8.dp)
-                        ) {
-                            Image(
-                                painter = rememberImagePainter(imageUrl),
-                                contentDescription = null,
-                                modifier = Modifier.size(50.dp)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Column {
-                                Text(
-                                    text = name,
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = Color(0xFFE3FEF7)
-                                )
-                                Spacer(modifier = Modifier.height(4.dp))
-
-                                Text(
-                                    text = keterangan,
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis,
-                                    color = Color(0xFFE3FEF7)
-                                )
-                            }
-                        }
-                        if (role == "admin") {
-                            IconButton(
-                                onClick = {
-                                    // Navigate to Edit screen with the document id
-                                    navController.navigate(Screen.EditStaff(id))
-                                }
-                            ) {
-                                Icon(
-                                    Icons.Default.Edit,
-                                    contentDescription = "Edit",
-                                    tint = Color.Gray
-                                )
-                            }
-                            IconButton(
-                                onClick = {
-
-                                    documentIdToDelete = id
-                                    showDialog = true
-                                }
-                            ) {
-                                Icon(
-                                    Icons.Default.Delete,
-                                    contentDescription = "Delete",
-                                    tint = Color.Red
-                                )
-                            }
-                        }
-                    }
-                }
-            }
+            Text("Export to PDF")
         }
+    }
+}
+fun exportDataToPDF(context: Context, staffData: List<Map<String, Any>>) {
+    val pdfDocument = PdfDocument()
+    val pageInfo = PdfDocument.PageInfo.Builder(595, 842, 1).create() // A4 size
+    val page = pdfDocument.startPage(pageInfo)
+    val canvas = page.canvas
+
+    val paint = Paint().apply {
+        textSize = 12f
+        isAntiAlias = true
+    }
+
+    var yPos = 50f
+
+    staffData.forEach { data ->
+        canvas.drawText("Name: ${data["nama"]}", 50f, yPos, paint)
+        yPos += 20f
+        canvas.drawText("Description: ${data["keterangan"]}", 50f, yPos, paint)
+        yPos += 40f
+    }
+
+    pdfDocument.finishPage(page)
+
+    val externalFilesDir = context.getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS)
+    if (externalFilesDir != null) {
+        val file = File(externalFilesDir, "staff_data.pdf")
+        try {
+            val outputStream = FileOutputStream(file)
+            pdfDocument.writeTo(outputStream)
+            pdfDocument.close()
+            outputStream.close()
+            Toast.makeText(context, "PDF saved to ${file.absolutePath}", Toast.LENGTH_LONG).show()
+        } catch (e: Error) {
+            pdfDocument.close()
+            Toast.makeText(context, "Failed to save PDF: ${e.message}", Toast.LENGTH_LONG).show()
+        }
+    } else {
+        Toast.makeText(context, "Failed to access external files directory", Toast.LENGTH_LONG).show()
     }
 }
 @OptIn(ExperimentalCoilApi::class)
@@ -4333,7 +4259,7 @@ role: String
         ),
             CardItem(
                 title = "Data Staff",
-                route = Screen.DataStaff(role)
+                route = Screen.ExportData(role)
             ),
             CardItem(
                 title = "Data Siswa",
