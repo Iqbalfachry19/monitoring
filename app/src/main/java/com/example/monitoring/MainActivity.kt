@@ -2272,7 +2272,7 @@ fun exportDataToPDF(context: Context, staffData: List<Map<String, Any>>) {
 
     val externalFilesDir = context.getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS)
     if (externalFilesDir != null) {
-        val file = File(externalFilesDir, "staff_data.pdf")
+        val file = File(externalFilesDir, "data_siswa.pdf")
         try {
             val outputStream = FileOutputStream(file)
             pdfDocument.writeTo(outputStream)
