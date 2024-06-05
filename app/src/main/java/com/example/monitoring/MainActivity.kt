@@ -2303,9 +2303,9 @@ fun exportDataToPDF(context: Context, staffData: List<Map<String, Any>>) {
         canvas.drawText("Nama: ${data["nama"]}", 50f, yPos, paint)
         yPos += 20f
         canvas.drawText("Keterangan: ${data["keterangan"]}", 50f, yPos, paint)
-        yPos += 40f
+        yPos += 20f
         canvas.drawText("NISN: ${data["nisn"]}", 50f, yPos, paint)
-        yPos += 60f
+        yPos += 40f
     }
 
 
