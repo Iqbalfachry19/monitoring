@@ -2242,7 +2242,7 @@ fun ExportData(
     }
 
     // Filter data based on selected class
-    val filteredStaffData = staffData.filter { it["keterangan"] == selectedClass }
+    val filteredStaffData = staffData.filter { it["keterangan"] == selectedClass }.sortedBy { it["nama"].toString()}
 
     Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
         Text(
