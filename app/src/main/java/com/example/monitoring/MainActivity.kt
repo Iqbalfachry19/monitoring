@@ -1139,9 +1139,9 @@ fun DataSiswa(
             snapshot?.documents?.forEach { document ->
                 val name = document.getString("nama") ?: ""
                 val keterangan = document.getString("keterangan") ?: ""
-                val imageUrl = document.getString("imageUrl") ?: ""
+                val nisn = document.getString("nisn") ?: ""
                 // Here you can collect more fields as needed
-                dataList.add(Quadruple(document.id, name, keterangan, imageUrl))
+                dataList.add(Quadruple(document.id, name, keterangan, nisn))
             }
             dataList.sortBy { it.second }
         }
@@ -1256,7 +1256,7 @@ fun DataSiswa(
                     dataList
                 } else {
                     dataList.filter { it.third == selectedFilter }
-                }.forEach { (id, name, keterangan, imageUrl) ->
+                }.forEach { (id, name, keterangan, nisn) ->
                     val canEdit = when (role) {
                         "admin" -> true
                         "guru 4" -> keterangan == "kelas 4"
@@ -1281,14 +1281,15 @@ fun DataSiswa(
                         ) {
 
                             Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center, modifier = Modifier.fillMaxSize()) {
+
                                 Text(
-                                    text = name,
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = Color(0xFFE3FEF7),
-                                    textAlign = TextAlign.Center
+                                    text = nisn,
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                    color = Color(0xFFE3FEF7)
                                 )
                                 Spacer(modifier = Modifier.height(4.dp))
-
                                 Text(
                                     text = keterangan,
                                     style = MaterialTheme.typography.bodyLarge,
@@ -1296,6 +1297,16 @@ fun DataSiswa(
                                     overflow = TextOverflow.Ellipsis,
                                     color = Color(0xFFE3FEF7)
                                 )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = name,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = Color(0xFFE3FEF7),
+                                    textAlign = TextAlign.Center
+                                )
+
+
+
                             }
                         }
                         if (canEdit) {
@@ -3910,21 +3921,15 @@ fun EditSiswa(
     val firestore = FirebaseFirestore.getInstance()
     var name by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
-    var imageDownloadUrl by remember { mutableStateOf<String?>(null) }
-    val getContent = rememberLauncherForActivityResult(contract = ActivityResultContracts.GetContent()) { uri ->
-        uri?.let {
-            uploadImageToFirebase(it) { downloadUrl ->
-                imageDownloadUrl = downloadUrl
-            }
-        }
-    }
+    var nisn by remember { mutableStateOf("") }
+
 
     // Fetch existing data from Firestore
     LaunchedEffect(guruId) {
         val document = firestore.collection("siswa").document(guruId).get().await()
         name = document.getString("nama") ?: ""
         description = document.getString("keterangan") ?: ""
-        imageDownloadUrl = document.getString("imageUrl")
+       nisn = document.getString("nisn")?:""
     }
 
     Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
@@ -3952,11 +3957,19 @@ fun EditSiswa(
                 .fillMaxWidth()
                 .padding(16.dp)
         )
+        TextField(
+            value = nisn,
+            onValueChange = { nisn = it },
+            label = { Text("NISN") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        )
 
         // Button to submit data
         Button(
             onClick = {
-                submitDataToDatabase(name, description, imageDownloadUrl, navController, guruId, data = "siswa")
+                submitDataToDatabaseSiswa(name, description, nisn, navController, guruId, data = "siswa")
             },
             modifier = Modifier
                 .align(Alignment.CenterHorizontally)
@@ -3968,6 +3981,31 @@ fun EditSiswa(
 }
 
 // Function to submit data to Firestore
+fun submitDataToDatabaseSiswa(
+    name: String,
+    description: String,
+    nisn: String,
+    navController: NavController,
+    documentId: String,
+    data: String
+) {
+    val firestore = FirebaseFirestore.getInstance()
+    val dataMap = hashMapOf(
+        "nama" to name,
+        "keterangan" to description,
+        "nisn" to nisn
+    )
+
+    firestore.collection(data).document(documentId).set(dataMap)
+        .addOnSuccessListener {
+            // Navigate back to the list screen after a successful update
+            navController.popBackStack()
+        }
+        .addOnFailureListener { e ->
+            // Handle any errors
+            Log.e("EditGuru", "Error updating document", e)
+        }
+}
 fun submitDataToDatabase(
     name: String,
     description: String,
