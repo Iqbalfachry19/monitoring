@@ -2217,12 +2217,12 @@ fun  DataRekapan(
 fun ExportData(
     navController: NavController,
     role: String
-){
+) {
     val context = LocalContext.current as Activity
-
-
     val firestore = FirebaseFirestore.getInstance()
     var staffData by remember { mutableStateOf<List<Map<String, Any>>>(emptyList()) }
+    var selectedClass by remember { mutableStateOf("kelas 4") }
+    val classOptions = listOf("kelas 4", "kelas 5", "kelas 6")
 
     // Fetch existing data from Firestore
     LaunchedEffect(Unit) {
@@ -2230,15 +2230,42 @@ fun ExportData(
         staffData = documents.map { it.data }
     }
 
+    // Filter data based on selected class
+    val filteredStaffData = staffData.filter { it["keterangan"] == selectedClass }
+
     Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(text="Export Data Siswa", modifier = Modifier.align(Alignment.CenterHorizontally), fontSize = 24.sp, fontWeight = FontWeight.Bold)
+        Text(
+            text = "Export Data Siswa",
+            modifier = Modifier.align(Alignment.CenterHorizontally),
+            fontSize = 24.sp,
+            fontWeight = FontWeight.Bold
+        )
 
-
+        // Dropdown menu for class selection
+        var expanded by remember { mutableStateOf(false) }
+        Box {
+            Button(onClick = { expanded = true }) {
+                Text("Select Class: $selectedClass")
+            }
+            DropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false }
+            ) {
+                classOptions.forEach { classOption ->
+                    DropdownMenuItem({
+                        Text("Class $classOption")
+                    },onClick = {
+                        selectedClass = classOption
+                        expanded = false
+                    })
+                }
+            }
+        }
 
         // Button to export data to PDF
         Button(
             onClick = {
-                exportDataToPDF(context, staffData)
+                exportDataToPDF(context, filteredStaffData)
             },
             modifier = Modifier
                 .align(Alignment.CenterHorizontally)
