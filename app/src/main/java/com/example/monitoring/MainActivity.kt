@@ -2333,14 +2333,8 @@ fun TambahSiswa(
 ) {
     var name by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
-    var imageDownloadUrl by remember { mutableStateOf<String?>(null) }
-    val getContent = rememberLauncherForActivityResult(contract = ActivityResultContracts.GetContent()) { uri ->
-        uri?.let {
-            uploadImageToFirebase(it) { downloadUrl ->
-                imageDownloadUrl = downloadUrl
-            }
-        }
-    }
+    var nisn by remember { mutableStateOf("") }
+
 
 
     Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
@@ -2371,11 +2365,19 @@ fun TambahSiswa(
                 .fillMaxWidth()
                 .padding(16.dp)
         )
+        TextField(
+            value = nisn,
+            onValueChange = { nisn = it },
+            label = { Text("NISN") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        )
 
         // Button to submit data
         Button(
             onClick = {
-                submitDataToDatabase(name, description, imageDownloadUrl,navController,dataId= "siswa")
+                submitDataToDatabaseSiswa(name, description, nisn,navController,dataId= "siswa")
             },
             modifier = Modifier
                 .align(Alignment.CenterHorizontally)
@@ -4029,6 +4031,34 @@ fun submitDataToDatabase(
         .addOnFailureListener { e ->
             // Handle any errors
             Log.e("EditGuru", "Error updating document", e)
+        }
+}
+private fun submitDataToDatabaseSiswa(name: String, description: String, nisn:String,
+                                 navController: NavController,dataId:String) {
+    // Access the Firestore collection where you want to store the data
+    val firestore = Firebase.firestore
+    val collectionRef = firestore.collection(dataId)
+
+    // Create a new document with a unique ID
+    val documentRef = collectionRef.document()
+
+    // Create a data object to store the fields
+    val data = hashMapOf(
+        "nama" to name,
+        "keterangan" to description,
+        "nisn" to nisn
+    )
+
+    // Set the data for the document
+    documentRef.set(data)
+        .addOnSuccessListener {
+            // Document successfully written
+            Log.d("Firestore", "DocumentSnapshot successfully written!")
+            navController.popBackStack()
+        }
+        .addOnFailureListener { e ->
+            // Handle any errors that may occur while writing the document
+            Log.w("Firestore", "Error writing document", e)
         }
 }
 private fun submitDataToDatabase(name: String, description: String, imageUrl: String?,
