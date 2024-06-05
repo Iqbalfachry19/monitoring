@@ -2271,21 +2271,21 @@ fun exportDataToPDF(context: Context, staffData: List<Map<String, Any>>) {
 
     pdfDocument.finishPage(page)
 
-    val externalFilesDir = context.getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS)
-    if (externalFilesDir != null) {
-        val file = File(externalFilesDir, "data_siswa.pdf")
+    val downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+    if (downloadsDir != null) {
+        val file = File(downloadsDir, "data_siswa.pdf")
         try {
             val outputStream = FileOutputStream(file)
             pdfDocument.writeTo(outputStream)
             pdfDocument.close()
             outputStream.close()
             Toast.makeText(context, "PDF saved to ${file.absolutePath}", Toast.LENGTH_LONG).show()
-        } catch (e: Error) {
+        } catch (e: Exception) {
             pdfDocument.close()
             Toast.makeText(context, "Failed to save PDF: ${e.message}", Toast.LENGTH_LONG).show()
         }
     } else {
-        Toast.makeText(context, "Failed to access external files directory", Toast.LENGTH_LONG).show()
+        Toast.makeText(context, "Failed to access downloads directory", Toast.LENGTH_LONG).show()
     }
 }
 @OptIn(ExperimentalCoilApi::class)
