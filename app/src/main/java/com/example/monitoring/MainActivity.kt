@@ -1344,7 +1344,7 @@ fun DataSiswa(
                 } else {
                     dataList.filter { it.third == selectedFilter }
                 }
-                items(filteredList.size) { index ->
+                items(filteredList.size, key = { index -> filteredList[index].first }) { index ->
                     val (id, name, keterangan, nisn) = filteredList[index]
                     val canEdit = when (role) {
                         "admin" -> true
