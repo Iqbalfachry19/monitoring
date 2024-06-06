@@ -1369,6 +1369,9 @@ fun DataSiswa(
                     }
                     }
                 }
+            item {
+                Spacer(modifier = Modifier.height(72.dp)) // Adjust the height as needed
+            }
             }
         }
     }
