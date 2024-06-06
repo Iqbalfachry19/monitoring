@@ -1614,7 +1614,7 @@ fun DataJadwalPelajaran(
                         modifier = Modifier.weight(1f)
                     )
                     Text(
-                        "edit",
+                        "Edit",
                         style = MaterialTheme.typography.bodyLarge,
                         color = Color(0xFFE3FEF7),
                         modifier = Modifier.weight(1f)
