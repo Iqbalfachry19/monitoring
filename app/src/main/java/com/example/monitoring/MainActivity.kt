@@ -931,7 +931,7 @@ fun SettingsPage(navController: NavController,it: PaddingValues,role:String){
     }
 
 }
-@OptIn(ExperimentalCoilApi::class)
+
 @Composable
 fun DataGuruPage(
     navController: NavController,
@@ -1065,77 +1065,76 @@ fun DataGuruPage(
                         )
                     }
                 }
+            }
+            items(dataList.size) { index ->
+                val item = dataList[index]
+                val (id, name, keterangan, nip) = item
 
-                    dataList.
-               forEach { (id, name, keterangan, nip) ->
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(8.dp)
+                ) {
 
 
                     Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.padding(8.dp)
+                        modifier = Modifier.weight(1f)
                     ) {
-
-
-
-                        Row(
+                        Text(
+                            text = nip,
+                            style = MaterialTheme.typography.bodyLarge,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            color = Color.White,
                             modifier = Modifier.weight(1f)
-                        ) {
-                            Text(
-                                text = nip,
-                                style = MaterialTheme.typography.bodyLarge,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                                color = Color.White,
-                                modifier = Modifier.weight(1f)
-                            )
-                            Text(
-                                text = keterangan,
-                                style = MaterialTheme.typography.bodyLarge,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                                color = Color.White,
-                                modifier = Modifier.weight(1f)
-                            )
-                            Text(
-                                text = name,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = Color.White,
-                                textAlign = TextAlign.Start,
-                                modifier = Modifier.weight(3f)
-                            )
-                        }
-                        if (role == "admin") {
-                            IconButton(
-                                onClick = {
-                                    // Navigate to Edit screen with the document id
-                                    navController.navigate(Screen.EditGuru(id))
-                                }
-                            ) {
-                                Icon(
-                                    Icons.Default.Edit,
-                                    contentDescription = "Edit",
-                                    tint = Color.Gray
-                                )
-                            }
-
-
-                            IconButton(
-                                onClick = {
-                                    documentIdToDelete = id
-                                    showDialog = true
-                                }
-                            ) {
-                                Icon(
-                                    Icons.Default.Delete,
-                                    contentDescription = "Delete",
-                                    tint = Color.Red
-                                )
-                            }
-                        }
-
+                        )
+                        Text(
+                            text = keterangan,
+                            style = MaterialTheme.typography.bodyLarge,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            color = Color.White,
+                            modifier = Modifier.weight(1f)
+                        )
+                        Text(
+                            text = name,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = Color.White,
+                            textAlign = TextAlign.Start,
+                            modifier = Modifier.weight(3f)
+                        )
                     }
+                    if (role == "admin") {
+                        IconButton(
+                            onClick = {
+                                // Navigate to Edit screen with the document id
+                                navController.navigate(Screen.EditGuru(id))
+                            }
+                        ) {
+                            Icon(
+                                Icons.Default.Edit,
+                                contentDescription = "Edit",
+                                tint = Color.Gray
+                            )
+                        }
+
+
+                        IconButton(
+                            onClick = {
+                                documentIdToDelete = id
+                                showDialog = true
+                            }
+                        ) {
+                            Icon(
+                                Icons.Default.Delete,
+                                contentDescription = "Delete",
+                                tint = Color.Red
+                            )
+                        }
+                    }
+
                 }
             }
+
             item {
                 Spacer(modifier = Modifier.height(72.dp)) // Adjust the height as needed
             }
@@ -1145,7 +1144,7 @@ fun DataGuruPage(
 
 
 
-@OptIn(ExperimentalCoilApi::class, ExperimentalMaterial3Api::class)
+
 @Composable
 fun DataSiswa(
     navController: NavController,
