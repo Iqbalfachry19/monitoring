@@ -1160,6 +1160,7 @@ fun DataSiswa(
     val firestore = FirebaseFirestore.getInstance()
     val dataList = remember { mutableStateListOf<Quadruple<String,String, String, String>>() }
     var showDialog by remember { mutableStateOf(false) }
+
     var documentIdToDelete by remember { mutableStateOf<String?>(null) }
     var selectedFilter by remember { mutableStateOf("All") }
     var showDropdownMenu by remember { mutableStateOf(false) }
@@ -1319,7 +1320,16 @@ fun DataSiswa(
                         color = Color.White,
                         modifier = Modifier.weight(3f)
                     )
-                    if (role == "admin") {
+                    val anyEditable = dataList.any { (_, _, keterangan, _) ->
+                        when (role) {
+                            "admin" -> true
+                            "guru 4" -> keterangan == "kelas 4" && (selectedFilter == "All" || selectedFilter == "kelas 4")
+                            "guru 5" -> keterangan == "kelas 5" && (selectedFilter == "All" || selectedFilter == "kelas 5")
+                            "guru 6" -> keterangan == "kelas 6" && (selectedFilter == "All" || selectedFilter == "kelas 6")
+                            else -> false
+                        }
+                    }
+                    if (anyEditable) {
                         Text(
                             text = "Edit",
                             style = MaterialTheme.typography.bodyLarge,
@@ -1327,6 +1337,7 @@ fun DataSiswa(
                             modifier = Modifier.weight(1f)
                         )
                     }
+
                 }
                 // Display the data fetched from Firestore
                 val filteredList = if (selectedFilter == "All") {
