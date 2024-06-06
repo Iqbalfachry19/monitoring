@@ -1976,7 +1976,7 @@ fun DataJadwalKegiatan(
 ){
 
     val firestore = FirebaseFirestore.getInstance()
-    val dataList = remember { mutableStateListOf<Quintuple<String,String, String, String,String>>() }
+    val dataList = remember { mutableStateListOf<Sextuple<String,String, String, String,String,String>>() }
     var showDialog by remember { mutableStateOf(false) }
     var documentIdToDelete by remember { mutableStateOf<String?>(null) }
 
@@ -2000,8 +2000,9 @@ fun DataJadwalKegiatan(
                 val jam = document.getString("jam") ?: ""
                 val kelas = document.getString("kelas") ?: ""
                 val hari = document.getString("hari") ?: ""
+                val semester = document.getString("semester") ?: ""
                 // Here you can collect more fields as needed
-                dataList.add(Quintuple(document.id,nama,jam,kelas,hari))
+                dataList.add(Sextuple(document.id,nama,jam,kelas,hari,semester))
             }
         }
         onDispose {
@@ -2058,7 +2059,7 @@ fun DataJadwalKegiatan(
                 Text(text = "Data Kegiatan", style = MaterialTheme.typography.headlineLarge, color = Color(0xFFE3FEF7))
                 Spacer(modifier = Modifier.height(16.dp))
                 // Display the data fetched from Firestore
-                dataList.forEach { (id,nama,jam,kelas,hari) ->
+                dataList.forEach { (id,nama,jam,kelas,hari,semester) ->
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.padding(8.dp)
@@ -2096,6 +2097,13 @@ fun DataJadwalKegiatan(
                                 Spacer(modifier = Modifier.height(4.dp))
                                 Text(
                                     text = hari,
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = semester,
                                     style = MaterialTheme.typography.bodyLarge,
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis
@@ -2141,7 +2149,7 @@ fun  DataRekapan(
 ){
 
     val firestore = FirebaseFirestore.getInstance()
-    val dataList = remember { mutableStateListOf<Quintuple<String,String, String, String,String>>() }
+    val dataList = remember { mutableStateListOf<Sextuple<String,String, String, String,String,String>>() }
     var showDialog by remember { mutableStateOf(false) }
     var documentIdToDelete by remember { mutableStateOf<String?>(null) }
 
@@ -2165,8 +2173,9 @@ fun  DataRekapan(
                 val tanggal = document.getString("tanggal") ?: ""
                 val kelas = document.getString("kelas") ?: ""
                 val keterangan = document.getString("keterangan") ?: ""
+                val semester = document.getString("semester") ?: ""
                 // Here you can collect more fields as needed
-                dataList.add(Quintuple(document.id,nama,tanggal,kelas,keterangan))
+                dataList.add(Sextuple(document.id,nama,tanggal,kelas,keterangan,semester))
             }
         }
         onDispose {
@@ -2223,7 +2232,7 @@ fun  DataRekapan(
                 Text(text = "Data Rekapan Kehadiran Siswa", style = MaterialTheme.typography.headlineLarge, color = Color(0xFFE3FEF7), textAlign = TextAlign.Center)
                 Spacer(modifier = Modifier.height(16.dp))
                 // Display the data fetched from Firestore
-                dataList.forEach { (id,nama,jam,kelas,hari) ->
+                dataList.forEach { (id,nama,jam,kelas,hari,semester) ->
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.padding(8.dp)
@@ -2261,6 +2270,13 @@ fun  DataRekapan(
                                 Spacer(modifier = Modifier.height(4.dp))
                                 Text(
                                     text = hari,
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = semester,
                                     style = MaterialTheme.typography.bodyLarge,
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis
@@ -2543,6 +2559,7 @@ fun TambahJadwalKegiatan(
     var kelas by remember { mutableStateOf("") }
     var jam by remember { mutableStateOf("") }
     var hari by remember { mutableStateOf("") }
+    var semester by remember { mutableStateOf("") }
 
 
 
@@ -2589,11 +2606,19 @@ fun TambahJadwalKegiatan(
                 .fillMaxWidth()
                 .padding(16.dp)
         )
+        TextField(
+            value = semester,
+            onValueChange = { semester = it },
+            label = { Text("Semester") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        )
 
         // Button to submit data
         Button(
             onClick = {
-                submitDataToDatabaseKegiatan(name, kelas,jam,hari,navController)
+                submitDataToDatabaseKegiatan(name, kelas,jam,hari,semester,navController)
             },
             modifier = Modifier
                 .align(Alignment.CenterHorizontally)
@@ -2613,7 +2638,7 @@ fun TambahRekapan(
     var kelas by remember { mutableStateOf("") }
     var tanggal by remember { mutableStateOf("") }
     var keterangan by remember { mutableStateOf("") }
-
+    var semester by remember { mutableStateOf("") }
 
 
     Column(modifier = Modifier.fillMaxSize()) {
@@ -2660,10 +2685,18 @@ fun TambahRekapan(
                 .fillMaxWidth()
                 .padding(16.dp)
         )
+        TextField(
+            value = semester,
+            onValueChange = { semester = it },
+            label = { Text("Semester") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        )
         // Button to submit data
         Button(
             onClick = {
-                submitDataToDatabaseAbsensi(name, kelas,tanggal,keterangan,navController)
+                submitDataToDatabaseAbsensi(name, kelas,tanggal,keterangan,semester,navController)
             },
             modifier = Modifier
                 .align(Alignment.CenterHorizontally)
@@ -3058,7 +3091,7 @@ fun TambahGuru(
 ) {
     var name by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
-    var nip by remember { mutableStateOf("null") }
+    var nip by remember { mutableStateOf("") }
 
 
 
@@ -3303,6 +3336,7 @@ fun EditRekapan(
 
     var tanggal by remember { mutableStateOf("") }
     var keterangan by remember { mutableStateOf("") }
+    var semester by remember { mutableStateOf("") }
     // Fetch existing data from Firestore
     LaunchedEffect(rekapanId) {
         val document = firestore.collection("absensi").document(rekapanId).get().await()
@@ -3310,6 +3344,7 @@ fun EditRekapan(
         kelas = document.getString("kelas") ?: ""
         tanggal = document.getString("tanggal") ?: ""
         keterangan = document.getString("keterangan") ?: ""
+        semester = document.getString("semester") ?: ""
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
@@ -3352,12 +3387,20 @@ fun EditRekapan(
                 .fillMaxWidth()
                 .padding(16.dp)
         )
+        TextField(
+            value =semester,
+            onValueChange = { semester = it },
+            label = { Text("Semester") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        )
 
 
         // Button to submit data
         Button(
             onClick = {
-                submitUpdatedDataToDatabaseAbsensi(name, kelas,  tanggal,keterangan, navController, rekapanId)
+                submitUpdatedDataToDatabaseAbsensi(name, kelas,  tanggal,keterangan,semester, navController, rekapanId)
             },
             modifier = Modifier
                 .align(Alignment.CenterHorizontally)
@@ -3374,6 +3417,7 @@ fun submitUpdatedDataToDatabaseAbsensi(
    kelas: String,
    tanggal: String,
     keterangan: String,
+    semester: String,
     navController: NavController,
     rekapanId: String
 ) {
@@ -3386,7 +3430,8 @@ fun submitUpdatedDataToDatabaseAbsensi(
                 "nama" to name,
                 "kelas" to kelas,
                 "tanggal" to tanggal,
-                "keterangan" to keterangan
+                "keterangan" to keterangan,
+                "semester" to semester
             )
         )
         .addOnSuccessListener {
@@ -3604,6 +3649,7 @@ fun EditJadwalKegiatan(
     var kelas by remember { mutableStateOf("") }
     var jam by remember { mutableStateOf("") }
     var hari by remember { mutableStateOf("") }
+    var semester by remember { mutableStateOf("") }
 
     // Fetch existing data from Firestore
     LaunchedEffect(jadwalId) {
@@ -3612,6 +3658,7 @@ fun EditJadwalKegiatan(
         kelas = document.getString("kelas") ?: ""
         jam = document.getString("jam") ?: ""
         hari = document.getString("hari") ?: ""
+        semester = document.getString("semester") ?: ""
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
@@ -3656,11 +3703,19 @@ fun EditJadwalKegiatan(
                 .fillMaxWidth()
                 .padding(16.dp)
         )
+        TextField(
+            value = semester,
+            onValueChange = { semester = it },
+            label = { Text("Semester") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        )
 
         // Button to submit data
         Button(
             onClick = {
-                submitUpdatedDataToDatabaseKegiatan(name, kelas, jam, hari, navController, jadwalId)
+                submitUpdatedDataToDatabaseKegiatan(name, kelas, jam, hari,semester, navController, jadwalId)
             },
             modifier = Modifier
                 .align(Alignment.CenterHorizontally)
@@ -3731,6 +3786,7 @@ fun submitUpdatedDataToDatabaseKegiatan(
     kelas: String,
     jam: String,
     hari: String,
+    semester: String,
     navController: NavController,
     jadwalId: String
 ) {
@@ -3739,7 +3795,8 @@ fun submitUpdatedDataToDatabaseKegiatan(
         "nama" to name,
         "kelas" to kelas,
         "jam" to jam,
-        "hari" to hari
+        "hari" to hari,
+        "semester" to semester
     )
 
     firestore.collection("jadwalKegiatan").document(jadwalId).set(dataMap)
@@ -3842,7 +3899,7 @@ fun EditGuru(
     val firestore = FirebaseFirestore.getInstance()
     var name by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
-    var nip by remember { mutableStateOf("null") }
+    var nip by remember { mutableStateOf("") }
 
 
     // Fetch existing data from Firestore
@@ -4107,11 +4164,11 @@ private fun submitDataToDatabaseNilai(name: String,mataPelajaran: List<Map<Strin
             Log.w("Firestore", "Error writing document", e)
         }
 }
-private fun submitDataToDatabaseAbsensi(name: String, kelas:String,tanggal:String,keterangan: String,
+private fun submitDataToDatabaseAbsensi(name: String, kelas:String,tanggal:String,keterangan: String,semester: String,
                                       navController: NavController) {
     // Access the Firestore collection where you want to store the data
     val firestore = Firebase.firestore
-    val collectionRef = firestore.collection("jadwalUjian")
+    val collectionRef = firestore.collection("absensi")
 
     // Create a new document with a unique ID
     val documentRef = collectionRef.document()
@@ -4121,7 +4178,8 @@ private fun submitDataToDatabaseAbsensi(name: String, kelas:String,tanggal:Strin
         "nama" to name,
         "kelas" to kelas,
         "tanggal" to tanggal,
-        "keterangan" to keterangan
+        "keterangan" to keterangan,
+        "semester" to semester
     )
 
     // Set the data for the document
@@ -4195,7 +4253,7 @@ private fun submitDataToDatabasePelajaran(name: String, kelas:String,jam:String 
             Log.w("Firestore", "Error writing document", e)
         }
 }
-private fun submitDataToDatabaseKegiatan(name: String, kelas:String,jam:String ,hari:String,
+private fun submitDataToDatabaseKegiatan(name: String, kelas:String,jam:String ,hari:String,semester: String,
 navController: NavController) {
     // Access the Firestore collection where you want to store the data
     val firestore = Firebase.firestore
@@ -4210,6 +4268,7 @@ navController: NavController) {
         "kelas" to kelas,
         "jam" to jam,
         "hari" to hari,
+        "semester" to semester
     )
 
     // Set the data for the document
