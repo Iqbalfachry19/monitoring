@@ -1280,12 +1280,14 @@ fun DataSiswa(
                         color = Color.White,
                         modifier = Modifier.weight(3f)
                     )
-                    Text(
-                        text = "Edit",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = Color.White,
-                        modifier = Modifier.weight(1f)
-                    )
+                    if (role == "admin") {
+                        Text(
+                            text = "Edit",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = Color.White,
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
                 }
                 // Display the data fetched from Firestore
                 val filteredList = if (selectedFilter == "All") {
