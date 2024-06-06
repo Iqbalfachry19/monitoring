@@ -1557,7 +1557,10 @@ fun DataJadwalPelajaran(
                 color = Color(0xFFE3FEF7)
             )
             Spacer(modifier = Modifier.height(16.dp))
-            Row {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
 
                 DropdownMenuButton(
                     expanded = false, // Initially closed
@@ -1586,91 +1589,100 @@ fun DataJadwalPelajaran(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             item {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp, horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        "Hari",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = Color(0xFFE3FEF7),
+                        modifier = Modifier.weight(1f)
+                    )
+                    Text(
+                        "Mata Pelajaran",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = Color(0xFFE3FEF7),
+                        modifier = Modifier.weight(3f)
+                    )
+                    Text(
+                        "Jam",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = Color(0xFFE3FEF7),
+                        modifier = Modifier.weight(1f)
+                    )
+                    Text(
+                        "edit",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = Color(0xFFE3FEF7),
+                        modifier = Modifier.weight(1f)
+                    )
+                }
 
-                // Display the data fetched from Firestore
-                filterDataByClassAndSemester(dataList).forEach { (id, nama, jam, kelas, hari, semester) ->
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.padding(8.dp)
-                    ) {
+                val daysOfWeek = listOf("senin", "selasa", "rabu", "kamis", "jumat", "sabtu")
 
-                        Card(
-                            colors = CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.tertiary,
+                daysOfWeek.forEach { day ->
+                    val filteredData =
+                        filterDataByClassAndSemester(dataList).filter { it.fifth == day }
 
-                                ),
-
-                            modifier = Modifier
-                                .width(width = 200.dp)
-                                .wrapContentHeight()
-                                .clickable { }
-                                .padding(8.dp)
-                        ) {
-                            Column(
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.Center,
-                                modifier = Modifier.fillMaxSize()
+                    if (filteredData.isNotEmpty()) {
+                        filteredData.forEach { (id, nama, jam, _, hari, _) ->
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 8.dp, horizontal = 16.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween
                             ) {
-                                Text(text = nama, style = MaterialTheme.typography.bodySmall)
-                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    day,
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    color = Color(0xFFE3FEF7),
+                                    modifier = Modifier.weight(1f)
+                                )
+                                Text(
+                                    nama,
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    color = Color(0xFFE3FEF7),
+                                    modifier = Modifier.weight(3f)
+                                )
+                                Text(
+                                    jam,
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    color = Color(0xFFE3FEF7),
+                                    modifier = Modifier.weight(1f)
 
-                                Text(
-                                    text = kelas,
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
-                                )
 
-                                Spacer(modifier = Modifier.height(4.dp))
-                                Text(
-                                    text = jam,
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
-                                )
-                                Spacer(modifier = Modifier.height(4.dp))
-                                Text(
-                                    text = hari,
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
-                                )
-                                Spacer(modifier = Modifier.height(4.dp))
-                                Text(
-                                    text = semester,
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
                                 )
 
-                            }
-                        }
-                        if (role == "admin") {
-                            IconButton(
-                                onClick = {
-                                    // Navigate to Edit screen with the document id
-                                    navController.navigate(Screen.EditJadwalPelajaran(id))
+
+                                if (role == "admin") {
+                                    IconButton(
+                                        onClick = {
+                                            navController.navigate(Screen.EditJadwalPelajaran(id))
+                                        }
+                                    ) {
+                                        Icon(
+                                            Icons.Default.Edit,
+                                            contentDescription = "Edit",
+                                            tint = Color.Gray
+                                        )
+                                    }
+
+                                    IconButton(
+                                        onClick = {
+                                            documentIdToDelete = id
+                                            showDialog = true
+                                        }
+                                    ) {
+                                        Icon(
+                                            Icons.Default.Delete,
+                                            contentDescription = "Delete",
+                                            tint = Color.Red
+                                        )
+                                    }
                                 }
-                            ) {
-                                Icon(
-                                    Icons.Default.Edit,
-                                    contentDescription = "Edit",
-                                    tint = Color.Gray
-                                )
-                            }
-
-                            IconButton(
-                                onClick = {
-
-                                    documentIdToDelete = id
-                                    showDialog = true
-                                }
-                            ) {
-                                Icon(
-                                    Icons.Default.Delete,
-                                    contentDescription = "Delete",
-                                    tint = Color.Red
-                                )
                             }
                         }
                     }
