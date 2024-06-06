@@ -1237,108 +1237,115 @@ fun DataSiswa(
                     .fillMaxWidth()
                     .padding(16.dp)
             ) {
-                Text("Filter by class: ",
-                    color = Color(0xFFE3FEF7))
+                Text(
+                    "Filter by class: ",
+                    color = Color(0xFFE3FEF7)
+                )
                 Box {
                     IconButton(onClick = { showDropdownMenu = !showDropdownMenu }) {
-                        Icon(Icons.Default.MoreVert, contentDescription = "Filter",tint=
-                         Color(0xFFE3FEF7))
+                        Icon(
+                            Icons.Default.MoreVert, contentDescription = "Filter", tint =
+                            Color(0xFFE3FEF7)
+                        )
                     }
                     DropdownMenu(
                         expanded = showDropdownMenu,
                         onDismissRequest = { showDropdownMenu = false }
                     ) {
-                        DropdownMenuItem(text =  {Text("All")}, onClick = {
+                        DropdownMenuItem(text = { Text("All") }, onClick = {
                             selectedFilter = "All"
                             showDropdownMenu = false
                         })
-                        DropdownMenuItem(text= {
+                        DropdownMenuItem(text = {
                             Text("Kelas 4")
-                        },onClick = {
+                        }, onClick = {
                             selectedFilter = "kelas 4"
                             showDropdownMenu = false
                         })
-                        DropdownMenuItem(text={
+                        DropdownMenuItem(text = {
                             Text("Kelas 5")
-                        },onClick = {
+                        }, onClick = {
                             selectedFilter = "kelas 5"
                             showDropdownMenu = false
                         })
                         DropdownMenuItem(text = {
                             Text("Kelas 6")
-                        },onClick = {
+                        }, onClick = {
                             selectedFilter = "kelas 6"
                             showDropdownMenu = false
                         })
-                        }
                     }
                 }
+            }
 
-        LazyColumn(
-            modifier = Modifier
-                .padding(innerPadding)
-                .fillMaxSize(),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            item {
-                Text(
-                    text = "Data Siswa",
-                    style = MaterialTheme.typography.headlineLarge,
-                    color = Color(0xFFE3FEF7)
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .padding(8.dp)
-                        .fillMaxWidth()
-                        .background(Color(0xFF77B0AA))
-                        .padding(8.dp)
-                ) {
+            LazyColumn(
+                modifier = Modifier
+                    .padding(innerPadding)
+                    .fillMaxSize(),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                item {
                     Text(
-                        text = "NISN",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = Color.White,
-                        modifier = Modifier.weight(1f)
+                        text = "Data Siswa",
+                        style = MaterialTheme.typography.headlineLarge,
+                        color = Color(0xFFE3FEF7)
                     )
-                    Text(
-                        text = "Kelas",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = Color.White,
-                        modifier = Modifier.weight(1f)
-                    )
-                    Text(
-                        text = "Nama",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = Color.White,
-                        modifier = Modifier.weight(3f)
-                    )
-                    val anyEditable = dataList.any { (_, _, keterangan, _) ->
-                        when (role) {
-                            "admin" -> true
-                            "guru 4" -> keterangan == "kelas 4" && (selectedFilter == "All" || selectedFilter == "kelas 4")
-                            "guru 5" -> keterangan == "kelas 5" && (selectedFilter == "All" || selectedFilter == "kelas 5")
-                            "guru 6" -> keterangan == "kelas 6" && (selectedFilter == "All" || selectedFilter == "kelas 6")
-                            else -> false
-                        }
-                    }
-                    if (anyEditable) {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .padding(8.dp)
+                            .fillMaxWidth()
+                            .background(Color(0xFF77B0AA))
+                            .padding(8.dp)
+                    ) {
                         Text(
-                            text = "Edit",
+                            text = "NISN",
                             style = MaterialTheme.typography.bodyLarge,
                             color = Color.White,
                             modifier = Modifier.weight(1f)
                         )
-                    }
+                        Text(
+                            text = "Kelas",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = Color.White,
+                            modifier = Modifier.weight(1f)
+                        )
+                        Text(
+                            text = "Nama",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = Color.White,
+                            modifier = Modifier.weight(3f)
+                        )
+                        val anyEditable = dataList.any { (_, _, keterangan, _) ->
+                            when (role) {
+                                "admin" -> true
+                                "guru 4" -> keterangan == "kelas 4" && (selectedFilter == "All" || selectedFilter == "kelas 4")
+                                "guru 5" -> keterangan == "kelas 5" && (selectedFilter == "All" || selectedFilter == "kelas 5")
+                                "guru 6" -> keterangan == "kelas 6" && (selectedFilter == "All" || selectedFilter == "kelas 6")
+                                else -> false
+                            }
+                        }
+                        if (anyEditable) {
+                            Text(
+                                text = "Edit",
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = Color.White,
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
 
+                    }
                 }
-                // Display the data fetched from Firestore
+
                 val filteredList = if (selectedFilter == "All") {
                     dataList
                 } else {
                     dataList.filter { it.third == selectedFilter }
-                }.forEach { (id, name, keterangan, nisn) ->
+                }
+                items(filteredList.size) { index ->
+                    val (id, name, keterangan, nisn) = filteredList[index]
                     val canEdit = when (role) {
                         "admin" -> true
                         "guru 4" -> keterangan == "kelas 4"
@@ -1353,69 +1360,69 @@ fun DataSiswa(
                     ) {
 
 
-
-                            Row(
+                        Row(
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Text(
+                                text = nisn,
+                                style = MaterialTheme.typography.bodyLarge,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                color = Color.White,
                                 modifier = Modifier.weight(1f)
+                            )
+                            Text(
+                                text = keterangan,
+                                style = MaterialTheme.typography.bodyLarge,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                color = Color.White,
+                                modifier = Modifier.weight(1f)
+                            )
+                            Text(
+                                text = name,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = Color.White,
+                                textAlign = TextAlign.Start,
+                                modifier = Modifier.weight(3f)
+                            )
+                        }
+                        if (canEdit) {
+                            IconButton(
+                                onClick = {
+                                    // Navigate to Edit screen with the document id
+                                    navController.navigate(Screen.EditSiswa(id))
+                                }
                             ) {
-                                Text(
-                                    text = nisn,
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis,
-                                    color = Color.White,
-                                    modifier = Modifier.weight(1f)
-                                )
-                                Text(
-                                    text = keterangan,
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis,
-                                    color = Color.White,
-                                    modifier = Modifier.weight(1f)
-                                )
-                                Text(
-                                    text = name,
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = Color.White,
-                                    textAlign = TextAlign.Start,
-                                    modifier = Modifier.weight(3f)
+                                Icon(
+                                    Icons.Default.Edit,
+                                    contentDescription = "Edit",
+                                    tint = Color.Gray
                                 )
                             }
-                            if (canEdit) {
-                                IconButton(
-                                    onClick = {
-                                        // Navigate to Edit screen with the document id
-                                        navController.navigate(Screen.EditSiswa(id))
-                                    }
-                                ) {
-                                    Icon(
-                                        Icons.Default.Edit,
-                                        contentDescription = "Edit",
-                                        tint = Color.Gray
-                                    )
+                        }
+                        if (role == "admin") {
+                            IconButton(
+                                onClick = {
+                                    documentIdToDelete = id
+                                    showDialog = true
                                 }
+                            ) {
+                                Icon(
+                                    Icons.Default.Delete,
+                                    contentDescription = "Delete",
+                                    tint = Color.Red
+                                )
                             }
-                            if (role == "admin") {
-                                IconButton(
-                                    onClick = {
-                                        documentIdToDelete = id
-                                        showDialog = true
-                                    }
-                                ) {
-                                    Icon(
-                                        Icons.Default.Delete,
-                                        contentDescription = "Delete",
-                                        tint = Color.Red
-                                    )
-                                }
-                            }
+                        }
 
-                    }
                     }
                 }
-            item {
-                Spacer(modifier = Modifier.height(72.dp)) // Adjust the height as needed
-            }
+
+                item {
+                    Spacer(modifier = Modifier.height(72.dp)) // Adjust the height as needed
+                }
+
             }
         }
     }
