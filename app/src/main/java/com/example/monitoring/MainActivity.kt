@@ -16,6 +16,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -920,7 +921,9 @@ fun AdminDashboardPage(navController: NavController,it:PaddingValues,role: Strin
 
 @Composable
 fun SettingsPage(navController: NavController,it: PaddingValues,role:String){
-    Column(modifier = Modifier.fillMaxSize().padding(it), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
+    Column(modifier = Modifier
+        .fillMaxSize()
+        .padding(it), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
         Text(text = "Settings", style = MaterialTheme.typography.headlineLarge, color = Color(0xFFE3FEF7))
 
         Button(onClick = {
@@ -1251,6 +1254,39 @@ fun DataSiswa(
                     color = Color(0xFFE3FEF7)
                 )
                 Spacer(modifier = Modifier.height(16.dp))
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .padding(8.dp)
+                        .fillMaxWidth()
+                        .background(Color(0xFF77B0AA))
+                        .padding(8.dp)
+                ) {
+                    Text(
+                        text = "NISN",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = Color.White,
+                        modifier = Modifier.weight(1f)
+                    )
+                    Text(
+                        text = "Kelas",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = Color.White,
+                        modifier = Modifier.weight(1f)
+                    )
+                    Text(
+                        text = "Nama",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = Color.White,
+                        modifier = Modifier.weight(3f)
+                    )
+                    Text(
+                        text = "Edit",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = Color.White,
+                        modifier = Modifier.weight(1f)
+                    )
+                }
                 // Display the data fetched from Firestore
                 val filteredList = if (selectedFilter == "All") {
                     dataList
@@ -1264,79 +1300,70 @@ fun DataSiswa(
                         "guru 6" -> keterangan == "kelas 6"
                         else -> false
                     }
+
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.padding(8.dp)
                     ) {
-                        Card(
-                            colors = CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.tertiary,
 
-                                ),
-                            modifier = Modifier
-                                .size(width = 200.dp, height = 120.dp)
-                                .clickable { }
-                                .padding(8.dp)
-                                .align(Alignment.CenterVertically)
-                        ) {
 
-                            Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center, modifier = Modifier.fillMaxSize()) {
 
+                            Row(
+                                modifier = Modifier.weight(1f)
+                            ) {
                                 Text(
                                     text = nisn,
                                     style = MaterialTheme.typography.bodyLarge,
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis,
-                                    color = Color(0xFFE3FEF7)
+                                    color = Color.White,
+                                    modifier = Modifier.weight(1f)
                                 )
-                                Spacer(modifier = Modifier.height(4.dp))
                                 Text(
                                     text = keterangan,
                                     style = MaterialTheme.typography.bodyLarge,
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis,
-                                    color = Color(0xFFE3FEF7)
+                                    color = Color.White,
+                                    modifier = Modifier.weight(1f)
                                 )
-                                Spacer(modifier = Modifier.height(4.dp))
                                 Text(
                                     text = name,
                                     style = MaterialTheme.typography.bodySmall,
-                                    color = Color(0xFFE3FEF7),
-                                    textAlign = TextAlign.Center
+                                    color = Color.White,
+                                    textAlign = TextAlign.Start,
+                                    modifier = Modifier.weight(3f)
                                 )
-
-
-
                             }
-                        }
-                        if (canEdit) {
-                            IconButton(
-                                onClick = {
-                                    // Navigate to Edit screen with the document id
-                                    navController.navigate(Screen.EditSiswa(id))
+                            if (canEdit) {
+                                IconButton(
+                                    onClick = {
+                                        // Navigate to Edit screen with the document id
+                                        navController.navigate(Screen.EditSiswa(id))
+                                    }
+                                ) {
+                                    Icon(
+                                        Icons.Default.Edit,
+                                        contentDescription = "Edit",
+                                        tint = Color.Gray
+                                    )
                                 }
-                            ) {
-                                Icon(
-                                    Icons.Default.Edit,
-                                    contentDescription = "Edit",
-                                    tint = Color.Gray
-                                )
                             }
-                        }
-                        if (role == "admin") {
-                            IconButton(
-                                onClick = {
-                                    documentIdToDelete = id
-                                    showDialog = true
+                            if (role == "admin") {
+                                IconButton(
+                                    onClick = {
+                                        documentIdToDelete = id
+                                        showDialog = true
+                                    }
+                                ) {
+                                    Icon(
+                                        Icons.Default.Delete,
+                                        contentDescription = "Delete",
+                                        tint = Color.Red
+                                    )
                                 }
-                            ) {
-                                Icon(
-                                    Icons.Default.Delete,
-                                    contentDescription = "Delete",
-                                    tint = Color.Red
-                                )
                             }
-                        }
+
                     }
                     }
                 }
@@ -2860,7 +2887,9 @@ fun EditNilai(
     Column(modifier = Modifier.fillMaxSize()) {
         Text(
             text = "Edit Data Nilai",
-            modifier = Modifier.align(Alignment.CenterHorizontally).padding(16.dp)
+            modifier = Modifier
+                .align(Alignment.CenterHorizontally)
+                .padding(16.dp)
         )
 
         TextField(
