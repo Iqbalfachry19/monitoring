@@ -966,9 +966,9 @@ fun DataGuruPage(
             snapshot?.documents?.forEach { document ->
                 val name = document.getString("nama") ?: ""
                 val keterangan = document.getString("keterangan") ?: ""
-                val imageUrl = document.getString("imageUrl") ?: ""
+                val nip = document.getString("nip") ?: ""
                 // Here you can collect more fields as needed
-                dataList.add(Quadruple(document.id, name, keterangan, imageUrl))
+                dataList.add(Quadruple(document.id, name, keterangan, nip))
             }
             dataList.sortBy { it.second }
         }
@@ -1035,44 +1035,79 @@ fun DataGuruPage(
                     color = Color(0xFFE3FEF7)
                 )
                 Spacer(modifier = Modifier.height(16.dp))
-                // Display the data fetched from Firestore
-                dataList.forEach { (id, name, keterangan, imageUrl) ->
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .padding(8.dp)
+                        .fillMaxWidth()
+                        .background(Color(0xFF77B0AA))
+                        .padding(8.dp)
+                ) {
+                    Text(
+                        text = "NIP",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = Color.White,
+                        modifier = Modifier.weight(1f)
+                    )
+                    Text(
+                        text = "Kelas",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = Color.White,
+                        modifier = Modifier.weight(1f)
+                    )
+                    Text(
+                        text = "Nama",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = Color.White,
+                        modifier = Modifier.weight(3f)
+                    )
+                    if (role == "admin") {
+                        Text(
+                            text = "Edit",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = Color.White,
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+                }
+
+                    dataList.
+               forEach { (id, name, keterangan, nip) ->
+
+
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.padding(8.dp)
                     ) {
-                        Card(
-                            colors = CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.tertiary,
 
-                                ),
-                            modifier = Modifier
-                                .size(width = 200.dp, height = 120.dp)
-                                .clickable { }
-                                .padding(8.dp)
+
+
+                        Row(
+                            modifier = Modifier.weight(1f)
                         ) {
-                            Image(
-                                painter = rememberImagePainter(imageUrl),
-                                contentDescription = null,
-                                modifier = Modifier.size(50.dp)
+                            Text(
+                                text = nip,
+                                style = MaterialTheme.typography.bodyLarge,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                color = Color.White,
+                                modifier = Modifier.weight(1f)
                             )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Column {
-                                Text(
-                                    text = name,
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = Color(0xFFE3FEF7)
-                                )
-                                Spacer(modifier = Modifier.height(4.dp))
-
-                                Text(
-                                    text = keterangan,
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis,
-                                    color = Color(0xFFE3FEF7)
-                                )
-                            }
+                            Text(
+                                text = keterangan,
+                                style = MaterialTheme.typography.bodyLarge,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                color = Color.White,
+                                modifier = Modifier.weight(1f)
+                            )
+                            Text(
+                                text = name,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = Color.White,
+                                textAlign = TextAlign.Start,
+                                modifier = Modifier.weight(3f)
+                            )
                         }
                         if (role == "admin") {
                             IconButton(
@@ -1088,9 +1123,9 @@ fun DataGuruPage(
                                 )
                             }
 
+
                             IconButton(
                                 onClick = {
-
                                     documentIdToDelete = id
                                     showDialog = true
                                 }
@@ -1102,13 +1137,17 @@ fun DataGuruPage(
                                 )
                             }
                         }
+
                     }
                 }
             }
+            item {
+                Spacer(modifier = Modifier.height(72.dp)) // Adjust the height as needed
+            }
         }
     }
-
 }
+
 
 
 @OptIn(ExperimentalCoilApi::class, ExperimentalMaterial3Api::class)
