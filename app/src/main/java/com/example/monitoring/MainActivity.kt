@@ -145,6 +145,7 @@ data class NavigationItem<T>(
 data class Quadruple<T, U, V, W>(val first: T, val second: U, val third: V, val fourth: W)
 data class Quintuple<T, U, V, W,X>(val first: T, val second: U, val third: V, val fourth: W, val fifth:X)
 data class Sextuple<T, U, V, W,X,Y>(val first: T, val second: U, val third: V, val fourth: W, val fifth:X,val sixth:Y)
+data class Septuple<T, U, V, W,X,Y,Z>(val first: T, val second: U, val third: V, val fourth: W, val fifth:X,val sixth:Y,val seven:Z)
 data class Nilai<T, U, V, W,X,Y>(val id:T,val nama: U, val mataPelajaranList: V, val semester:W,val kelas:X, val peringkat:Y)
 sealed interface Screen {
     @Serializable
@@ -1429,7 +1430,7 @@ fun DataJadwalPelajaran(
 ){
 
     val firestore = FirebaseFirestore.getInstance()
-    val dataList = remember { mutableStateListOf<Quintuple<String,String, String, String,String>>() }
+    val dataList = remember { mutableStateListOf<Sextuple<String,String, String, String,String,String>>() }
     var showDialog by remember { mutableStateOf(false) }
     var documentIdToDelete by remember { mutableStateOf<String?>(null) }
 
@@ -1453,8 +1454,9 @@ fun DataJadwalPelajaran(
                 val jam = document.getString("jam") ?: ""
                 val kelas = document.getString("kelas") ?: ""
                 val hari = document.getString("hari") ?: ""
+                val semester = document.getString("semester") ?: ""
                 // Here you can collect more fields as needed
-                dataList.add(Quintuple(document.id,nama,jam,kelas,hari))
+                dataList.add(Sextuple(document.id,nama,jam,kelas,hari,semester))
             }
         }
         onDispose {
@@ -1511,7 +1513,7 @@ fun DataJadwalPelajaran(
             Text(text = "Data Jadwal Pelajaran", style = MaterialTheme.typography.headlineLarge, color = Color(0xFFE3FEF7))
             Spacer(modifier = Modifier.height(16.dp))
             // Display the data fetched from Firestore
-            dataList.forEach { (id,nama,jam,kelas,hari) ->
+            dataList.forEach { (id,nama,jam,kelas,hari,semester) ->
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.padding(8.dp)
@@ -1524,7 +1526,8 @@ fun DataJadwalPelajaran(
                             ),
 
                         modifier = Modifier
-                            .size(width = 200.dp, height = 120.dp)
+                            .width(width = 200.dp)
+                            .wrapContentHeight()
                             .clickable { }
                             .padding(8.dp)
                     ) {
@@ -1549,6 +1552,13 @@ fun DataJadwalPelajaran(
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
                                 text = hari,
+                                style = MaterialTheme.typography.bodyLarge,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = semester,
                                 style = MaterialTheme.typography.bodyLarge,
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis
@@ -1594,7 +1604,7 @@ fun DataJadwalUjian(
 ){
 
     val firestore = FirebaseFirestore.getInstance()
-    val dataList = remember { mutableStateListOf<Sextuple<String,String, String, String,String,String>>() }
+    val dataList = remember { mutableStateListOf<Septuple<String,String, String, String,String,String,String>>() }
     var showDialog by remember { mutableStateOf(false) }
     var documentIdToDelete by remember { mutableStateOf<String?>(null) }
 
@@ -1620,8 +1630,9 @@ fun DataJadwalUjian(
                 val kelas = document.getString("kelas") ?: ""
                 val hari = document.getString("hari") ?: ""
                 val tanggal = document.getString("tanggal") ?: ""
+                val semester = document.getString("semester") ?: ""
                 // Here you can collect more fields as needed
-                dataList.add(Sextuple(document.id,nama,jam,kelas,hari,tanggal))
+                dataList.add(Septuple(document.id,nama,jam,kelas,hari,tanggal,semester))
             }
         }
         onDispose {
@@ -1678,7 +1689,7 @@ fun DataJadwalUjian(
             Text(text = "Data Jadwal Ujian", style = MaterialTheme.typography.headlineLarge, color = Color(0xFFE3FEF7))
             Spacer(modifier = Modifier.height(16.dp))
             // Display the data fetched from Firestore
-            dataList.forEach { (id, nama, jam, kelas, hari, tanggal) ->
+            dataList.forEach { (id, nama, jam, kelas, hari, tanggal,semester) ->
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.padding(8.dp)
@@ -1691,9 +1702,11 @@ fun DataJadwalUjian(
                             ),
 
                         modifier = Modifier
-                            .size(width = 200.dp, height = 120.dp)
+                            .width(width = 200.dp)
+                            .wrapContentHeight()
                             .clickable { }
                             .padding(8.dp)
+
                     ) {
                         Column(
                             horizontalAlignment = Alignment.CenterHorizontally,
@@ -1732,6 +1745,12 @@ fun DataJadwalUjian(
 
                             Text(
                                 text = tanggal,
+                                style = MaterialTheme.typography.bodyLarge,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                            Text(
+                                text = semester,
                                 style = MaterialTheme.typography.bodyLarge,
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis
@@ -2072,7 +2091,8 @@ fun DataJadwalKegiatan(
                                 ),
 
                             modifier = Modifier
-                                .size(width = 200.dp, height = 120.dp)
+                                .width(width = 200.dp)
+                                .wrapContentHeight()
                                 .clickable { }
                                 .padding(8.dp)
                         ) {
@@ -2245,7 +2265,8 @@ fun  DataRekapan(
                                 ),
 
                             modifier = Modifier
-                                .size(width = 200.dp, height = 120.dp)
+                                .width(width = 200.dp)
+                                .wrapContentHeight()
                                 .clickable { }
                                 .padding(8.dp)
                         ) {
@@ -2491,7 +2512,7 @@ fun TambahJadwalPelajaran(
     var kelas by remember { mutableStateOf("") }
     var jam by remember { mutableStateOf("") }
     var hari by remember { mutableStateOf("") }
-
+    var semester by remember { mutableStateOf("") }
 
 
     Column(modifier = Modifier.fillMaxSize()) {
@@ -2537,11 +2558,19 @@ fun TambahJadwalPelajaran(
                 .fillMaxWidth()
                 .padding(16.dp)
         )
+        TextField(
+            value = semester,
+            onValueChange = { semester = it },
+            label = { Text("Semester") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        )
 
         // Button to submit data
         Button(
             onClick = {
-                submitDataToDatabasePelajaran(name, kelas,jam,hari,navController)
+                submitDataToDatabasePelajaran(name, kelas,jam,hari,semester,navController)
             },
             modifier = Modifier
                 .align(Alignment.CenterHorizontally)
@@ -2707,83 +2736,6 @@ fun TambahRekapan(
     }
 }
 
-@Composable
-fun TambahPerkembangan(
-    navController: NavController
-) {
-    var name by remember { mutableStateOf("") }
-    var kelas by remember { mutableStateOf("") }
-    var jam by remember { mutableStateOf("") }
-    var hari by remember { mutableStateOf("") }
-    var tanggal by remember { mutableStateOf("") }
-
-
-
-    Column(modifier = Modifier.fillMaxSize()) {
-        Text(text="Tambah Data Perkembangan Nilai", modifier = Modifier
-            .align(Alignment.CenterHorizontally))
-        // Display the selected image
-
-        // Button to select image
-
-
-        // Text field for name
-        TextField(
-            value = name,
-            onValueChange = { name = it },
-            label = { Text("Nama Siswa") },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-        )
-
-        // Text field for description
-        TextField(
-            value = kelas,
-            onValueChange = { kelas = it },
-            label = { Text("Kelas") },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-        )
-        TextField(
-            value = jam,
-            onValueChange = { jam = it },
-            label = { Text("Jam") },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-        )
-        TextField(
-            value = hari,
-            onValueChange = { hari = it },
-            label = { Text("Hari") },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-        )
-        TextField(
-            value = tanggal,
-            onValueChange = { tanggal = it },
-            label = { Text("Tanggal") },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-        )
-
-        // Button to submit data
-        Button(
-            onClick = {
-                submitDataToDatabaseUjian(name, kelas,jam,hari,tanggal,navController)
-            },
-            modifier = Modifier
-                .align(Alignment.CenterHorizontally)
-                .padding(16.dp)
-        ) {
-            Text("Submit")
-        }
-    }
-}
 
 
 @Composable
@@ -3015,6 +2967,7 @@ fun TambahJadwalUjian(
     var jam by remember { mutableStateOf("") }
     var hari by remember { mutableStateOf("") }
     var tanggal by remember { mutableStateOf("") }
+    var semester by remember { mutableStateOf("") }
 
 
 
@@ -3069,11 +3022,19 @@ fun TambahJadwalUjian(
                 .fillMaxWidth()
                 .padding(16.dp)
         )
+        TextField(
+            value = semester,
+            onValueChange = { semester = it },
+            label = { Text("Semester") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        )
 
         // Button to submit data
         Button(
             onClick = {
-                submitDataToDatabaseUjian(name, kelas,jam,hari,tanggal,navController)
+                submitDataToDatabaseUjian(name, kelas,jam,hari,tanggal,semester,navController)
             },
             modifier = Modifier
                 .align(Alignment.CenterHorizontally)
@@ -3487,7 +3448,7 @@ fun EditJadwalUjian(
     var jam by remember { mutableStateOf("") }
     var hari by remember { mutableStateOf("") }
     var tanggal by remember { mutableStateOf("") }
-
+    var semester by remember { mutableStateOf("") }
     // Fetch existing data from Firestore
     LaunchedEffect(jadwalId) {
         val document = firestore.collection("jadwalUjian").document(jadwalId).get().await()
@@ -3496,6 +3457,7 @@ fun EditJadwalUjian(
         jam = document.getString("jam") ?: ""
         hari = document.getString("hari") ?: ""
         tanggal = document.getString("tanggal") ?: ""
+        semester = document.getString("semester") ?: ""
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
@@ -3549,11 +3511,19 @@ fun EditJadwalUjian(
                 .fillMaxWidth()
                 .padding(16.dp)
         )
+        TextField(
+            value = semester,
+            onValueChange = { semester = it },
+            label = { Text("Semester") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        )
 
         // Button to submit data
         Button(
             onClick = {
-                submitUpdatedDataToDatabaseUjian(name, kelas, jam, hari, tanggal, navController, jadwalId)
+                submitUpdatedDataToDatabaseUjian(name, kelas, jam, hari, tanggal,semester, navController, jadwalId)
             },
             modifier = Modifier
                 .align(Alignment.CenterHorizontally)
@@ -3573,7 +3543,7 @@ fun EditJadwalPelajaran(
     var kelas by remember { mutableStateOf("") }
     var jam by remember { mutableStateOf("") }
     var hari by remember { mutableStateOf("") }
-
+    var semester by remember { mutableStateOf("") }
     // Fetch existing data from Firestore
     LaunchedEffect(jadwalId) {
         val document = firestore.collection("jadwalPelajaran").document(jadwalId).get().await()
@@ -3581,6 +3551,7 @@ fun EditJadwalPelajaran(
         kelas = document.getString("kelas") ?: ""
         jam = document.getString("jam") ?: ""
         hari = document.getString("hari") ?: ""
+        semester = document.getString("semester") ?: ""
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
@@ -3625,11 +3596,19 @@ fun EditJadwalPelajaran(
                 .fillMaxWidth()
                 .padding(16.dp)
         )
+        TextField(
+            value = semester,
+            onValueChange = { semester = it },
+            label = { Text("Semester") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        )
 
         // Button to submit data
         Button(
             onClick = {
-                submitUpdatedDataToDatabasePelajaran(name, kelas, jam, hari, navController, jadwalId)
+                submitUpdatedDataToDatabasePelajaran(name, kelas, jam, hari,semester, navController, jadwalId)
             },
             modifier = Modifier
                 .align(Alignment.CenterHorizontally)
@@ -3732,6 +3711,7 @@ fun submitUpdatedDataToDatabaseUjian(
     jam: String,
     hari: String,
     tanggal: String,
+    semester: String,
     navController: NavController,
     jadwalId: String
 ) {
@@ -3741,7 +3721,8 @@ fun submitUpdatedDataToDatabaseUjian(
         "kelas" to kelas,
         "jam" to jam,
         "hari" to hari,
-        "tanggal" to tanggal
+        "tanggal" to tanggal,
+        "semester" to semester,
     )
 
     firestore.collection("jadwalUjian").document(jadwalId).set(dataMap)
@@ -3760,6 +3741,7 @@ fun submitUpdatedDataToDatabasePelajaran(
     kelas: String,
     jam: String,
     hari: String,
+    semester: String,
     navController: NavController,
     jadwalId: String
 ) {
@@ -3768,7 +3750,8 @@ fun submitUpdatedDataToDatabasePelajaran(
         "nama" to name,
         "kelas" to kelas,
         "jam" to jam,
-        "hari" to hari
+        "hari" to hari,
+        "semester" to semester
     )
 
     firestore.collection("jadwalPelajaran").document(jadwalId).set(dataMap)
@@ -4194,7 +4177,7 @@ private fun submitDataToDatabaseAbsensi(name: String, kelas:String,tanggal:Strin
             Log.w("Firestore", "Error writing document", e)
         }
 }
-private fun submitDataToDatabaseUjian(name: String, kelas:String,jam:String ,hari:String,tanggal:String,
+private fun submitDataToDatabaseUjian(name: String, kelas:String,jam:String ,hari:String,tanggal:String,semester: String,
                                           navController: NavController) {
     // Access the Firestore collection where you want to store the data
     val firestore = Firebase.firestore
@@ -4209,7 +4192,8 @@ private fun submitDataToDatabaseUjian(name: String, kelas:String,jam:String ,har
         "kelas" to kelas,
         "jam" to jam,
         "hari" to hari,
-        "tanggal" to tanggal
+        "tanggal" to tanggal,
+        "semester" to semester
     )
 
     // Set the data for the document
@@ -4224,7 +4208,7 @@ private fun submitDataToDatabaseUjian(name: String, kelas:String,jam:String ,har
             Log.w("Firestore", "Error writing document", e)
         }
 }
-private fun submitDataToDatabasePelajaran(name: String, kelas:String,jam:String ,hari:String,
+private fun submitDataToDatabasePelajaran(name: String, kelas:String,jam:String ,hari:String,semester: String,
                                  navController: NavController) {
     // Access the Firestore collection where you want to store the data
     val firestore = Firebase.firestore
@@ -4239,6 +4223,7 @@ private fun submitDataToDatabasePelajaran(name: String, kelas:String,jam:String 
         "kelas" to kelas,
         "jam" to jam,
         "hari" to hari,
+        "semester" to semester
     )
 
     // Set the data for the document
