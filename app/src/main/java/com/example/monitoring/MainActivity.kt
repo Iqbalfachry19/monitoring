@@ -1427,7 +1427,39 @@ fun DataSiswa(
         }
     }
 }
+@Composable
+fun DropdownMenuButton(
+    expanded: Boolean,
+    onDismissRequest: () -> Unit,
+    modifier: Modifier = Modifier,
+    buttonText: String,
+    options: List<String>,
+    onOptionSelected: (String) -> Unit
+) {
+    var expandedState by remember { mutableStateOf(expanded) }
 
+    Button(
+        onClick = { expandedState = true },
+        modifier = modifier
+    ) {
+        Text(buttonText)
+    }
+
+    DropdownMenu(
+        expanded = expandedState,
+        onDismissRequest = { expandedState = false },
+        modifier = modifier
+    ) {
+        options.forEach { option ->
+            DropdownMenuItem({
+                Text(text = option)
+            },onClick = {
+                onOptionSelected(option)
+                expandedState = false
+            })
+        }
+    }
+}
 
 @Composable
 fun DataJadwalPelajaran(
@@ -1439,8 +1471,16 @@ fun DataJadwalPelajaran(
     val dataList = remember { mutableStateListOf<Sextuple<String,String, String, String,String,String>>() }
     var showDialog by remember { mutableStateOf(false) }
     var documentIdToDelete by remember { mutableStateOf<String?>(null) }
-
-
+    val classOptions = listOf("kelas 4", "kelas 5", "kelas 6")
+    val semesterOptions = listOf("semester 1", "semester 2")
+    var selectedClass by remember { mutableStateOf(classOptions[0]) }
+    var selectedSemester by remember { mutableStateOf(semesterOptions[0]) }
+    // Function to filter data based on selected class and semester
+    fun filterDataByClassAndSemester(dataList: List<Sextuple<String, String, String, String, String, String>>): List<Sextuple<String, String, String, String, String, String>> {
+        return dataList.filter { (_, _, _, kelas, _, semester) ->
+            kelas == selectedClass && semester == selectedSemester
+        }
+    }
     DisposableEffect(Unit) {
         val collectionRef = firestore.collection("jadwalPelajaran")
 
@@ -1507,7 +1547,37 @@ fun DataJadwalPelajaran(
                 , containerColor = Color(0xFF77B0AA) ) { Text("+", fontSize = 24.sp, color = Color(0xFFE3FEF7)) }
         },
     ) { innerPadding ->
+        Column(modifier = Modifier.padding(innerPadding)  .fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally) {
+            // Dropdown for class selection
+            Text(
+                text = "Data Jadwal Pelajaran",
+                style = MaterialTheme.typography.headlineLarge,
+                color = Color(0xFFE3FEF7)
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Row {
 
+                DropdownMenuButton(
+                    expanded = false, // Initially closed
+                    onDismissRequest = {},
+                    modifier = Modifier.padding(8.dp),
+                    buttonText = selectedClass,
+                    options = classOptions,
+                    onOptionSelected = { selectedClass = it }
+                )
+
+                // Button for semester selection
+                DropdownMenuButton(
+                    expanded = false, // Initially closed
+                    onDismissRequest = {},
+                    modifier = Modifier.padding(8.dp),
+                    buttonText = selectedSemester,
+                    options = semesterOptions,
+                    onOptionSelected = { selectedSemester = it }
+                )
+            }
         LazyColumn(
             modifier = Modifier
                 .padding(innerPadding)
@@ -1515,90 +1585,98 @@ fun DataJadwalPelajaran(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            item{
-            Text(text = "Data Jadwal Pelajaran", style = MaterialTheme.typography.headlineLarge, color = Color(0xFFE3FEF7))
-            Spacer(modifier = Modifier.height(16.dp))
-            // Display the data fetched from Firestore
-            dataList.forEach { (id,nama,jam,kelas,hari,semester) ->
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(8.dp)
-                ) {
+            item {
 
-                    Card(
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.tertiary,
-
-                            ),
-
-                        modifier = Modifier
-                            .width(width = 200.dp)
-                            .wrapContentHeight()
-                            .clickable { }
-                            .padding(8.dp)
+                // Display the data fetched from Firestore
+                filterDataByClassAndSemester(dataList).forEach { (id, nama, jam, kelas, hari, semester) ->
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(8.dp)
                     ) {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center,modifier = Modifier.fillMaxSize()) {
-                            Text(text = nama, style = MaterialTheme.typography.bodySmall)
-                            Spacer(modifier = Modifier.height(4.dp))
 
-                            Text(
-                                text = kelas,
-                                style = MaterialTheme.typography.bodyLarge,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
-                            )
+                        Card(
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.tertiary,
 
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Text(
-                                text = jam,
-                                style = MaterialTheme.typography.bodyLarge,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
-                            )
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Text(
-                                text = hari,
-                                style = MaterialTheme.typography.bodyLarge,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
-                            )
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Text(
-                                text = semester,
-                                style = MaterialTheme.typography.bodyLarge,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
-                            )
+                                ),
 
-                        }
-                    }
-                    if (role == "admin") {
-                        IconButton(
-                            onClick = {
-                                // Navigate to Edit screen with the document id
-                                navController.navigate(Screen.EditJadwalPelajaran(id))
-                            }
+                            modifier = Modifier
+                                .width(width = 200.dp)
+                                .wrapContentHeight()
+                                .clickable { }
+                                .padding(8.dp)
                         ) {
-                            Icon(Icons.Default.Edit, contentDescription = "Edit", tint = Color.Gray)
-                        }
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.Center,
+                                modifier = Modifier.fillMaxSize()
+                            ) {
+                                Text(text = nama, style = MaterialTheme.typography.bodySmall)
+                                Spacer(modifier = Modifier.height(4.dp))
 
-                        IconButton(
-                            onClick = {
+                                Text(
+                                    text = kelas,
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
 
-                                documentIdToDelete = id
-                                showDialog = true
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = jam,
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = hari,
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = semester,
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+
                             }
-                        ) {
-                            Icon(
-                                Icons.Default.Delete,
-                                contentDescription = "Delete",
-                                tint = Color.Red
-                            )
+                        }
+                        if (role == "admin") {
+                            IconButton(
+                                onClick = {
+                                    // Navigate to Edit screen with the document id
+                                    navController.navigate(Screen.EditJadwalPelajaran(id))
+                                }
+                            ) {
+                                Icon(
+                                    Icons.Default.Edit,
+                                    contentDescription = "Edit",
+                                    tint = Color.Gray
+                                )
+                            }
+
+                            IconButton(
+                                onClick = {
+
+                                    documentIdToDelete = id
+                                    showDialog = true
+                                }
+                            ) {
+                                Icon(
+                                    Icons.Default.Delete,
+                                    contentDescription = "Delete",
+                                    tint = Color.Red
+                                )
+                            }
                         }
                     }
                 }
             }
-            }
+         }
         }
     }
 }
