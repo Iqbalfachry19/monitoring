@@ -1894,7 +1894,16 @@ fun DataNilai(
     val dataList = remember { mutableStateListOf<Nilai<String,String, String,String,String,String>>() }
     var showDialog by remember { mutableStateOf(false) }
     var documentIdToDelete by remember { mutableStateOf<String?>(null) }
-
+    val classOptions = listOf("kelas 4", "kelas 5", "kelas 6")
+    val semesterOptions = listOf("semester 1", "semester 2")
+    var selectedClass by remember { mutableStateOf(classOptions[0]) }
+    var selectedSemester by remember { mutableStateOf(semesterOptions[0]) }
+    // Function to filter data based on selected class and semester
+    fun filterDataByClassAndSemester(dataList: List<Nilai<String,String, List<Pair<String, String>>,String,String,String>>): List<Nilai<String,String, List<Pair<String, String>>,String,String,String>> {
+        return dataList.filter { (_, _, _, semester, kelas, _) ->
+            kelas == selectedClass && semester == selectedSemester
+        }
+    }
 
     DisposableEffect(Unit) {
         val collectionRef = firestore.collection("nilai")
@@ -1971,7 +1980,40 @@ fun DataNilai(
                 , containerColor = Color(0xFF77B0AA) ) { Text("+", fontSize = 24.sp, color = Color(0xFFE3FEF7)) }
         },
     ) { innerPadding ->
+        Column(modifier = Modifier.padding(innerPadding)  .fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally) {
+            // Dropdown for class selection
+            Text(
+                text = "Data Jadwal Pelajaran",
+                style = MaterialTheme.typography.headlineLarge,
+                color = Color(0xFFE3FEF7)
+            )
+        Spacer(modifier = Modifier.height(16.dp))
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceEvenly
+        ) {
 
+            DropdownMenuButton(
+                expanded = false, // Initially closed
+                onDismissRequest = {},
+                modifier = Modifier.padding(8.dp),
+                buttonText = selectedClass,
+                options = classOptions,
+                onOptionSelected = { selectedClass = it }
+            )
+
+            // Button for semester selection
+            DropdownMenuButton(
+                expanded = false, // Initially closed
+                onDismissRequest = {},
+                modifier = Modifier.padding(8.dp),
+                buttonText = selectedSemester,
+                options = semesterOptions,
+                onOptionSelected = { selectedSemester = it }
+            )
+        }
         LazyColumn(
             modifier = Modifier
                 .padding(innerPadding)
@@ -1988,7 +2030,9 @@ fun DataNilai(
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 // Display the data fetched from Firestore
-                dataList.forEach { (id, nama, nilai, semester,kelas, peringkat) ->
+
+                filterDataByClassAndSemester(dataList).forEach { (id, nama, matapelajaran, semester, kelas, peringkat) ->
+
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.padding(8.dp)
@@ -2084,6 +2128,7 @@ fun DataNilai(
                         }
                     }
                 }
+            }
             }
         }
         }
