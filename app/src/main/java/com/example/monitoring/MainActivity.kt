@@ -1984,7 +1984,7 @@ fun DataNilai(
             horizontalAlignment = Alignment.CenterHorizontally) {
             // Dropdown for class selection
             Text(
-                text = "Data Jadwal Pelajaran",
+                text = "Data Nilai dan Peringkat Siswa",
                 style = MaterialTheme.typography.headlineLarge,
                 color = Color(0xFFE3FEF7)
             )
@@ -2021,13 +2021,6 @@ fun DataNilai(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             item {
-                Text(
-                    text = "Data Nilai dan Peringkat Siswa",
-                    style = MaterialTheme.typography.headlineLarge,
-                    color = Color(0xFFE3FEF7),
-                    textAlign = TextAlign.Center
-                )
-                Spacer(modifier = Modifier.height(16.dp))
                 // Display the data fetched from Firestore
                 filterDataByClassAndSemester(dataList).forEach { (id, nama, matapelajaran, semester, kelas, peringkat) ->
                     Row(
