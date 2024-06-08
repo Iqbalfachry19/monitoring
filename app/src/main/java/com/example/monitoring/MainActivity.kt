@@ -1045,7 +1045,7 @@ fun DataGuruPage(
                         modifier = Modifier.weight(1f)
                     )
                     Text(
-                        text = "Keterangan",
+                        text = "Ket.",
                         style = MaterialTheme.typography.bodyLarge,
                         color = Color.White,
                         modifier = Modifier.weight(1f)
@@ -2047,7 +2047,7 @@ fun DataNilai(
 
 
                             Column(
-                                horizontalAlignment = Alignment.CenterHorizontally,
+                                horizontalAlignment = Alignment.Start,
                                 verticalArrangement = Arrangement.Center,
                                 modifier = Modifier.weight(2f)
                             ) {
