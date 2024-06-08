@@ -1045,7 +1045,7 @@ fun DataGuruPage(
                         modifier = Modifier.weight(1f)
                     )
                     Text(
-                        text = "Kelas",
+                        text = "Keterangan",
                         style = MaterialTheme.typography.bodyLarge,
                         color = Color.White,
                         modifier = Modifier.weight(1f)
