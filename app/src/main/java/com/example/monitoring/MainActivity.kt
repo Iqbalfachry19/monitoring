@@ -1986,7 +1986,8 @@ fun DataNilai(
             Text(
                 text = "Data Nilai dan Peringkat Siswa",
                 style = MaterialTheme.typography.headlineLarge,
-                color = Color(0xFFE3FEF7)
+                color = Color(0xFFE3FEF7),
+                textAlign = TextAlign.Center
             )
             Spacer(modifier = Modifier.height(16.dp))
             Row(
