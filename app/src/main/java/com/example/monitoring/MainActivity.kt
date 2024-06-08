@@ -146,7 +146,7 @@ data class Quadruple<T, U, V, W>(val first: T, val second: U, val third: V, val 
 data class Quintuple<T, U, V, W,X>(val first: T, val second: U, val third: V, val fourth: W, val fifth:X)
 data class Sextuple<T, U, V, W,X,Y>(val first: T, val second: U, val third: V, val fourth: W, val fifth:X,val sixth:Y)
 data class Septuple<T, U, V, W,X,Y,Z>(val first: T, val second: U, val third: V, val fourth: W, val fifth:X,val sixth:Y,val seven:Z)
-data class Nilai<T, U, V, W,X,Y>(val id:T,val nama: U, val nilai: V, val semester:W,val kelas:X, val peringkat:Y)
+data class Nilai<T, U, V, W,X,Y>(val id:T,val nama: U, val mataPelajaranList: V, val semester:W,val kelas:X, val peringkat:Y)
 sealed interface Screen {
     @Serializable
     data object Login : Screen
@@ -480,7 +480,7 @@ fun ScreenWithScaffold(navController: NavController,role: String, content: @Comp
             }
         },
         content = content
-        )
+    )
 
 }
 @Composable
@@ -546,7 +546,7 @@ fun LoginPage(navController: NavController) {
         }
     }
 
-        if (!isLoggedIn) {
+    if (!isLoggedIn) {
         Scaffold(
             snackbarHost = { SnackbarHost(snackbarHostState) },
 //            floatingActionButton = {
@@ -810,101 +810,101 @@ fun AdminDashboardPage(navController: NavController,it:PaddingValues,role: Strin
 //
 //            }
 
-            // Implement admin dashboard UI
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(it)
-                ,
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically){
-                    Text(text = "Dashboard Admin", style = MaterialTheme.typography.headlineLarge, color = Color(0xFFE3FEF7))
-                    Spacer(modifier = Modifier.width(65.dp))
-                    Icon(
-                        imageVector = Icons.Filled.AccountCircle,
-                        contentDescription = "Person",
-                        modifier=Modifier.size(50.dp),
-                        tint = Color(0xFFE3FEF7)
-                    )
-                }
-                Spacer(modifier = Modifier.height(8.dp))
-                val cards= listOf(CardItem(
-                    title = "Data Guru",
-                    route = Screen.DataGuru(role)
-                ),
-                    CardItem(
-                        title = "Export Data",
-                        route = Screen.ExportData(role),
-                        icon = Icons.Filled.Share
-                    ),
-                            CardItem(
-                            title = "Data Siswa",
-                                route = Screen.DataSiswa(role),
+    // Implement admin dashboard UI
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(it)
+        ,
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically){
+            Text(text = "Dashboard Admin", style = MaterialTheme.typography.headlineLarge, color = Color(0xFFE3FEF7))
+            Spacer(modifier = Modifier.width(65.dp))
+            Icon(
+                imageVector = Icons.Filled.AccountCircle,
+                contentDescription = "Person",
+                modifier=Modifier.size(50.dp),
+                tint = Color(0xFFE3FEF7)
+            )
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+        val cards= listOf(CardItem(
+            title = "Data Guru",
+            route = Screen.DataGuru(role)
+        ),
+            CardItem(
+                title = "Export Data",
+                route = Screen.ExportData(role),
+                icon = Icons.Filled.Share
+            ),
+            CardItem(
+                title = "Data Siswa",
+                route = Screen.DataSiswa(role),
 
                 ),
-                    CardItem(
-                        title = "Data Jadwal Pelajaran",
-                        route =Screen.DataJadwalPelajaran(role),
-                        icon = Icons.Filled.DateRange
-                    ),
-                    CardItem(
-                        title = "Data Jadwal Ujian",
-                        route =Screen.DataJadwalUjian(role),
-                        icon = Icons.Filled.DateRange
-                    ),
-                    CardItem(
-                        title = "Data Nilai dan Peringkat Siswa",
-                        route =Screen.DataNilai(role),
-                        icon = Icons.Filled.Star
-                    ),
-                    CardItem(
-                        title = "Data Kegiatan",
-                        route =Screen.DataJadwalKegiatan(role),
-                        icon = Icons.Filled.DateRange
-                    ),
-                    CardItem(
-                        title = "Data Rekapan Kehadiran Siswa",
-                        route =Screen.DataRekapan(role),
-                        icon = Icons.Filled.Face
-                    ),
-                    )
-                LazyVerticalGrid(
-                    columns = GridCells.Fixed(2)
+            CardItem(
+                title = "Data Jadwal Pelajaran",
+                route =Screen.DataJadwalPelajaran(role),
+                icon = Icons.Filled.DateRange
+            ),
+            CardItem(
+                title = "Data Jadwal Ujian",
+                route =Screen.DataJadwalUjian(role),
+                icon = Icons.Filled.DateRange
+            ),
+            CardItem(
+                title = "Data Nilai dan Peringkat Siswa",
+                route =Screen.DataNilai(role),
+                icon = Icons.Filled.Star
+            ),
+            CardItem(
+                title = "Data Kegiatan",
+                route =Screen.DataJadwalKegiatan(role),
+                icon = Icons.Filled.DateRange
+            ),
+            CardItem(
+                title = "Data Rekapan Kehadiran Siswa",
+                route =Screen.DataRekapan(role),
+                icon = Icons.Filled.Face
+            ),
+        )
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(2)
+        ) {
+            items(cards) {
+                Card(
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.tertiary,
+
+                        ),
+                    modifier = Modifier
+                        .size(width = 200.dp, height = 100.dp)
+                        .clickable { navController.navigate(it.route) }
+                        .padding(8.dp)
                 ) {
-                    items(cards) {
-                        Card(
-                            colors = CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.tertiary,
-
-                            ),
-                            modifier = Modifier
-                                .size(width = 200.dp, height = 100.dp)
-                                .clickable { navController.navigate(it.route) }
-                                .padding(8.dp)
-                        ) {
-                            Column(
-                                verticalArrangement = Arrangement.Center,
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                modifier = Modifier.fillMaxSize()
-                            ) {
-                                it.icon?.let { it1 ->
-                                    Icon(
-                                        imageVector = it1,
-                                        contentDescription = "Person"
-                                    )
-                                }
-                                Text(
-                                    text = it.title,
-                                    textAlign = TextAlign.Center
-                                )
-                            }   }
-                    }
-
-                }
-
+                    Column(
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        it.icon?.let { it1 ->
+                            Icon(
+                                imageVector = it1,
+                                contentDescription = "Person"
+                            )
+                        }
+                        Text(
+                            text = it.title,
+                            textAlign = TextAlign.Center
+                        )
+                    }   }
             }
+
+        }
+
+    }
 //
 
 
@@ -1581,106 +1581,107 @@ fun DataJadwalPelajaran(
                     onOptionSelected = { selectedSemester = it }
                 )
             }
-        LazyColumn(
-            modifier = Modifier
-                .padding(innerPadding)
-                .fillMaxSize(),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            item {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 8.dp, horizontal = 16.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text(
-                        "Hari",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = Color(0xFFE3FEF7),
-                        modifier = Modifier.weight(1f)
-                    )
-                    Text(
-                        "Mata Pelajaran",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = Color(0xFFE3FEF7),
-                        modifier = Modifier.weight(3f)
-                    )
-                    Text(
-                        "Jam",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = Color(0xFFE3FEF7),
-                        modifier = Modifier.weight(1f)
-                    )
-                    Text(
-                        "Edit",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = Color(0xFFE3FEF7),
-                        modifier = Modifier.weight(1f)
-                    )
-                }
+            LazyColumn(
+                modifier = Modifier
+                    .padding(innerPadding)
+                    .fillMaxSize(),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                item {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 8.dp, horizontal = 16.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            "Hari",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = Color(0xFFE3FEF7),
+                            modifier = Modifier.weight(1f)
+                        )
+                        Text(
+                            "Mata Pelajaran",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = Color(0xFFE3FEF7),
+                            modifier = Modifier.weight(3f)
+                        )
+                        Text(
+                            "Jam",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = Color(0xFFE3FEF7),
+                            modifier = Modifier.weight(1f)
+                        )
+                        Text(
+                            "Edit",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = Color(0xFFE3FEF7),
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
 
-                val daysOfWeek = listOf("senin", "selasa", "rabu", "kamis", "jumat", "sabtu")
+                    val daysOfWeek = listOf("senin", "selasa", "rabu", "kamis", "jumat", "sabtu")
 
-                daysOfWeek.forEach { day ->
-                    val filteredData =
-                        filterDataByClassAndSemester(dataList).filter { it.fifth == day }
+                    daysOfWeek.forEach { day ->
+                        val filteredData =
+                            filterDataByClassAndSemester(dataList).filter { it.fifth == day }
 
-                    if (filteredData.isNotEmpty()) {
-                        filteredData.forEach { (id, nama, jam, _, hari, _) ->
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(vertical = 8.dp, horizontal = 16.dp),
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                Text(
-                                    day,
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    color = Color(0xFFE3FEF7),
-                                    modifier = Modifier.weight(1f)
-                                )
-                                Text(
-                                    nama,
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    color = Color(0xFFE3FEF7),
-                                    modifier = Modifier.weight(3f)
-                                )
-                                Text(
-                                    jam,
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    color = Color(0xFFE3FEF7),
-                                    modifier = Modifier.weight(1f)
-
-
-                                )
+                        if (filteredData.isNotEmpty()) {
+                            filteredData.forEach { (id, nama, jam, _, hari, _) ->
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = 8.dp, horizontal = 16.dp),
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Text(
+                                        day,
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        color = Color(0xFFE3FEF7),
+                                        modifier = Modifier.weight(1f)
+                                    )
+                                    Text(
+                                        nama,
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        color = Color(0xFFE3FEF7),
+                                        modifier = Modifier.weight(3f)
+                                    )
+                                    Text(
+                                        jam,
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        color = Color(0xFFE3FEF7),
+                                        modifier = Modifier.weight(1f)
 
 
-                                if (role == "admin") {
-                                    IconButton(
-                                        onClick = {
-                                            navController.navigate(Screen.EditJadwalPelajaran(id))
+                                    )
+
+
+                                    if (role == "admin") {
+                                        IconButton(
+                                            onClick = {
+                                                navController.navigate(Screen.EditJadwalPelajaran(id))
+                                            }
+                                        ) {
+                                            Icon(
+                                                Icons.Default.Edit,
+                                                contentDescription = "Edit",
+                                                tint = Color.Gray
+                                            )
                                         }
-                                    ) {
-                                        Icon(
-                                            Icons.Default.Edit,
-                                            contentDescription = "Edit",
-                                            tint = Color.Gray
-                                        )
-                                    }
 
-                                    IconButton(
-                                        onClick = {
-                                            documentIdToDelete = id
-                                            showDialog = true
+                                        IconButton(
+                                            onClick = {
+                                                documentIdToDelete = id
+                                                showDialog = true
+                                            }
+                                        ) {
+                                            Icon(
+                                                Icons.Default.Delete,
+                                                contentDescription = "Delete",
+                                                tint = Color.Red
+                                            )
                                         }
-                                    ) {
-                                        Icon(
-                                            Icons.Default.Delete,
-                                            contentDescription = "Delete",
-                                            tint = Color.Red
-                                        )
                                     }
                                 }
                             }
@@ -1688,7 +1689,6 @@ fun DataJadwalPelajaran(
                     }
                 }
             }
-         }
         }
     }
 }
@@ -1782,103 +1782,103 @@ fun DataJadwalUjian(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             item{
-            Text(text = "Data Jadwal Ujian", style = MaterialTheme.typography.headlineLarge, color = Color(0xFFE3FEF7))
-            Spacer(modifier = Modifier.height(16.dp))
-            // Display the data fetched from Firestore
-            dataList.forEach { (id, nama, jam, kelas, hari, tanggal,semester) ->
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(8.dp)
-                ) {
-
-                    Card(
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.tertiary,
-
-                            ),
-
-                        modifier = Modifier
-                            .width(width = 200.dp)
-                            .wrapContentHeight()
-                            .clickable { }
-                            .padding(8.dp)
-
+                Text(text = "Data Jadwal Ujian", style = MaterialTheme.typography.headlineLarge, color = Color(0xFFE3FEF7))
+                Spacer(modifier = Modifier.height(16.dp))
+                // Display the data fetched from Firestore
+                dataList.forEach { (id, nama, jam, kelas, hari, tanggal,semester) ->
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(8.dp)
                     ) {
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.Center,
-                            modifier = Modifier.fillMaxSize()
+
+                        Card(
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.tertiary,
+
+                                ),
+
+                            modifier = Modifier
+                                .width(width = 200.dp)
+                                .wrapContentHeight()
+                                .clickable { }
+                                .padding(8.dp)
+
                         ) {
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.Center,
+                                modifier = Modifier.fillMaxSize()
+                            ) {
 
 
-                            Text(
-                                text = nama,
-                                style = MaterialTheme.typography.bodyLarge,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
-                            )
+                                Text(
+                                    text = nama,
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
 
-                            Text(
-                                text = kelas,
-                                style = MaterialTheme.typography.bodyLarge,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
-                            )
+                                Text(
+                                    text = kelas,
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
 
-                            Text(
-                                text = jam,
-                                style = MaterialTheme.typography.bodyLarge,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
-                            )
+                                Text(
+                                    text = jam,
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
 
-                            Text(
-                                text = hari,
-                                style = MaterialTheme.typography.bodyLarge,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
-                            )
+                                Text(
+                                    text = hari,
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
 
-                            Text(
-                                text = tanggal,
-                                style = MaterialTheme.typography.bodyLarge,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
-                            )
-                            Text(
-                                text = semester,
-                                style = MaterialTheme.typography.bodyLarge,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
-                            )
-                        }
-                    }
-                    if (role == "admin") {
-                        IconButton(
-                            onClick = {
-                                // Navigate to Edit screen with the document id
-                                navController.navigate(Screen.EditJadwalUjian(id))
+                                Text(
+                                    text = tanggal,
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                                Text(
+                                    text = semester,
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
                             }
-                        ) {
-                            Icon(Icons.Default.Edit, contentDescription = "Edit", tint = Color.Gray)
                         }
-
-                        IconButton(
-                            onClick = {
-
-                                documentIdToDelete = id
-                                showDialog = true
+                        if (role == "admin") {
+                            IconButton(
+                                onClick = {
+                                    // Navigate to Edit screen with the document id
+                                    navController.navigate(Screen.EditJadwalUjian(id))
+                                }
+                            ) {
+                                Icon(Icons.Default.Edit, contentDescription = "Edit", tint = Color.Gray)
                             }
-                        ) {
-                            Icon(
-                                Icons.Default.Delete,
-                                contentDescription = "Delete",
-                                tint = Color.Red
-                            )
+
+                            IconButton(
+                                onClick = {
+
+                                    documentIdToDelete = id
+                                    showDialog = true
+                                }
+                            ) {
+                                Icon(
+                                    Icons.Default.Delete,
+                                    contentDescription = "Delete",
+                                    tint = Color.Red
+                                )
+                            }
                         }
                     }
                 }
-            }
             }
         }
     }
@@ -1891,7 +1891,7 @@ fun DataNilai(
 ){
 
     val firestore = FirebaseFirestore.getInstance()
-    val dataList = remember { mutableStateListOf<Nilai<String,String, String,String,String,String>>() }
+    val dataList = remember { mutableStateListOf<Nilai<String,String, List<Pair<String, String>>,String,String,String>>() }
     var showDialog by remember { mutableStateOf(false) }
     var documentIdToDelete by remember { mutableStateOf<String?>(null) }
     val classOptions = listOf("kelas 4", "kelas 5", "kelas 6")
@@ -1921,21 +1921,20 @@ fun DataNilai(
             // Add the new data to the list
             snapshot?.documents?.forEach { document ->
                 val nama = document.getString("nama") ?: ""
-//                val mataPelajaranArray = document.get("mata_pelajaran") as? ArrayList<HashMap<String, String>> ?: arrayListOf()
-//
-//                // Iterate through each item in the mataPelajaranArray and extract nama and nilai
-//                val mataPelajaranList = mutableListOf<Pair<String, String>>()
-//                mataPelajaranArray.forEach { mataPelajaranMap ->
-//                    val namaPelajaran = mataPelajaranMap["nama"] ?: ""
-//                    val nilaiPelajaran = mataPelajaranMap["nilai"] ?: ""
-//                    mataPelajaranList.add(Pair(namaPelajaran, nilaiPelajaran))
-//                }
-                val nilai = document.getString("nilai") ?: ""
+                val mataPelajaranArray = document.get("mata_pelajaran") as? ArrayList<HashMap<String, String>> ?: arrayListOf()
+
+                // Iterate through each item in the mataPelajaranArray and extract nama and nilai
+                val mataPelajaranList = mutableListOf<Pair<String, String>>()
+                mataPelajaranArray.forEach { mataPelajaranMap ->
+                    val namaPelajaran = mataPelajaranMap["nama"] ?: ""
+                    val nilaiPelajaran = mataPelajaranMap["nilai"] ?: ""
+                    mataPelajaranList.add(Pair(namaPelajaran, nilaiPelajaran))
+                }
                 val semester = document.getString("semester") ?: ""
                 val kelas = document.getString("kelas") ?: ""
                 val peringkat = document.getString("peringkat") ?: ""
                 // Here you can collect more fields as needed
-                dataList.add(Nilai(document.id,nama, nilai,semester, kelas,peringkat))
+                dataList.add(Nilai(document.id,nama, mataPelajaranList,semester, kelas,peringkat))
             }
         }
         onDispose {
@@ -1989,31 +1988,31 @@ fun DataNilai(
                 style = MaterialTheme.typography.headlineLarge,
                 color = Color(0xFFE3FEF7)
             )
-        Spacer(modifier = Modifier.height(16.dp))
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceEvenly
-        ) {
+            Spacer(modifier = Modifier.height(16.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
 
-            DropdownMenuButton(
-                expanded = false, // Initially closed
-                onDismissRequest = {},
-                modifier = Modifier.padding(8.dp),
-                buttonText = selectedClass,
-                options = classOptions,
-                onOptionSelected = { selectedClass = it }
-            )
+                DropdownMenuButton(
+                    expanded = false, // Initially closed
+                    onDismissRequest = {},
+                    modifier = Modifier.padding(8.dp),
+                    buttonText = selectedClass,
+                    options = classOptions,
+                    onOptionSelected = { selectedClass = it }
+                )
 
-            // Button for semester selection
-            DropdownMenuButton(
-                expanded = false, // Initially closed
-                onDismissRequest = {},
-                modifier = Modifier.padding(8.dp),
-                buttonText = selectedSemester,
-                options = semesterOptions,
-                onOptionSelected = { selectedSemester = it }
-            )
-        }
+                // Button for semester selection
+                DropdownMenuButton(
+                    expanded = false, // Initially closed
+                    onDismissRequest = {},
+                    modifier = Modifier.padding(8.dp),
+                    buttonText = selectedSemester,
+                    options = semesterOptions,
+                    onOptionSelected = { selectedSemester = it }
+                )
+            }
         LazyColumn(
             modifier = Modifier
                 .padding(innerPadding)
@@ -2030,9 +2029,7 @@ fun DataNilai(
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 // Display the data fetched from Firestore
-
                 filterDataByClassAndSemester(dataList).forEach { (id, nama, matapelajaran, semester, kelas, peringkat) ->
-
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.padding(8.dp)
@@ -2060,19 +2057,14 @@ fun DataNilai(
 
 
 
-//                                matapelajaran.forEach { (pelajaran, nilai) ->
-//                                    Text(
-//                                        text = "$pelajaran: $nilai",
-//                                        style = MaterialTheme.typography.bodyLarge,
-//                                        maxLines = 1
-//                                    )
-//                                }
-                                Text(
-                                    text = "Nilai $nilai",
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
-                                )
+                                matapelajaran.forEach { (pelajaran, nilai) ->
+                                    Text(
+                                        text = "$pelajaran: $nilai",
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        maxLines = 1
+                                    )
+                                }
+
 
                                 Spacer(modifier = Modifier.height(4.dp))
                                 Text(
@@ -2131,8 +2123,8 @@ fun DataNilai(
             }
             }
         }
-        }
     }
+}
 
 
 @Composable
@@ -2601,7 +2593,7 @@ fun TambahSiswa(
 
     Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
 
-    Text(text="Tambah Data Siswa", modifier = Modifier
+        Text(text="Tambah Data Siswa", modifier = Modifier
             .align(Alignment.CenterHorizontally))
         // Display the selected image
 
@@ -2895,7 +2887,7 @@ fun TambahNilai(
     var semester by remember { mutableStateOf("") }
     var kelas by remember { mutableStateOf("") }
     var peringkat by remember { mutableStateOf("") }
-
+    var mataPelajaranList by remember { mutableStateOf(listOf<Map<String, String>>()) }
     var isEditing by remember { mutableStateOf(false) }
     var editingIndex by remember { mutableIntStateOf(-1) }
 
@@ -2924,27 +2916,27 @@ fun TambahNilai(
                     .padding(16.dp)
             )
 
-//            if (isEditing) {
-//                EditNilai(
-//                    mataPelajaranList = mataPelajaranList,
-//                    index = editingIndex,
-//                    onDone = { updatedEntry ->
-//                        mataPelajaranList = mataPelajaranList.toMutableList().apply {
-//                            set(editingIndex, updatedEntry)
-//                        }
-//                        isEditing = false
-//                        editingIndex = -1
-//                    }
-//                )
-//            } else {
-//                TextField(
-//                    value = mataPelajaran,
-//                    onValueChange = { mataPelajaran = it },
-//                    label = { Text("Mata Pelajaran") },
-//                    modifier = Modifier
-//                        .fillMaxWidth()
-//                        .padding(16.dp)
-//                )
+            if (isEditing) {
+                EditNilai(
+                    mataPelajaranList = mataPelajaranList,
+                    index = editingIndex,
+                    onDone = { updatedEntry ->
+                        mataPelajaranList = mataPelajaranList.toMutableList().apply {
+                            set(editingIndex, updatedEntry)
+                        }
+                        isEditing = false
+                        editingIndex = -1
+                    }
+                )
+            } else {
+                TextField(
+                    value = mataPelajaran,
+                    onValueChange = { mataPelajaran = it },
+                    label = { Text("Mata Pelajaran") },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                )
 
                 TextField(
                     value = nilai,
@@ -2954,61 +2946,61 @@ fun TambahNilai(
                         .fillMaxWidth()
                         .padding(16.dp)
                 )
-//                Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-//
-//                    Button(
-//                        onClick = {
-//                            if (mataPelajaran.isNotBlank() && nilai.isNotBlank()) {
-//                                val newEntry = mapOf("nama" to mataPelajaran, "nilai" to nilai)
-//                                mataPelajaranList = mataPelajaranList + newEntry
-//                                mataPelajaran = ""
-//                                nilai = ""
-//                            }
-//                        },
-//                        modifier = Modifier
-//
-//                            .padding(16.dp)
-//                    ) {
-//                        Text("Tambah Mata Pelajaran")
-//                    }
-//                }
-//            }
+                Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
 
-//            if (mataPelajaranList.isNotEmpty()) {
-//                Column {
-//                    Text("Daftar Mata Pelajaran:", modifier = Modifier.padding(16.dp))
-//                    mataPelajaranList.forEachIndexed { index, item ->
-//                        Row(
-//                            modifier = Modifier
-//                                .fillMaxWidth()
-//                                .padding(horizontal = 16.dp, vertical = 8.dp),
-//                            horizontalArrangement = Arrangement.SpaceBetween
-//                        ) {
-//                            Text(
-//                                text = "${item["nama"]} - ${item["nilai"]}",
-//                            )
-//                            Row {
-//
-//
-//                                Button(onClick = {
-//                                    isEditing = true
-//                                    editingIndex = index
-//                                }) {
-//                                    Text("Edit")
-//                                }
-//                                Spacer(modifier = Modifier.width(8.dp))
-//                                Button(onClick = {
-//                                    mataPelajaranList = mataPelajaranList.toMutableList().apply {
-//                                        removeAt(index)
-//                                    }
-//                                }) {
-//                                    Text("Delete")
-//                                }
-//                            }
-//                        }
-//                    }
-//                }
-//            }
+                    Button(
+                        onClick = {
+                            if (mataPelajaran.isNotBlank() && nilai.isNotBlank()) {
+                                val newEntry = mapOf("nama" to mataPelajaran, "nilai" to nilai)
+                                mataPelajaranList = mataPelajaranList + newEntry
+                                mataPelajaran = ""
+                                nilai = ""
+                            }
+                        },
+                        modifier = Modifier
+
+                            .padding(16.dp)
+                    ) {
+                        Text("Tambah Mata Pelajaran")
+                    }
+                }
+            }
+
+            if (mataPelajaranList.isNotEmpty()) {
+                Column {
+                    Text("Daftar Mata Pelajaran:", modifier = Modifier.padding(16.dp))
+                    mataPelajaranList.forEachIndexed { index, item ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 8.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(
+                                text = "${item["nama"]} - ${item["nilai"]}",
+                            )
+                            Row {
+
+
+                                Button(onClick = {
+                                    isEditing = true
+                                    editingIndex = index
+                                }) {
+                                    Text("Edit")
+                                }
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Button(onClick = {
+                                    mataPelajaranList = mataPelajaranList.toMutableList().apply {
+                                        removeAt(index)
+                                    }
+                                }) {
+                                    Text("Delete")
+                                }
+                            }
+                        }
+                    }
+                }
+            }
             TextField(
                 value = semester,
                 onValueChange = { semester = it },
@@ -3039,7 +3031,7 @@ fun TambahNilai(
                     onClick = {
                         submitDataToDatabaseNilai(
                             name,
-                            nilai,
+                            mataPelajaranList,
                             semester,
                             kelas,
                             peringkat,
@@ -3205,7 +3197,7 @@ fun TambahGuru(
 
     Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
 
-    // Display the selected image
+        // Display the selected image
         Text(text="Tambah Data Guru", modifier = Modifier
             .align(Alignment.CenterHorizontally))
 
@@ -3260,12 +3252,12 @@ fun EditNilai(
 ) {
     val firestore = FirebaseFirestore.getInstance()
     var name by remember { mutableStateOf("") }
-
+    var mataPelajaran by remember { mutableStateOf("") }
     var nilai by remember { mutableStateOf("") }
     var semester by remember { mutableStateOf("") }
     var kelas by remember { mutableStateOf("") }
     var peringkat by remember { mutableStateOf("") }
-
+    var mataPelajaranList by remember { mutableStateOf(listOf<Map<String, String>>()) }
     var isEditing by remember { mutableStateOf(false) }
     var editingIndex by remember { mutableIntStateOf(-1) }
 
@@ -3276,7 +3268,8 @@ fun EditNilai(
         peringkat = document.getString("peringkat") ?: ""
         kelas = document.getString("kelas") ?: ""
         semester = document.getString("semester") ?: ""
-        nilai = document.getString("nilai") ?: ""
+        val mataPelajaranArray = document.get("mata_pelajaran") as? List<Map<String, String>>
+        mataPelajaranList = mataPelajaranArray ?: listOf()
     }
 
     LazyColumn(modifier = Modifier.fillMaxSize()) {
@@ -3299,52 +3292,52 @@ fun EditNilai(
                     .padding(16.dp)
             )
 
-//            // Display list of mata pelajaran with edit option
-//            if (mataPelajaranList.isNotEmpty()) {
-//                Column {
-//                    Text("Daftar Mata Pelajaran:", modifier = Modifier.padding(16.dp))
-//                    mataPelajaranList.forEachIndexed { index, item ->
-//                        Row(
-//                            modifier = Modifier
-//                                .fillMaxWidth()
-//                                .padding(horizontal = 16.dp, vertical = 8.dp),
-//                            horizontalArrangement = Arrangement.SpaceBetween
-//                        ) {
-//                            Text(
-//                                text = "${item["nama"]} - ${item["nilai"]}",
-//                            )
-//                            Row {
-//                                Button(onClick = {
-//                                    isEditing = true
-//                                    editingIndex = index
-//                                    mataPelajaran = item["nama"] ?: ""
-//                                    nilai = item["nilai"] ?: ""
-//                                }) {
-//                                    Text("Edit")
-//                                }
-//                                Spacer(modifier = Modifier.width(8.dp))
-//                                Button(onClick = {
-//                                    mataPelajaranList = mataPelajaranList.toMutableList().apply {
-//                                        removeAt(index)
-//                                    }
-//                                }) {
-//                                    Text("Delete")
-//                                }
-//                            }
-//                        }
-//                    }
-//                }
-//            }
+            // Display list of mata pelajaran with edit option
+            if (mataPelajaranList.isNotEmpty()) {
+                Column {
+                    Text("Daftar Mata Pelajaran:", modifier = Modifier.padding(16.dp))
+                    mataPelajaranList.forEachIndexed { index, item ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 8.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(
+                                text = "${item["nama"]} - ${item["nilai"]}",
+                            )
+                            Row {
+                                Button(onClick = {
+                                    isEditing = true
+                                    editingIndex = index
+                                    mataPelajaran = item["nama"] ?: ""
+                                    nilai = item["nilai"] ?: ""
+                                }) {
+                                    Text("Edit")
+                                }
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Button(onClick = {
+                                    mataPelajaranList = mataPelajaranList.toMutableList().apply {
+                                        removeAt(index)
+                                    }
+                                }) {
+                                    Text("Delete")
+                                }
+                            }
+                        }
+                    }
+                }
+            }
 
-//            // Form fields for mata pelajaran and nilai
-//            TextField(
-//                value = mataPelajaran,
-//                onValueChange = { mataPelajaran = it },
-//                label = { Text("Mata Pelajaran") },
-//                modifier = Modifier
-//                    .fillMaxWidth()
-//                    .padding(16.dp)
-//            )
+            // Form fields for mata pelajaran and nilai
+            TextField(
+                value = mataPelajaran,
+                onValueChange = { mataPelajaran = it },
+                label = { Text("Mata Pelajaran") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+            )
 
             TextField(
                 value = nilai,
@@ -3355,33 +3348,33 @@ fun EditNilai(
                     .padding(16.dp)
             )
 
-//            // Button to save or update mata pelajaran
-//            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-//
-//                Button(
-//                    onClick = {
-//                        if (mataPelajaran.isNotBlank() && nilai.isNotBlank()) {
-//                            val newEntry = mapOf("nama" to mataPelajaran, "nilai" to nilai)
-//                            if (isEditing && editingIndex >= 0) {
-//                                mataPelajaranList = mataPelajaranList.toMutableList().apply {
-//                                    this[editingIndex] = newEntry
-//                                }
-//                                isEditing = false
-//                                editingIndex = -1
-//                            } else {
-//                                mataPelajaranList = mataPelajaranList + newEntry
-//                            }
-//                            mataPelajaran = ""
-//                            nilai = ""
-//                        }
-//                    },
-//                    modifier = Modifier
-//
-//                        .padding(16.dp)
-//                ) {
-//                    Text(if (isEditing) "Update Mata Pelajaran" else "Tambah Mata Pelajaran")
-//                }
-//            }
+            // Button to save or update mata pelajaran
+            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+
+                Button(
+                    onClick = {
+                        if (mataPelajaran.isNotBlank() && nilai.isNotBlank()) {
+                            val newEntry = mapOf("nama" to mataPelajaran, "nilai" to nilai)
+                            if (isEditing && editingIndex >= 0) {
+                                mataPelajaranList = mataPelajaranList.toMutableList().apply {
+                                    this[editingIndex] = newEntry
+                                }
+                                isEditing = false
+                                editingIndex = -1
+                            } else {
+                                mataPelajaranList = mataPelajaranList + newEntry
+                            }
+                            mataPelajaran = ""
+                            nilai = ""
+                        }
+                    },
+                    modifier = Modifier
+
+                        .padding(16.dp)
+                ) {
+                    Text(if (isEditing) "Update Mata Pelajaran" else "Tambah Mata Pelajaran")
+                }
+            }
             // Text field for peringkat
             TextField(
                 value = semester,
@@ -3415,7 +3408,7 @@ fun EditNilai(
                     onClick = {
                         submitUpdatedDataToDatabaseNilai(
                             name,
-                           nilai,
+                            mataPelajaranList,
                             semester,
                             kelas,
                             peringkat,
@@ -3521,8 +3514,8 @@ fun EditRekapan(
 
 fun submitUpdatedDataToDatabaseAbsensi(
     name: String,
-   kelas: String,
-   tanggal: String,
+    kelas: String,
+    tanggal: String,
     keterangan: String,
     semester: String,
     navController: NavController,
@@ -3553,7 +3546,7 @@ fun submitUpdatedDataToDatabaseAbsensi(
 
 fun submitUpdatedDataToDatabaseNilai(
     name: String,
-    nilai:String,
+    mataPelajaranList: List<Map<String, String>>,
     semester: String,
     kelas: String,
     peringkat: String,
@@ -3567,7 +3560,7 @@ fun submitUpdatedDataToDatabaseNilai(
         .update(
             mapOf(
                 "nama" to name,
-                "nilai" to nilai,
+                "mata_pelajaran" to mataPelajaranList,
                 "semester" to semester,
                 "kelas" to kelas,
                 "peringkat" to peringkat
@@ -3580,7 +3573,7 @@ fun submitUpdatedDataToDatabaseNilai(
         .addOnFailureListener { e ->
             // Handle the error
             Log.e("EditNilai", "Error updating document", e)
-                   }
+        }
 }
 
 @Composable
@@ -4104,7 +4097,7 @@ fun EditSiswa(
         val document = firestore.collection("siswa").document(guruId).get().await()
         name = document.getString("nama") ?: ""
         description = document.getString("keterangan") ?: ""
-       nisn = document.getString("nisn")?:""
+        nisn = document.getString("nisn")?:""
     }
 
     Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
@@ -4207,7 +4200,7 @@ fun submitDataToDatabase(
         }
 }
 private fun submitDataToDatabaseSiswa(name: String, description: String, nisn:String,
-                                 navController: NavController,dataId:String) {
+                                      navController: NavController,dataId:String) {
     // Access the Firestore collection where you want to store the data
     val firestore = Firebase.firestore
     val collectionRef = firestore.collection(dataId)
@@ -4262,7 +4255,7 @@ private fun submitDataToDatabase(name: String, description: String, nip: String,
             Log.w("Firestore", "Error writing document", e)
         }
 }
-private fun submitDataToDatabaseNilai(name: String,nilai:String,semester:String,kelas:String,peringkat:String,
+private fun submitDataToDatabaseNilai(name: String,mataPelajaran: List<Map<String, String>>,semester:String,kelas:String,peringkat:String,
                                       navController: NavController) {
     // Access the Firestore collection where you want to store the data
     val firestore = Firebase.firestore
@@ -4274,12 +4267,12 @@ private fun submitDataToDatabaseNilai(name: String,nilai:String,semester:String,
     // Create a data object to store the fields
     val data = hashMapOf(
         "nama" to name,
-        "nilai" to nilai,
+        "mata_pelajaran" to mataPelajaran,
         "semester" to semester,
         "kelas" to kelas,
         "peringkat" to peringkat,
 
-    )
+        )
 
     // Set the data for the document
     documentRef.set(data)
@@ -4294,7 +4287,7 @@ private fun submitDataToDatabaseNilai(name: String,nilai:String,semester:String,
         }
 }
 private fun submitDataToDatabaseAbsensi(name: String, kelas:String,tanggal:String,keterangan: String,semester: String,
-                                      navController: NavController) {
+                                        navController: NavController) {
     // Access the Firestore collection where you want to store the data
     val firestore = Firebase.firestore
     val collectionRef = firestore.collection("absensi")
@@ -4324,7 +4317,7 @@ private fun submitDataToDatabaseAbsensi(name: String, kelas:String,tanggal:Strin
         }
 }
 private fun submitDataToDatabaseUjian(name: String, kelas:String,jam:String ,hari:String,tanggal:String,semester: String,
-                                          navController: NavController) {
+                                      navController: NavController) {
     // Access the Firestore collection where you want to store the data
     val firestore = Firebase.firestore
     val collectionRef = firestore.collection("jadwalUjian")
@@ -4355,7 +4348,7 @@ private fun submitDataToDatabaseUjian(name: String, kelas:String,jam:String ,har
         }
 }
 private fun submitDataToDatabasePelajaran(name: String, kelas:String,jam:String ,hari:String,semester: String,
-                                 navController: NavController) {
+                                          navController: NavController) {
     // Access the Firestore collection where you want to store the data
     val firestore = Firebase.firestore
     val collectionRef = firestore.collection("jadwalPelajaran")
@@ -4385,7 +4378,7 @@ private fun submitDataToDatabasePelajaran(name: String, kelas:String,jam:String 
         }
 }
 private fun submitDataToDatabaseKegiatan(name: String, kelas:String,jam:String ,hari:String,semester: String,
-navController: NavController) {
+                                         navController: NavController) {
     // Access the Firestore collection where you want to store the data
     val firestore = Firebase.firestore
     val collectionRef = firestore.collection("jadwalKegiatan")
@@ -4441,9 +4434,9 @@ fun uploadImageToFirebase(uri: Uri, callback: (String) -> Unit) {
 
 @Composable
 fun TeacherDashboard(
-navController: NavController,
-it: PaddingValues,
-role: String
+    navController: NavController,
+    it: PaddingValues,
+    role: String
 ) {
 
 
