@@ -146,7 +146,7 @@ data class Quadruple<T, U, V, W>(val first: T, val second: U, val third: V, val 
 data class Quintuple<T, U, V, W,X>(val first: T, val second: U, val third: V, val fourth: W, val fifth:X)
 data class Sextuple<T, U, V, W,X,Y>(val first: T, val second: U, val third: V, val fourth: W, val fifth:X,val sixth:Y)
 data class Septuple<T, U, V, W,X,Y,Z>(val first: T, val second: U, val third: V, val fourth: W, val fifth:X,val sixth:Y,val seven:Z)
-data class Nilai<T, U, V, W,X,Y>(val id:T,val nama: U, val mataPelajaranList: V, val semester:W,val kelas:X, val peringkat:Y)
+data class Nilai<T, U, V, W,X,Y>(val id:T,val nama: U, val nilai: V, val semester:W,val kelas:X, val peringkat:Y)
 sealed interface Screen {
     @Serializable
     data object Login : Screen
@@ -1891,7 +1891,7 @@ fun DataNilai(
 ){
 
     val firestore = FirebaseFirestore.getInstance()
-    val dataList = remember { mutableStateListOf<Nilai<String,String, List<Pair<String, String>>,String,String,String>>() }
+    val dataList = remember { mutableStateListOf<Nilai<String,String, String,String,String,String>>() }
     var showDialog by remember { mutableStateOf(false) }
     var documentIdToDelete by remember { mutableStateOf<String?>(null) }
     val classOptions = listOf("kelas 4", "kelas 5", "kelas 6")
@@ -1921,20 +1921,21 @@ fun DataNilai(
             // Add the new data to the list
             snapshot?.documents?.forEach { document ->
                 val nama = document.getString("nama") ?: ""
-                val mataPelajaranArray = document.get("mata_pelajaran") as? ArrayList<HashMap<String, String>> ?: arrayListOf()
-
-                // Iterate through each item in the mataPelajaranArray and extract nama and nilai
-                val mataPelajaranList = mutableListOf<Pair<String, String>>()
-                mataPelajaranArray.forEach { mataPelajaranMap ->
-                    val namaPelajaran = mataPelajaranMap["nama"] ?: ""
-                    val nilaiPelajaran = mataPelajaranMap["nilai"] ?: ""
-                    mataPelajaranList.add(Pair(namaPelajaran, nilaiPelajaran))
-                }
+//                val mataPelajaranArray = document.get("mata_pelajaran") as? ArrayList<HashMap<String, String>> ?: arrayListOf()
+//
+//                // Iterate through each item in the mataPelajaranArray and extract nama and nilai
+//                val mataPelajaranList = mutableListOf<Pair<String, String>>()
+//                mataPelajaranArray.forEach { mataPelajaranMap ->
+//                    val namaPelajaran = mataPelajaranMap["nama"] ?: ""
+//                    val nilaiPelajaran = mataPelajaranMap["nilai"] ?: ""
+//                    mataPelajaranList.add(Pair(namaPelajaran, nilaiPelajaran))
+//                }
+                val nilai = document.getString("nilai") ?: ""
                 val semester = document.getString("semester") ?: ""
                 val kelas = document.getString("kelas") ?: ""
                 val peringkat = document.getString("peringkat") ?: ""
                 // Here you can collect more fields as needed
-                dataList.add(Nilai(document.id,nama, mataPelajaranList,semester, kelas,peringkat))
+                dataList.add(Nilai(document.id,nama, nilai,semester, kelas,peringkat))
             }
         }
         onDispose {
@@ -2029,7 +2030,9 @@ fun DataNilai(
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 // Display the data fetched from Firestore
+
                 filterDataByClassAndSemester(dataList).forEach { (id, nama, matapelajaran, semester, kelas, peringkat) ->
+
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.padding(8.dp)
@@ -2057,14 +2060,19 @@ fun DataNilai(
 
 
 
-                                matapelajaran.forEach { (pelajaran, nilai) ->
-                                    Text(
-                                        text = "$pelajaran: $nilai",
-                                        style = MaterialTheme.typography.bodyLarge,
-                                        maxLines = 1
-                                    )
-                                }
-
+//                                matapelajaran.forEach { (pelajaran, nilai) ->
+//                                    Text(
+//                                        text = "$pelajaran: $nilai",
+//                                        style = MaterialTheme.typography.bodyLarge,
+//                                        maxLines = 1
+//                                    )
+//                                }
+                                Text(
+                                    text = "Nilai $nilai",
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
 
                                 Spacer(modifier = Modifier.height(4.dp))
                                 Text(
@@ -2887,7 +2895,7 @@ fun TambahNilai(
     var semester by remember { mutableStateOf("") }
     var kelas by remember { mutableStateOf("") }
     var peringkat by remember { mutableStateOf("") }
-    var mataPelajaranList by remember { mutableStateOf(listOf<Map<String, String>>()) }
+
     var isEditing by remember { mutableStateOf(false) }
     var editingIndex by remember { mutableIntStateOf(-1) }
 
@@ -2916,27 +2924,27 @@ fun TambahNilai(
                     .padding(16.dp)
             )
 
-            if (isEditing) {
-                EditNilai(
-                    mataPelajaranList = mataPelajaranList,
-                    index = editingIndex,
-                    onDone = { updatedEntry ->
-                        mataPelajaranList = mataPelajaranList.toMutableList().apply {
-                            set(editingIndex, updatedEntry)
-                        }
-                        isEditing = false
-                        editingIndex = -1
-                    }
-                )
-            } else {
-                TextField(
-                    value = mataPelajaran,
-                    onValueChange = { mataPelajaran = it },
-                    label = { Text("Mata Pelajaran") },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp)
-                )
+//            if (isEditing) {
+//                EditNilai(
+//                    mataPelajaranList = mataPelajaranList,
+//                    index = editingIndex,
+//                    onDone = { updatedEntry ->
+//                        mataPelajaranList = mataPelajaranList.toMutableList().apply {
+//                            set(editingIndex, updatedEntry)
+//                        }
+//                        isEditing = false
+//                        editingIndex = -1
+//                    }
+//                )
+//            } else {
+//                TextField(
+//                    value = mataPelajaran,
+//                    onValueChange = { mataPelajaran = it },
+//                    label = { Text("Mata Pelajaran") },
+//                    modifier = Modifier
+//                        .fillMaxWidth()
+//                        .padding(16.dp)
+//                )
 
                 TextField(
                     value = nilai,
@@ -2946,61 +2954,61 @@ fun TambahNilai(
                         .fillMaxWidth()
                         .padding(16.dp)
                 )
-                Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+//                Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+//
+//                    Button(
+//                        onClick = {
+//                            if (mataPelajaran.isNotBlank() && nilai.isNotBlank()) {
+//                                val newEntry = mapOf("nama" to mataPelajaran, "nilai" to nilai)
+//                                mataPelajaranList = mataPelajaranList + newEntry
+//                                mataPelajaran = ""
+//                                nilai = ""
+//                            }
+//                        },
+//                        modifier = Modifier
+//
+//                            .padding(16.dp)
+//                    ) {
+//                        Text("Tambah Mata Pelajaran")
+//                    }
+//                }
+//            }
 
-                    Button(
-                        onClick = {
-                            if (mataPelajaran.isNotBlank() && nilai.isNotBlank()) {
-                                val newEntry = mapOf("nama" to mataPelajaran, "nilai" to nilai)
-                                mataPelajaranList = mataPelajaranList + newEntry
-                                mataPelajaran = ""
-                                nilai = ""
-                            }
-                        },
-                        modifier = Modifier
-
-                            .padding(16.dp)
-                    ) {
-                        Text("Tambah Mata Pelajaran")
-                    }
-                }
-            }
-
-            if (mataPelajaranList.isNotEmpty()) {
-                Column {
-                    Text("Daftar Mata Pelajaran:", modifier = Modifier.padding(16.dp))
-                    mataPelajaranList.forEachIndexed { index, item ->
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp, vertical = 8.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Text(
-                                text = "${item["nama"]} - ${item["nilai"]}",
-                            )
-                            Row {
-
-
-                                Button(onClick = {
-                                    isEditing = true
-                                    editingIndex = index
-                                }) {
-                                    Text("Edit")
-                                }
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Button(onClick = {
-                                    mataPelajaranList = mataPelajaranList.toMutableList().apply {
-                                        removeAt(index)
-                                    }
-                                }) {
-                                    Text("Delete")
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+//            if (mataPelajaranList.isNotEmpty()) {
+//                Column {
+//                    Text("Daftar Mata Pelajaran:", modifier = Modifier.padding(16.dp))
+//                    mataPelajaranList.forEachIndexed { index, item ->
+//                        Row(
+//                            modifier = Modifier
+//                                .fillMaxWidth()
+//                                .padding(horizontal = 16.dp, vertical = 8.dp),
+//                            horizontalArrangement = Arrangement.SpaceBetween
+//                        ) {
+//                            Text(
+//                                text = "${item["nama"]} - ${item["nilai"]}",
+//                            )
+//                            Row {
+//
+//
+//                                Button(onClick = {
+//                                    isEditing = true
+//                                    editingIndex = index
+//                                }) {
+//                                    Text("Edit")
+//                                }
+//                                Spacer(modifier = Modifier.width(8.dp))
+//                                Button(onClick = {
+//                                    mataPelajaranList = mataPelajaranList.toMutableList().apply {
+//                                        removeAt(index)
+//                                    }
+//                                }) {
+//                                    Text("Delete")
+//                                }
+//                            }
+//                        }
+//                    }
+//                }
+//            }
             TextField(
                 value = semester,
                 onValueChange = { semester = it },
@@ -3031,7 +3039,7 @@ fun TambahNilai(
                     onClick = {
                         submitDataToDatabaseNilai(
                             name,
-                            mataPelajaranList,
+                            nilai,
                             semester,
                             kelas,
                             peringkat,
@@ -3252,12 +3260,12 @@ fun EditNilai(
 ) {
     val firestore = FirebaseFirestore.getInstance()
     var name by remember { mutableStateOf("") }
-    var mataPelajaran by remember { mutableStateOf("") }
+
     var nilai by remember { mutableStateOf("") }
     var semester by remember { mutableStateOf("") }
     var kelas by remember { mutableStateOf("") }
     var peringkat by remember { mutableStateOf("") }
-    var mataPelajaranList by remember { mutableStateOf(listOf<Map<String, String>>()) }
+
     var isEditing by remember { mutableStateOf(false) }
     var editingIndex by remember { mutableIntStateOf(-1) }
 
@@ -3268,8 +3276,7 @@ fun EditNilai(
         peringkat = document.getString("peringkat") ?: ""
         kelas = document.getString("kelas") ?: ""
         semester = document.getString("semester") ?: ""
-        val mataPelajaranArray = document.get("mata_pelajaran") as? List<Map<String, String>>
-        mataPelajaranList = mataPelajaranArray ?: listOf()
+        nilai = document.getString("nilai") ?: ""
     }
 
     LazyColumn(modifier = Modifier.fillMaxSize()) {
@@ -3292,52 +3299,52 @@ fun EditNilai(
                     .padding(16.dp)
             )
 
-            // Display list of mata pelajaran with edit option
-            if (mataPelajaranList.isNotEmpty()) {
-                Column {
-                    Text("Daftar Mata Pelajaran:", modifier = Modifier.padding(16.dp))
-                    mataPelajaranList.forEachIndexed { index, item ->
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp, vertical = 8.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Text(
-                                text = "${item["nama"]} - ${item["nilai"]}",
-                            )
-                            Row {
-                                Button(onClick = {
-                                    isEditing = true
-                                    editingIndex = index
-                                    mataPelajaran = item["nama"] ?: ""
-                                    nilai = item["nilai"] ?: ""
-                                }) {
-                                    Text("Edit")
-                                }
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Button(onClick = {
-                                    mataPelajaranList = mataPelajaranList.toMutableList().apply {
-                                        removeAt(index)
-                                    }
-                                }) {
-                                    Text("Delete")
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+//            // Display list of mata pelajaran with edit option
+//            if (mataPelajaranList.isNotEmpty()) {
+//                Column {
+//                    Text("Daftar Mata Pelajaran:", modifier = Modifier.padding(16.dp))
+//                    mataPelajaranList.forEachIndexed { index, item ->
+//                        Row(
+//                            modifier = Modifier
+//                                .fillMaxWidth()
+//                                .padding(horizontal = 16.dp, vertical = 8.dp),
+//                            horizontalArrangement = Arrangement.SpaceBetween
+//                        ) {
+//                            Text(
+//                                text = "${item["nama"]} - ${item["nilai"]}",
+//                            )
+//                            Row {
+//                                Button(onClick = {
+//                                    isEditing = true
+//                                    editingIndex = index
+//                                    mataPelajaran = item["nama"] ?: ""
+//                                    nilai = item["nilai"] ?: ""
+//                                }) {
+//                                    Text("Edit")
+//                                }
+//                                Spacer(modifier = Modifier.width(8.dp))
+//                                Button(onClick = {
+//                                    mataPelajaranList = mataPelajaranList.toMutableList().apply {
+//                                        removeAt(index)
+//                                    }
+//                                }) {
+//                                    Text("Delete")
+//                                }
+//                            }
+//                        }
+//                    }
+//                }
+//            }
 
-            // Form fields for mata pelajaran and nilai
-            TextField(
-                value = mataPelajaran,
-                onValueChange = { mataPelajaran = it },
-                label = { Text("Mata Pelajaran") },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp)
-            )
+//            // Form fields for mata pelajaran and nilai
+//            TextField(
+//                value = mataPelajaran,
+//                onValueChange = { mataPelajaran = it },
+//                label = { Text("Mata Pelajaran") },
+//                modifier = Modifier
+//                    .fillMaxWidth()
+//                    .padding(16.dp)
+//            )
 
             TextField(
                 value = nilai,
@@ -3348,33 +3355,33 @@ fun EditNilai(
                     .padding(16.dp)
             )
 
-            // Button to save or update mata pelajaran
-            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-
-                Button(
-                    onClick = {
-                        if (mataPelajaran.isNotBlank() && nilai.isNotBlank()) {
-                            val newEntry = mapOf("nama" to mataPelajaran, "nilai" to nilai)
-                            if (isEditing && editingIndex >= 0) {
-                                mataPelajaranList = mataPelajaranList.toMutableList().apply {
-                                    this[editingIndex] = newEntry
-                                }
-                                isEditing = false
-                                editingIndex = -1
-                            } else {
-                                mataPelajaranList = mataPelajaranList + newEntry
-                            }
-                            mataPelajaran = ""
-                            nilai = ""
-                        }
-                    },
-                    modifier = Modifier
-
-                        .padding(16.dp)
-                ) {
-                    Text(if (isEditing) "Update Mata Pelajaran" else "Tambah Mata Pelajaran")
-                }
-            }
+//            // Button to save or update mata pelajaran
+//            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+//
+//                Button(
+//                    onClick = {
+//                        if (mataPelajaran.isNotBlank() && nilai.isNotBlank()) {
+//                            val newEntry = mapOf("nama" to mataPelajaran, "nilai" to nilai)
+//                            if (isEditing && editingIndex >= 0) {
+//                                mataPelajaranList = mataPelajaranList.toMutableList().apply {
+//                                    this[editingIndex] = newEntry
+//                                }
+//                                isEditing = false
+//                                editingIndex = -1
+//                            } else {
+//                                mataPelajaranList = mataPelajaranList + newEntry
+//                            }
+//                            mataPelajaran = ""
+//                            nilai = ""
+//                        }
+//                    },
+//                    modifier = Modifier
+//
+//                        .padding(16.dp)
+//                ) {
+//                    Text(if (isEditing) "Update Mata Pelajaran" else "Tambah Mata Pelajaran")
+//                }
+//            }
             // Text field for peringkat
             TextField(
                 value = semester,
@@ -3408,7 +3415,7 @@ fun EditNilai(
                     onClick = {
                         submitUpdatedDataToDatabaseNilai(
                             name,
-                            mataPelajaranList,
+                           nilai,
                             semester,
                             kelas,
                             peringkat,
@@ -3546,7 +3553,7 @@ fun submitUpdatedDataToDatabaseAbsensi(
 
 fun submitUpdatedDataToDatabaseNilai(
     name: String,
-    mataPelajaranList: List<Map<String, String>>,
+    nilai:String,
     semester: String,
     kelas: String,
     peringkat: String,
@@ -3560,7 +3567,7 @@ fun submitUpdatedDataToDatabaseNilai(
         .update(
             mapOf(
                 "nama" to name,
-                "mata_pelajaran" to mataPelajaranList,
+                "nilai" to nilai,
                 "semester" to semester,
                 "kelas" to kelas,
                 "peringkat" to peringkat
@@ -4255,7 +4262,7 @@ private fun submitDataToDatabase(name: String, description: String, nip: String,
             Log.w("Firestore", "Error writing document", e)
         }
 }
-private fun submitDataToDatabaseNilai(name: String,mataPelajaran: List<Map<String, String>>,semester:String,kelas:String,peringkat:String,
+private fun submitDataToDatabaseNilai(name: String,nilai:String,semester:String,kelas:String,peringkat:String,
                                       navController: NavController) {
     // Access the Firestore collection where you want to store the data
     val firestore = Firebase.firestore
@@ -4267,7 +4274,7 @@ private fun submitDataToDatabaseNilai(name: String,mataPelajaran: List<Map<Strin
     // Create a data object to store the fields
     val data = hashMapOf(
         "nama" to name,
-        "mata_pelajaran" to mataPelajaran,
+        "nilai" to nilai,
         "semester" to semester,
         "kelas" to kelas,
         "peringkat" to peringkat,
