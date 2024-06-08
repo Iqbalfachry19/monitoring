@@ -2022,31 +2022,36 @@ fun DataNilai(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             item {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp, horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.End
+                ) {
+
+                    Text(
+                        "Edit",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = Color(0xFFE3FEF7),
+                        modifier = Modifier.padding(end = 42.dp)
+                    )
+                }
                 // Display the data fetched from Firestore
                 filterDataByClassAndSemester(dataList).forEach { (id, nama, matapelajaran, semester, kelas, peringkat) ->
                     Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.padding(8.dp)
-                    ) {
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 8.dp, horizontal = 16.dp),
+                        horizontalArrangement = Arrangement.SpaceEvenly
+                    ){
 
-                        Card(
-                            colors = CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.tertiary,
 
-                                ),
-
-                            modifier = Modifier
-                                .width(200.dp)
-                                .wrapContentHeight()
-                                .clickable { }
-                                .padding(8.dp)
-                        ) {
                             Column(
                                 horizontalAlignment = Alignment.CenterHorizontally,
                                 verticalArrangement = Arrangement.Center,
-                                modifier = Modifier.fillMaxSize()
+                                modifier = Modifier.weight(2f)
                             ) {
-                                Text(text = nama, style = MaterialTheme.typography.bodySmall)
+                                Text(text = "NAMA: $nama", style = MaterialTheme.typography.bodySmall,color=Color.White)
                                 Spacer(modifier = Modifier.height(4.dp))
 
 
@@ -2055,61 +2060,56 @@ fun DataNilai(
                                     Text(
                                         text = "$pelajaran: $nilai",
                                         style = MaterialTheme.typography.bodyLarge,
-                                        maxLines = 1
+                                        maxLines = 1,
+                                        color=Color.White
                                     )
                                 }
 
 
+
                                 Spacer(modifier = Modifier.height(4.dp))
                                 Text(
-                                    text = semester,
+                                    text = "PERINGKAT: $peringkat",
                                     style = MaterialTheme.typography.bodyLarge,
                                     maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
-                                )
-                                Spacer(modifier = Modifier.height(4.dp))
-                                Text(
-                                    text = kelas,
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
-                                )
-                                Spacer(modifier = Modifier.height(4.dp))
-                                Text(
-                                    text = "Peringkat $peringkat",
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
+                                    overflow = TextOverflow.Ellipsis,
+                                    color=Color.White
                                 )
                             }
 
-                        }
+
                         if (role == "admin") {
-                            IconButton(
-                                onClick = {
-                                    // Navigate to Edit screen with the document id
-                                    navController.navigate(Screen.EditNilai(id))
-                                }
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 8.dp, horizontal = 16.dp).weight(1f)
                             ) {
-                                Icon(
-                                    Icons.Default.Edit,
-                                    contentDescription = "Edit",
-                                    tint = Color.Gray
-                                )
-                            }
-
-                            IconButton(
-                                onClick = {
-
-                                    documentIdToDelete = id
-                                    showDialog = true
+                                IconButton(
+                                    onClick = {
+                                        // Navigate to Edit screen with the document id
+                                        navController.navigate(Screen.EditNilai(id))
+                                    }
+                                ) {
+                                    Icon(
+                                        Icons.Default.Edit,
+                                        contentDescription = "Edit",
+                                        tint = Color.Gray
+                                    )
                                 }
-                            ) {
-                                Icon(
-                                    Icons.Default.Delete,
-                                    contentDescription = "Delete",
-                                    tint = Color.Red
-                                )
+
+                                IconButton(
+                                    onClick = {
+
+                                        documentIdToDelete = id
+                                        showDialog = true
+                                    }
+                                ) {
+                                    Icon(
+                                        Icons.Default.Delete,
+                                        contentDescription = "Delete",
+                                        tint = Color.Red
+                                    )
+                                }
                             }
                         }
                     }
