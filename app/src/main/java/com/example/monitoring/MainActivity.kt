@@ -1703,7 +1703,16 @@ fun DataJadwalUjian(
     val dataList = remember { mutableStateListOf<Septuple<String,String, String, String,String,String,String>>() }
     var showDialog by remember { mutableStateOf(false) }
     var documentIdToDelete by remember { mutableStateOf<String?>(null) }
-
+    val classOptions = listOf("kelas 4", "kelas 5", "kelas 6")
+    val semesterOptions = listOf("semester 1", "semester 2")
+    var selectedClass by remember { mutableStateOf(classOptions[0]) }
+    var selectedSemester by remember { mutableStateOf(semesterOptions[0]) }
+    // Function to filter data based on selected class and semester
+    fun filterDataByClassAndSemester(dataList: List<Septuple<String, String, String, String, String, String,String>>): List<Septuple<String, String, String, String,String, String, String>> {
+        return dataList.filter { (_, _, _, kelas,_, _, semester) ->
+            kelas == selectedClass && semester == selectedSemester
+        }
+    }
 
 
     DisposableEffect(Unit) {
@@ -1773,6 +1782,39 @@ fun DataJadwalUjian(
                 , containerColor = Color(0xFF77B0AA) ) { Text("+", fontSize = 24.sp, color = Color(0xFFE3FEF7)) }
         },
     ) { innerPadding ->
+        Column(modifier = Modifier.padding(innerPadding)  .fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(
+                text = "Data Jadwal Ujian",
+                style = MaterialTheme.typography.headlineLarge,
+                color = Color(0xFFE3FEF7)
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+
+                DropdownMenuButton(
+                    expanded = false, // Initially closed
+                    onDismissRequest = {},
+                    modifier = Modifier.padding(8.dp),
+                    buttonText = selectedClass,
+                    options = classOptions,
+                    onOptionSelected = { selectedClass = it }
+                )
+
+                // Button for semester selection
+                DropdownMenuButton(
+                    expanded = false, // Initially closed
+                    onDismissRequest = {},
+                    modifier = Modifier.padding(8.dp),
+                    buttonText = selectedSemester,
+                    options = semesterOptions,
+                    onOptionSelected = { selectedSemester = it }
+                )
+            }
 
         LazyColumn(
             modifier = Modifier
@@ -1782,102 +1824,108 @@ fun DataJadwalUjian(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             item{
-                Text(text = "Data Jadwal Ujian", style = MaterialTheme.typography.headlineLarge, color = Color(0xFFE3FEF7))
-                Spacer(modifier = Modifier.height(16.dp))
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp, horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.End
+                ) {
+
+                    Text(
+                        "Edit",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = Color(0xFFE3FEF7),
+                        modifier = Modifier.padding(end = 42.dp)
+                    )
+                }
                 // Display the data fetched from Firestore
-                dataList.forEach { (id, nama, jam, kelas, hari, tanggal,semester) ->
+                filterDataByClassAndSemester(dataList).forEach { (id, nama, jam, kelas, hari, tanggal, semester) ->
                     Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.padding(8.dp)
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 8.dp, horizontal = 16.dp),
+                        horizontalArrangement = Arrangement.SpaceEvenly
                     ) {
 
-                        Card(
-                            colors = CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.tertiary,
-
-                                ),
-
-                            modifier = Modifier
-                                .width(width = 200.dp)
-                                .wrapContentHeight()
-                                .clickable { }
-                                .padding(8.dp)
-
+                        Column(
+                            horizontalAlignment = Alignment.Start,
+                            verticalArrangement = Arrangement.Center,
+                            modifier = Modifier.weight(2f)
                         ) {
-                            Column(
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.Center,
-                                modifier = Modifier.fillMaxSize()
-                            ) {
 
 
                                 Text(
                                     text = nama,
                                     style = MaterialTheme.typography.bodyLarge,
                                     maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
+                                    overflow = TextOverflow.Ellipsis,
+                                    color=Color.White,
                                 )
 
-                                Text(
-                                    text = kelas,
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
-                                )
+
 
                                 Text(
                                     text = jam,
                                     style = MaterialTheme.typography.bodyLarge,
                                     maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
+                                    overflow = TextOverflow.Ellipsis,
+                                    color=Color.White
                                 )
 
                                 Text(
                                     text = hari,
                                     style = MaterialTheme.typography.bodyLarge,
                                     maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
+                                    overflow = TextOverflow.Ellipsis,
+                                    color=Color.White
                                 )
 
                                 Text(
                                     text = tanggal,
                                     style = MaterialTheme.typography.bodyLarge,
                                     maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
+                                    overflow = TextOverflow.Ellipsis,
+                                    color=Color.White
                                 )
-                                Text(
-                                    text = semester,
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
-                                )
+
                             }
-                        }
+
                         if (role == "admin") {
-                            IconButton(
-                                onClick = {
-                                    // Navigate to Edit screen with the document id
-                                    navController.navigate(Screen.EditJadwalUjian(id))
-                                }
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 8.dp, horizontal = 16.dp).weight(1f)
                             ) {
-                                Icon(Icons.Default.Edit, contentDescription = "Edit", tint = Color.Gray)
-                            }
-
-                            IconButton(
-                                onClick = {
-
-                                    documentIdToDelete = id
-                                    showDialog = true
+                                IconButton(
+                                    onClick = {
+                                        // Navigate to Edit screen with the document id
+                                        navController.navigate(Screen.EditJadwalUjian(id))
+                                    }
+                                ) {
+                                    Icon(
+                                        Icons.Default.Edit,
+                                        contentDescription = "Edit",
+                                        tint = Color.Gray
+                                    )
                                 }
-                            ) {
-                                Icon(
-                                    Icons.Default.Delete,
-                                    contentDescription = "Delete",
-                                    tint = Color.Red
-                                )
+
+                                IconButton(
+                                    onClick = {
+
+                                        documentIdToDelete = id
+                                        showDialog = true
+                                    }
+                                ) {
+                                    Icon(
+                                        Icons.Default.Delete,
+                                        contentDescription = "Delete",
+                                        tint = Color.Red
+                                    )
+                                }
                             }
                         }
                     }
+                }
                 }
             }
         }
