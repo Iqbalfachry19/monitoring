@@ -2584,27 +2584,32 @@ fun ExportData(
 fun exportDataToPDF(context: Context, staffData: List<Map<String, Any>>) {
     val pdfDocument = PdfDocument()
     val pageInfo = PdfDocument.PageInfo.Builder(595, 842, 1).create() // A4 size
-    val page = pdfDocument.startPage(pageInfo)
-    val canvas = page.canvas
-
     val paint = Paint().apply {
         textSize = 12f
         isAntiAlias = true
     }
 
     var yPos = 50f
+    var currentPage = pdfDocument.startPage(pageInfo)
+    var canvas = currentPage.canvas
 
     staffData.forEach { data ->
-        canvas.drawText("Nama: ${data["nama"]?:""}", 50f, yPos, paint)
+        if (yPos > 800f) {
+            pdfDocument.finishPage(currentPage)
+            currentPage = pdfDocument.startPage(pageInfo)
+            canvas = currentPage.canvas
+            yPos = 50f
+        }
+
+        canvas.drawText("Nama: ${data["nama"] ?: ""}", 50f, yPos, paint)
         yPos += 20f
-        canvas.drawText("Keterangan: ${data["keterangan"]?:""}", 50f, yPos, paint)
+        canvas.drawText("Keterangan: ${data["keterangan"] ?: ""}", 50f, yPos, paint)
         yPos += 20f
-        canvas.drawText("NISN: ${data["nisn"]?:""}", 50f, yPos, paint)
+        canvas.drawText("NISN: ${data["nisn"] ?: ""}", 50f, yPos, paint)
         yPos += 40f
     }
 
-
-    pdfDocument.finishPage(page)
+    pdfDocument.finishPage(currentPage)
 
     val downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
     if (downloadsDir != null) {
