@@ -146,7 +146,7 @@ data class Quadruple<T, U, V, W>(val first: T, val second: U, val third: V, val 
 data class Quintuple<T, U, V, W,X>(val first: T, val second: U, val third: V, val fourth: W, val fifth:X)
 data class Sextuple<T, U, V, W,X,Y>(val first: T, val second: U, val third: V, val fourth: W, val fifth:X,val sixth:Y)
 data class Septuple<T, U, V, W,X,Y,Z>(val first: T, val second: U, val third: V, val fourth: W, val fifth:X,val sixth:Y,val seven:Z)
-data class Nilai<T, U, V, W,X,Y>(val id:T,val nama: U, val mataPelajaranList: V, val semester:W,val kelas:X, val peringkat:Y)
+data class Nilai<T, U, V, W,X,Y,Z>(val id:T,val nama: U, val mataPelajaranList: V, val semester:W,val kelas:X, val peringkat:Y,val rata:Z)
 sealed interface Screen {
     @Serializable
     data object Login : Screen
@@ -1932,7 +1932,23 @@ fun DataJadwalUjian(
         }
     }
 }
+fun calculateAverage(matapelajaran: List<Pair<String, String>>): Double {
+    var totalNilai = 0.0
+    var jumlahPelajaran = 0
 
+    // Iterate through each mata pelajaran and sum up the nilai
+    matapelajaran.forEach { (_, nilai) ->
+        totalNilai += nilai.toDoubleOrNull() ?: 0.0
+        jumlahPelajaran++
+    }
+
+    // Calculate the average nilai
+    return if (jumlahPelajaran > 0) {
+        totalNilai / jumlahPelajaran
+    } else {
+        0.0 // Return 0 if there are no pelajaran or if nilai cannot be parsed
+    }
+}
 @Composable
 fun DataNilai(
     navController: NavController,
@@ -1940,7 +1956,7 @@ fun DataNilai(
 ){
 
     val firestore = FirebaseFirestore.getInstance()
-    val dataList = remember { mutableStateListOf<Nilai<String,String, List<Pair<String, String>>,String,String,String>>() }
+    val dataList = remember { mutableStateListOf<Nilai<String,String, List<Pair<String, String>>,String,String,String,Double>>() }
     var showDialog by remember { mutableStateOf(false) }
     var documentIdToDelete by remember { mutableStateOf<String?>(null) }
     val classOptions = listOf("kelas 4", "kelas 5", "kelas 6")
@@ -1948,8 +1964,8 @@ fun DataNilai(
     var selectedClass by remember { mutableStateOf(classOptions[0]) }
     var selectedSemester by remember { mutableStateOf(semesterOptions[0]) }
     // Function to filter data based on selected class and semester
-    fun filterDataByClassAndSemester(dataList: List<Nilai<String,String, List<Pair<String, String>>,String,String,String>>): List<Nilai<String,String, List<Pair<String, String>>,String,String,String>> {
-        return dataList.filter { (_, _, _, semester, kelas, _) ->
+    fun filterDataByClassAndSemester(dataList: List<Nilai<String,String, List<Pair<String, String>>,String,String,String,Double>>): List<Nilai<String,String, List<Pair<String, String>>,String,String,String,Double>> {
+        return dataList.filter { (_, _, _, semester, kelas, _,_) ->
             kelas == selectedClass && semester == selectedSemester
         }
     }
@@ -1983,13 +1999,15 @@ fun DataNilai(
                 val kelas = document.getString("kelas") ?: ""
                 val peringkat = document.getString("peringkat") ?: ""
                 // Here you can collect more fields as needed
-                dataList.add(Nilai(document.id,nama, mataPelajaranList,semester, kelas,peringkat))
+                dataList.add(Nilai(document.id,nama, mataPelajaranList,semester, kelas,peringkat,
+                    calculateAverage(mataPelajaranList)))
             }
         }
         onDispose {
             listenerRegistration.remove()
         }
     }
+
     if (showDialog) {
         AlertDialog(
             onDismissRequest = { showDialog = false },
@@ -2086,7 +2104,7 @@ fun DataNilai(
                     )
                 }
                 // Display the data fetched from Firestore
-                filterDataByClassAndSemester(dataList).forEach { (id, nama, matapelajaran, semester, kelas, peringkat) ->
+                filterDataByClassAndSemester(dataList).forEach { (id, nama, matapelajaran, semester, kelas, peringkat,rata) ->
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -2115,7 +2133,14 @@ fun DataNilai(
                                 }
 
 
-
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = "Nilai rata-rata: $rata",
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                    color=Color.White
+                                )
                                 Spacer(modifier = Modifier.height(4.dp))
                                 Text(
                                     text = "PERINGKAT: $peringkat",
