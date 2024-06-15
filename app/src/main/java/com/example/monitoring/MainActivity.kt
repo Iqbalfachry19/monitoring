@@ -4669,7 +4669,7 @@ fun TeacherDashboard(
 
 
 }
-@Preview(showBackground = true)
+@Preview
 @Composable
 fun Preview() {
 
