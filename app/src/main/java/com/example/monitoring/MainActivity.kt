@@ -1561,7 +1561,7 @@ fun DataJadwalPelajaran(
                     expanded = false, // Initially closed
                     onDismissRequest = {},
                     modifier = Modifier.padding(8.dp),
-                    buttonText = selectedClass,
+                    buttonText = "Kelas $selectedClass",
                     options = classOptions,
                     onOptionSelected = { selectedClass = it }
                 )
@@ -1571,7 +1571,7 @@ fun DataJadwalPelajaran(
                     expanded = false, // Initially closed
                     onDismissRequest = {},
                     modifier = Modifier.padding(8.dp),
-                    buttonText = selectedSemester,
+                    buttonText = "Semester $selectedSemester",
                     options = semesterOptions,
                     onOptionSelected = { selectedSemester = it }
                 )
@@ -1795,7 +1795,7 @@ fun DataJadwalUjian(
                     expanded = false, // Initially closed
                     onDismissRequest = {},
                     modifier = Modifier.padding(8.dp),
-                    buttonText = selectedClass,
+                    buttonText = "Kelas $selectedClass",
                     options = classOptions,
                     onOptionSelected = { selectedClass = it }
                 )
@@ -1805,7 +1805,7 @@ fun DataJadwalUjian(
                     expanded = false, // Initially closed
                     onDismissRequest = {},
                     modifier = Modifier.padding(8.dp),
-                    buttonText = selectedSemester,
+                    buttonText = "Semester $selectedSemester",
                     options = semesterOptions,
                     onOptionSelected = { selectedSemester = it }
                 )
@@ -2061,7 +2061,7 @@ fun DataNilai(
                     expanded = false, // Initially closed
                     onDismissRequest = {},
                     modifier = Modifier.padding(8.dp),
-                    buttonText = selectedClass,
+                    buttonText = "Kelas $selectedClass",
                     options = classOptions,
                     onOptionSelected = { selectedClass = it }
                 )
@@ -2071,7 +2071,7 @@ fun DataNilai(
                     expanded = false, // Initially closed
                     onDismissRequest = {},
                     modifier = Modifier.padding(8.dp),
-                    buttonText = selectedSemester,
+                    buttonText = "Semester $selectedSemester",
                     options = semesterOptions,
                     onOptionSelected = { selectedSemester = it }
                 )
