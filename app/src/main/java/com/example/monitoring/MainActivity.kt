@@ -4672,11 +4672,5 @@ fun TeacherDashboard(
 @Preview
 @Composable
 fun Preview() {
-
-
           LoginPage(rememberNavController())
-
-
-
-
 }
