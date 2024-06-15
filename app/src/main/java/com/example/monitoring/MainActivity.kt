@@ -104,6 +104,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
@@ -1542,7 +1543,9 @@ fun DataJadwalPelajaran(
                 , containerColor = Color(0xFF77B0AA) ) { Text("+", fontSize = 24.sp, color = Color(0xFFE3FEF7)) }
         },
     ) { innerPadding ->
-        Column(modifier = Modifier.padding(innerPadding)  .fillMaxSize(),
+        Column(modifier = Modifier
+            .padding(innerPadding)
+            .fillMaxSize(),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally) {
             // Dropdown for class selection
@@ -1777,7 +1780,9 @@ fun DataJadwalUjian(
                 , containerColor = Color(0xFF77B0AA) ) { Text("+", fontSize = 24.sp, color = Color(0xFFE3FEF7)) }
         },
     ) { innerPadding ->
-        Column(modifier = Modifier.padding(innerPadding)  .fillMaxSize(),
+        Column(modifier = Modifier
+            .padding(innerPadding)
+            .fillMaxSize(),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
@@ -1890,7 +1895,8 @@ fun DataJadwalUjian(
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(vertical = 8.dp, horizontal = 16.dp).weight(1f)
+                                    .padding(vertical = 8.dp, horizontal = 16.dp)
+                                    .weight(1f)
                             ) {
                                 IconButton(
                                     onClick = {
@@ -2041,7 +2047,9 @@ fun DataNilai(
                 , containerColor = Color(0xFF77B0AA) ) { Text("+", fontSize = 24.sp, color = Color(0xFFE3FEF7)) }
         },
     ) { innerPadding ->
-        Column(modifier = Modifier.padding(innerPadding)  .fillMaxSize(),
+        Column(modifier = Modifier
+            .padding(innerPadding)
+            .fillMaxSize(),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally) {
             // Dropdown for class selection
@@ -2151,7 +2159,8 @@ fun DataNilai(
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(vertical = 8.dp, horizontal = 16.dp).weight(1f)
+                                    .padding(vertical = 8.dp, horizontal = 16.dp)
+                                    .weight(1f)
                             ) {
                                 IconButton(
                                     onClick = {
@@ -4657,6 +4666,17 @@ fun TeacherDashboard(
 
     }
 //
+
+
+}
+@Preview
+@Composable
+fun Preview() {
+
+
+          LoginPage(rememberNavController())
+
+
 
 
 }
