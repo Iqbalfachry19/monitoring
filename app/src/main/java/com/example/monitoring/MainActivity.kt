@@ -822,12 +822,7 @@ fun AdminDashboardPage(navController: NavController,it:PaddingValues,role: Strin
         Row(verticalAlignment = Alignment.CenterVertically){
             Text(text = "Dashboard Admin", style = MaterialTheme.typography.headlineLarge, color = Color(0xFFE3FEF7))
             Spacer(modifier = Modifier.width(65.dp))
-            Icon(
-                imageVector = Icons.Filled.AccountCircle,
-                contentDescription = "Person",
-                modifier=Modifier.size(50.dp),
-                tint = Color(0xFFE3FEF7)
-            )
+
         }
         Spacer(modifier = Modifier.height(8.dp))
         val cards= listOf(CardItem(
@@ -4584,12 +4579,7 @@ fun TeacherDashboard(
         Row(verticalAlignment = Alignment.CenterVertically){
             Text(text = "Dashboard Guru", style = MaterialTheme.typography.headlineLarge, color = Color(0xFFE3FEF7))
             Spacer(modifier = Modifier.width(65.dp))
-            Icon(
-                imageVector = Icons.Filled.AccountCircle,
-                contentDescription = "Person",
-                modifier=Modifier.size(50.dp),
-                tint = Color(0xFFE3FEF7)
-            )
+
         }
         Spacer(modifier = Modifier.height(8.dp))
         val cards= listOf(CardItem(
