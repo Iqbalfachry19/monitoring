@@ -1598,7 +1598,7 @@ fun DataJadwalPelajaran(
                         )
                         Text(
                             "Mata Pelajaran",
-                            style = MaterialTheme.typography.bodyLarge,
+                            style = MaterialTheme.typography.bodySmall,
                             color = Color(0xFFE3FEF7),
                             modifier = Modifier.weight(3f)
                         )
@@ -1640,13 +1640,13 @@ fun DataJadwalPelajaran(
                                         nama,
                                         style = MaterialTheme.typography.bodyLarge,
                                         color = Color(0xFFE3FEF7),
-                                        modifier = Modifier.weight(3f)
+                                        modifier = Modifier.weight(2f)
                                     )
                                     Text(
                                         jam,
                                         style = MaterialTheme.typography.bodyLarge,
                                         color = Color(0xFFE3FEF7),
-                                        modifier = Modifier.weight(1f)
+                                        modifier = Modifier.weight(2f)
 
 
                                     )
