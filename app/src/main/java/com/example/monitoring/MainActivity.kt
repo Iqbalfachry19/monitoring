@@ -1176,9 +1176,9 @@ fun DataSiswa(
             snapshot?.documents?.forEach { document ->
                 val name = document.getString("nama") ?: ""
                 val keterangan = document.getString("keterangan") ?: ""
-                val nisn = document.getString("nisn") ?: ""
+                val lp = document.getString("lp") ?: ""
                 // Here you can collect more fields as needed
-                dataList.add(Quadruple(document.id, name, keterangan, nisn))
+                dataList.add(Quadruple(document.id, name, keterangan, lp))
             }
             dataList.sortBy { it.second }
         }
@@ -1301,7 +1301,7 @@ fun DataSiswa(
                             .padding(8.dp)
                     ) {
                         Text(
-                            text = "NISN",
+                            text = "L/P",
                             style = MaterialTheme.typography.bodyLarge,
                             color = Color.White,
                             modifier = Modifier.weight(1f)
@@ -1345,7 +1345,7 @@ fun DataSiswa(
                     dataList.filter { it.third == selectedFilter }
                 }
                 items(filteredList.size, key = { index -> filteredList[index].first }) { index ->
-                    val (id, name, keterangan, nisn) = filteredList[index]
+                    val (id, name, keterangan, lp) = filteredList[index]
                     val canEdit = when (role) {
                         "admin" -> true
                         "guru 4" -> keterangan == "kelas 4"
@@ -1364,7 +1364,7 @@ fun DataSiswa(
                             modifier = Modifier.weight(1f)
                         ) {
                             Text(
-                                text = nisn,
+                                text = lp,
                                 style = MaterialTheme.typography.bodyLarge,
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,
@@ -2630,7 +2630,7 @@ fun exportDataToPDF(context: Context, staffData: List<Map<String, Any>>) {
         yPos += 20f
         canvas.drawText("Keterangan: ${data["keterangan"] ?: ""}", 50f, yPos, paint)
         yPos += 20f
-        canvas.drawText("NISN: ${data["nisn"] ?: ""}", 50f, yPos, paint)
+        canvas.drawText("L/P: ${data["lp"] ?: ""}", 50f, yPos, paint)
         yPos += 40f
     }
 
@@ -2660,7 +2660,7 @@ fun TambahSiswa(
 ) {
     var name by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
-    var nisn by remember { mutableStateOf("") }
+    var lp by remember { mutableStateOf("") }
 
 
 
@@ -2693,9 +2693,9 @@ fun TambahSiswa(
                 .padding(16.dp)
         )
         TextField(
-            value = nisn,
-            onValueChange = { nisn = it },
-            label = { Text("NISN") },
+            value = lp,
+            onValueChange = { lp = it },
+            label = { Text("L/P") },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp)
@@ -2704,7 +2704,7 @@ fun TambahSiswa(
         // Button to submit data
         Button(
             onClick = {
-                submitDataToDatabaseSiswa(name, description, nisn,navController,dataId= "siswa")
+                submitDataToDatabaseSiswa(name, description, lp,navController,dataId= "siswa")
             },
             modifier = Modifier
                 .align(Alignment.CenterHorizontally)
@@ -4162,7 +4162,7 @@ fun EditSiswa(
     val firestore = FirebaseFirestore.getInstance()
     var name by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
-    var nisn by remember { mutableStateOf("") }
+    var lp by remember { mutableStateOf("") }
 
 
     // Fetch existing data from Firestore
@@ -4170,7 +4170,7 @@ fun EditSiswa(
         val document = firestore.collection("siswa").document(guruId).get().await()
         name = document.getString("nama") ?: ""
         description = document.getString("keterangan") ?: ""
-        nisn = document.getString("nisn")?:""
+        lp = document.getString("lp")?:""
     }
 
     Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
@@ -4199,9 +4199,9 @@ fun EditSiswa(
                 .padding(16.dp)
         )
         TextField(
-            value = nisn,
-            onValueChange = { nisn = it },
-            label = { Text("NISN") },
+            value = lp,
+            onValueChange = { lp = it },
+            label = { Text("L/P") },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp)
@@ -4210,7 +4210,7 @@ fun EditSiswa(
         // Button to submit data
         Button(
             onClick = {
-                submitDataToDatabaseSiswa(name, description, nisn, navController, guruId, data = "siswa")
+                submitDataToDatabaseSiswa(name, description, lp, navController, guruId, data = "siswa")
             },
             modifier = Modifier
                 .align(Alignment.CenterHorizontally)
@@ -4225,7 +4225,7 @@ fun EditSiswa(
 fun submitDataToDatabaseSiswa(
     name: String,
     description: String,
-    nisn: String,
+    lp: String,
     navController: NavController,
     documentId: String,
     data: String
@@ -4234,7 +4234,7 @@ fun submitDataToDatabaseSiswa(
     val dataMap = hashMapOf(
         "nama" to name,
         "keterangan" to description,
-        "nisn" to nisn
+        "lp" to lp
     )
 
     firestore.collection(data).document(documentId).set(dataMap)
@@ -4272,7 +4272,7 @@ fun submitDataToDatabase(
             Log.e("EditGuru", "Error updating document", e)
         }
 }
-private fun submitDataToDatabaseSiswa(name: String, description: String, nisn:String,
+private fun submitDataToDatabaseSiswa(name: String, description: String, lp:String,
                                       navController: NavController,dataId:String) {
     // Access the Firestore collection where you want to store the data
     val firestore = Firebase.firestore
@@ -4285,7 +4285,7 @@ private fun submitDataToDatabaseSiswa(name: String, description: String, nisn:St
     val data = hashMapOf(
         "nama" to name,
         "keterangan" to description,
-        "nisn" to nisn
+        "lp" to lp
     )
 
     // Set the data for the document
