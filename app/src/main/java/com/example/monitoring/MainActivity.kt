@@ -2303,7 +2303,7 @@ fun DataJadwalKegiatan(
                                 Spacer(modifier = Modifier.height(4.dp))
 
                                 Text(
-                                    text = kelas,
+                                    text = "Kelas $kelas",
                                     style = MaterialTheme.typography.bodyLarge,
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis
@@ -2325,7 +2325,7 @@ fun DataJadwalKegiatan(
                                 )
                                 Spacer(modifier = Modifier.height(4.dp))
                                 Text(
-                                    text = semester,
+                                    text = "Semester $semester",
                                     style = MaterialTheme.typography.bodyLarge,
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis
@@ -2499,7 +2499,7 @@ fun  DataRekapan(
                                 )
                                 Spacer(modifier = Modifier.height(4.dp))
                                 Text(
-                                    text = semester,
+                                    text = "Semester $semester",
                                     style = MaterialTheme.typography.bodyLarge,
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis
