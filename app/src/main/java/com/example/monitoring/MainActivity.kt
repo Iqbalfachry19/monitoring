@@ -1598,15 +1598,15 @@ fun DataJadwalPelajaran(
                         )
                         Text(
                             "Mata Pelajaran",
-                            style = MaterialTheme.typography.bodySmall,
+                            style = MaterialTheme.typography.bodyLarge,
                             color = Color(0xFFE3FEF7),
-                            modifier = Modifier.weight(3f)
+                            modifier = Modifier.weight(2f)
                         )
                         Text(
                             "Jam",
                             style = MaterialTheme.typography.bodyLarge,
                             color = Color(0xFFE3FEF7),
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier.weight(2f)
                         )
                         Text(
                             "Edit",
