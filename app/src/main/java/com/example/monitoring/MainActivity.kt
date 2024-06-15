@@ -956,9 +956,9 @@ fun DataGuruPage(
             snapshot?.documents?.forEach { document ->
                 val name = document.getString("nama") ?: ""
                 val keterangan = document.getString("keterangan") ?: ""
-                val nip = document.getString("nip") ?: ""
+                val lp = document.getString("lp") ?: ""
                 // Here you can collect more fields as needed
-                dataList.add(Quadruple(document.id, name, keterangan, nip))
+                dataList.add(Quadruple(document.id, name, keterangan, lp))
             }
             dataList.sortBy { it.second }
         }
@@ -1034,7 +1034,7 @@ fun DataGuruPage(
                         .padding(8.dp)
                 ) {
                     Text(
-                        text = "NIP",
+                        text = "L/P",
                         style = MaterialTheme.typography.bodyLarge,
                         color = Color.White,
                         modifier = Modifier.weight(1f)
@@ -1063,7 +1063,7 @@ fun DataGuruPage(
             }
             items(dataList.size) { index ->
                 val item = dataList[index]
-                val (id, name, keterangan, nip) = item
+                val (id, name, keterangan, lp) = item
 
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -1075,7 +1075,7 @@ fun DataGuruPage(
                         modifier = Modifier.weight(1f)
                     ) {
                         Text(
-                            text = nip,
+                            text = lp,
                             style = MaterialTheme.typography.bodyLarge,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
@@ -3259,7 +3259,7 @@ fun TambahGuru(
 ) {
     var name by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
-    var nip by remember { mutableStateOf("") }
+    var lp by remember { mutableStateOf("") }
 
 
 
@@ -3292,9 +3292,9 @@ fun TambahGuru(
         )
         // Text field for description
         TextField(
-            value =nip,
-            onValueChange = { nip = it },
-            label = { Text("NIP") },
+            value =lp,
+            onValueChange = { lp = it },
+            label = { Text("L/P") },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp)
@@ -3303,7 +3303,7 @@ fun TambahGuru(
         // Button to submit data
         Button(
             onClick = {
-                submitDataToDatabase(name, description, nip,navController,dataId= "guru")
+                submitDataToDatabase(name, description, lp,navController,dataId= "guru")
             },
             modifier = Modifier
                 .align(Alignment.CenterHorizontally)
@@ -4089,7 +4089,7 @@ fun EditGuru(
     val firestore = FirebaseFirestore.getInstance()
     var name by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
-    var nip by remember { mutableStateOf("") }
+    var lp by remember { mutableStateOf("") }
 
 
     // Fetch existing data from Firestore
@@ -4097,7 +4097,7 @@ fun EditGuru(
         val document = firestore.collection("guru").document(guruId).get().await()
         name = document.getString("nama") ?: ""
         description = document.getString("keterangan") ?: ""
-        nip = document.getString("nip")?:""
+        lp = document.getString("lp")?:""
     }
 
     Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
@@ -4127,9 +4127,9 @@ fun EditGuru(
         )
         // Text field for description
         TextField(
-            value = nip,
-            onValueChange = { nip = it },
-            label = { Text("NIP") },
+            value = lp,
+            onValueChange = { lp = it },
+            label = { Text("L/P") },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp)
@@ -4138,7 +4138,7 @@ fun EditGuru(
         // Button to submit data
         Button(
             onClick = {
-                submitDataToDatabase(name, description, nip, navController, guruId, data = "guru")
+                submitDataToDatabase(name, description, lp, navController, guruId, data = "guru")
             },
             modifier = Modifier
                 .align(Alignment.CenterHorizontally)
@@ -4245,7 +4245,7 @@ fun submitDataToDatabaseSiswa(
 fun submitDataToDatabase(
     name: String,
     description: String,
-    nip: String,
+    lp: String,
     navController: NavController,
     documentId: String,
     data: String
@@ -4254,7 +4254,7 @@ fun submitDataToDatabase(
     val dataMap = hashMapOf(
         "nama" to name,
         "keterangan" to description,
-        "nip" to nip
+        "lp" to lp
     )
 
     firestore.collection(data).document(documentId).set(dataMap)
@@ -4295,7 +4295,7 @@ private fun submitDataToDatabaseSiswa(name: String, description: String, lp:Stri
             Log.w("Firestore", "Error writing document", e)
         }
 }
-private fun submitDataToDatabase(name: String, description: String, nip: String,
+private fun submitDataToDatabase(name: String, description: String, lp: String,
                                  navController: NavController,dataId:String) {
     // Access the Firestore collection where you want to store the data
     val firestore = Firebase.firestore
@@ -4308,7 +4308,7 @@ private fun submitDataToDatabase(name: String, description: String, nip: String,
     val data = hashMapOf(
         "nama" to name,
         "keterangan" to description,
-        "nip" to nip
+        "lp" to lp
     )
 
     // Set the data for the document
