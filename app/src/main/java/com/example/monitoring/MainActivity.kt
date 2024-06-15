@@ -1254,19 +1254,19 @@ fun DataSiswa(
                         DropdownMenuItem(text = {
                             Text("Kelas 4")
                         }, onClick = {
-                            selectedFilter = "kelas 4"
+                            selectedFilter = "4"
                             showDropdownMenu = false
                         })
                         DropdownMenuItem(text = {
                             Text("Kelas 5")
                         }, onClick = {
-                            selectedFilter = "kelas 5"
+                            selectedFilter = "5"
                             showDropdownMenu = false
                         })
                         DropdownMenuItem(text = {
                             Text("Kelas 6")
                         }, onClick = {
-                            selectedFilter = "kelas 6"
+                            selectedFilter = "6"
                             showDropdownMenu = false
                         })
                     }
@@ -1316,9 +1316,9 @@ fun DataSiswa(
                         val anyEditable = dataList.any { (_, _, keterangan, _) ->
                             when (role) {
                                 "admin" -> true
-                                "guru 4" -> keterangan == "kelas 4" && (selectedFilter == "All" || selectedFilter == "kelas 4")
-                                "guru 5" -> keterangan == "kelas 5" && (selectedFilter == "All" || selectedFilter == "kelas 5")
-                                "guru 6" -> keterangan == "kelas 6" && (selectedFilter == "All" || selectedFilter == "kelas 6")
+                                "guru 4" -> keterangan == "4" && (selectedFilter == "All" || selectedFilter == "4")
+                                "guru 5" -> keterangan == "5" && (selectedFilter == "All" || selectedFilter == "5")
+                                "guru 6" -> keterangan == "6" && (selectedFilter == "All" || selectedFilter == "6")
                                 else -> false
                             }
                         }
@@ -1343,9 +1343,9 @@ fun DataSiswa(
                     val (id, name, keterangan, lp) = filteredList[index]
                     val canEdit = when (role) {
                         "admin" -> true
-                        "guru 4" -> keterangan == "kelas 4"
-                        "guru 5" -> keterangan == "kelas 5"
-                        "guru 6" -> keterangan == "kelas 6"
+                        "guru 4" -> keterangan == "4"
+                        "guru 5" -> keterangan == "5"
+                        "guru 6" -> keterangan == "6"
                         else -> false
                     }
 
@@ -1466,8 +1466,8 @@ fun DataJadwalPelajaran(
     val dataList = remember { mutableStateListOf<Sextuple<String,String, String, String,String,String>>() }
     var showDialog by remember { mutableStateOf(false) }
     var documentIdToDelete by remember { mutableStateOf<String?>(null) }
-    val classOptions = listOf("kelas 4", "kelas 5", "kelas 6")
-    val semesterOptions = listOf("semester 1", "semester 2")
+    val classOptions = listOf("4", "5", "6")
+    val semesterOptions = listOf("1", "2")
     var selectedClass by remember { mutableStateOf(classOptions[0]) }
     var selectedSemester by remember { mutableStateOf(semesterOptions[0]) }
     // Function to filter data based on selected class and semester
@@ -1698,8 +1698,8 @@ fun DataJadwalUjian(
     val dataList = remember { mutableStateListOf<Septuple<String,String, String, String,String,String,String>>() }
     var showDialog by remember { mutableStateOf(false) }
     var documentIdToDelete by remember { mutableStateOf<String?>(null) }
-    val classOptions = listOf("kelas 4", "kelas 5", "kelas 6")
-    val semesterOptions = listOf("semester 1", "semester 2")
+    val classOptions = listOf("4", "5", "6")
+    val semesterOptions = listOf("1", "2")
     var selectedClass by remember { mutableStateOf(classOptions[0]) }
     var selectedSemester by remember { mutableStateOf(semesterOptions[0]) }
     // Function to filter data based on selected class and semester
@@ -1954,8 +1954,8 @@ fun DataNilai(
     val dataList = remember { mutableStateListOf<Nilai<String,String, List<Pair<String, String>>,String,String,String,Double>>() }
     var showDialog by remember { mutableStateOf(false) }
     var documentIdToDelete by remember { mutableStateOf<String?>(null) }
-    val classOptions = listOf("kelas 4", "kelas 5", "kelas 6")
-    val semesterOptions = listOf("semester 1", "semester 2")
+    val classOptions = listOf("4", "5", "6")
+    val semesterOptions = listOf("1", "2")
     var selectedClass by remember { mutableStateOf(classOptions[0]) }
     var selectedSemester by remember { mutableStateOf(semesterOptions[0]) }
     // Function to filter data based on selected class and semester
@@ -2303,7 +2303,7 @@ fun DataJadwalKegiatan(
                                 Spacer(modifier = Modifier.height(4.dp))
 
                                 Text(
-                                    text = "Kelas $kelas",
+                                    text = kelas,
                                     style = MaterialTheme.typography.bodyLarge,
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis
@@ -2547,8 +2547,8 @@ fun ExportData(
     val context = LocalContext.current as Activity
     val firestore = FirebaseFirestore.getInstance()
     var staffData by remember { mutableStateOf<List<Map<String, Any>>>(emptyList()) }
-    var selectedClass by remember { mutableStateOf("kelas 4") }
-    val classOptions = listOf("kelas 4", "kelas 5", "kelas 6")
+    var selectedClass by remember { mutableStateOf("4") }
+    val classOptions = listOf("4", "5", "6")
 
     // Fetch existing data from Firestore
     LaunchedEffect(Unit) {
