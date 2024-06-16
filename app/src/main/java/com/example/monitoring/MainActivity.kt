@@ -76,6 +76,7 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
@@ -554,19 +555,8 @@ fun LoginPage(navController: NavController) {
     if (!isLoggedIn) {
         Scaffold(
             snackbarHost = { SnackbarHost(snackbarHostState) },
-//            floatingActionButton = {
-//                var clickCount by remember { mutableStateOf(0) }
-//                ExtendedFloatingActionButton(
-//                    onClick = {
-//                        // show snackbar as a suspend function
-//                        scope.launch {
-//                            snackbarHostState.showSnackbar(
-//                                "Snackbar # ${++clickCount}"
-//                            )
-//                        }
-//                    }
-//                ) { Text("Show snackbar") }
-//            },
+          modifier = Modifier.fillMaxSize(),
+            containerColor = Color( 0xFF135D66),
             content = { innerPadding ->
                 Column(
                     modifier = Modifier
@@ -4677,6 +4667,8 @@ fun TeacherDashboard(
 @Composable
 fun PreviewLoginPage() {
     MonitoringTheme(darkTheme = true) {
-        LoginPage(navController = rememberNavController())
+
+            LoginPage(navController = rememberNavController())
+
     }
 }
