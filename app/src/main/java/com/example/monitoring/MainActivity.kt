@@ -118,10 +118,11 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import coil.annotation.ExperimentalCoilApi
-import coil.compose.rememberImagePainter
+
 import com.example.monitoring.ui.theme.MonitoringTheme
 import com.google.firebase.Firebase
-import com.google.firebase.auth.auth
+import com.google.firebase.FirebaseApp
+
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.firestore
 import com.google.firebase.storage.storage
@@ -235,10 +236,13 @@ data class CardItem<T>(
     val route:T,
     val icon:ImageVector?=Icons.Filled.Person,
 )
+
 class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        FirebaseApp.initializeApp(this)
+
         setContent {
             MonitoringTheme {
                 // A surface container using the 'background' color from the theme
@@ -489,10 +493,10 @@ fun LoginPage(navController: NavController) {
     // Implement login UI using Jetpack Compose components
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
-    val auth = Firebase.auth
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var isLoggedIn by rememberSaveable { mutableStateOf(false) }
+
     // Function to check user role and navigate
     fun checkUserRoleAndNavigate(userId: String) {
         val usersRef = FirebaseFirestore.getInstance().collection("user")
@@ -539,9 +543,9 @@ fun LoginPage(navController: NavController) {
             }
     }
 
-    // Check if the user is already logged in
-    LaunchedEffect(auth) {
-        auth.currentUser?.let { user ->
+
+    LaunchedEffect(Unit) {
+        FirebaseUtil.auth.currentUser?.let { user ->
             isLoggedIn = true
             checkUserRoleAndNavigate(user.uid)
         }
@@ -621,11 +625,11 @@ fun LoginPage(navController: NavController) {
                             }
                         } else {
                             val nameEmail = "$email@gmail.com"
-                            auth.signInWithEmailAndPassword(nameEmail, password)
+                            FirebaseUtil.auth.signInWithEmailAndPassword(nameEmail, password)
                                 .addOnCompleteListener { task ->
                                     if (task.isSuccessful) {
                                         // Authentication successful, navigate to appropriate screen
-                                        val user = auth.currentUser
+                                        val user = FirebaseUtil.auth.currentUser
                                         if (user != null) {
                                             Log.d("user", user.toString())
                                             val userId = user.uid
@@ -918,8 +922,8 @@ fun SettingsPage(navController: NavController,it: PaddingValues,role:String){
         Text(text = "Settings", style = MaterialTheme.typography.headlineLarge, color = Color(0xFFE3FEF7))
 
         Button(onClick = {
-            val auth = Firebase.auth
-            auth.signOut()
+
+            FirebaseUtil.auth.signOut()
             navController.navigate(Screen.Login) {
                 popUpTo(Screen.AdminDashboard(role)) { inclusive = true }
             }
@@ -4669,8 +4673,10 @@ fun TeacherDashboard(
 
 
 }
-@Preview
+@Preview(showBackground = true, name = "Login Page - Dark Mode")
 @Composable
-fun Preview() {
-          LoginPage(rememberNavController())
+fun PreviewLoginPage() {
+    MonitoringTheme(darkTheme = true) {
+        LoginPage(navController = rememberNavController())
+    }
 }
