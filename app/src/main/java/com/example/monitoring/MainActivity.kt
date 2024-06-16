@@ -396,13 +396,10 @@ fun NavBackStackEntry?.fromRoute(role: String): Screen {
         }
     return Screen.AdminDashboard(role)
 }
-@OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
 @Composable
 fun ScreenWithScaffold(navController: NavController,role: String, content: @Composable (PaddingValues) -> Unit) {
 
-    val activity = LocalContext.current as Activity
-    val windowClass = calculateWindowSizeClass(activity)
-    val showNavigationRail = windowClass.widthSizeClass == WindowWidthSizeClass.Compact
+
     val items1 = listOf(
         NavigationItem(
             route = if (role == "admin") Screen.AdminDashboard(role) else Screen.TeacherDashboard(role) ,
@@ -435,8 +432,11 @@ fun ScreenWithScaffold(navController: NavController,role: String, content: @Comp
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry.fromRoute(role)
     Scaffold (
+        modifier = Modifier.fillMaxSize(),
+        containerColor = Color( 0xFF003C43),
+
         bottomBar = {
-            if(showNavigationRail){
+
                 NavigationBar {
                     items1.forEach { item ->
                         Log.d("current",currentRoute.toString())
@@ -482,7 +482,7 @@ fun ScreenWithScaffold(navController: NavController,role: String, content: @Comp
                             }
                         )
                     }
-                }
+
             }
         },
         content = content
@@ -556,7 +556,7 @@ fun LoginPage(navController: NavController) {
         Scaffold(
             snackbarHost = { SnackbarHost(snackbarHostState) },
           modifier = Modifier.fillMaxSize(),
-            containerColor = Color( 0xFF135D66),
+            containerColor = Color( 0xFF003C43),
             content = { innerPadding ->
                 Column(
                     modifier = Modifier
@@ -4670,5 +4670,14 @@ fun PreviewLoginPage() {
 
             LoginPage(navController = rememberNavController())
 
+    }
+}
+@Preview(showBackground = true, name = "Dashboard Admin Page - Dark Mode")
+@Composable
+fun PreviewDashboardAdminPage() {
+    MonitoringTheme(darkTheme = true) {
+        ScreenWithScaffold(rememberNavController(),"admin") {
+            AdminDashboardPage(rememberNavController(),it,"admin")
+        }
     }
 }
