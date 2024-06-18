@@ -2808,7 +2808,14 @@ fun TambahJadwalKegiatan(
         // Display the selected image
 
         // Button to select image
-
+        TextField(
+            value = hari,
+            onValueChange = { hari = it.lowercase() },
+            label = { Text("Hari") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        )
 
         // Text field for name
         TextField(
@@ -2820,15 +2827,7 @@ fun TambahJadwalKegiatan(
                 .padding(16.dp)
         )
 
-        // Text field for description
-        TextField(
-            value = kelas,
-            onValueChange = { kelas = it },
-            label = { Text("Kelas") },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-        )
+
         TextField(
             value = jam,
             onValueChange = { jam = it },
@@ -2837,22 +2836,8 @@ fun TambahJadwalKegiatan(
                 .fillMaxWidth()
                 .padding(16.dp)
         )
-        TextField(
-            value = hari,
-            onValueChange = { hari = it },
-            label = { Text("Hari") },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-        )
-        TextField(
-            value = semester,
-            onValueChange = { semester = it },
-            label = { Text("Semester") },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-        )
+
+
 
         // Button to submit data
         Button(
@@ -3853,6 +3838,16 @@ fun EditJadwalKegiatan(
     Column(modifier = Modifier.fillMaxSize()) {
         Text(text="Edit Data Kegiatan", modifier = Modifier.align(Alignment.CenterHorizontally))
 
+
+        // Text field for day
+        TextField(
+            value = hari,
+            onValueChange = { hari = it.lowercase() },
+            label = { Text("Hari") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        )
         // Text field for name
         TextField(
             value = name,
@@ -3863,15 +3858,7 @@ fun EditJadwalKegiatan(
                 .padding(16.dp)
         )
 
-        // Text field for class
-        TextField(
-            value = kelas,
-            onValueChange = { kelas = it },
-            label = { Text("Kelas") },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-        )
+
 
         // Text field for time
         TextField(
@@ -3883,23 +3870,7 @@ fun EditJadwalKegiatan(
                 .padding(16.dp)
         )
 
-        // Text field for day
-        TextField(
-            value = hari,
-            onValueChange = { hari = it },
-            label = { Text("Hari") },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-        )
-        TextField(
-            value = semester,
-            onValueChange = { semester = it },
-            label = { Text("Semester") },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-        )
+
 
         // Button to submit data
         Button(
