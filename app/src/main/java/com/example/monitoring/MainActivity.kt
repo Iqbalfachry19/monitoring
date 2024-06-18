@@ -1538,7 +1538,7 @@ fun DataJadwalPelajaran(
         Column(modifier = Modifier
             .padding(innerPadding)
             .fillMaxSize(),
-            verticalArrangement = Arrangement.Center,
+            verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.CenterHorizontally) {
             // Dropdown for class selection
             Text(
@@ -1575,7 +1575,7 @@ fun DataJadwalPelajaran(
                 modifier = Modifier
                     .padding(innerPadding)
                     .fillMaxSize(),
-                verticalArrangement = Arrangement.Center,
+                verticalArrangement = Arrangement.Top,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 item {
@@ -1775,7 +1775,7 @@ fun DataJadwalUjian(
         Column(modifier = Modifier
             .padding(innerPadding)
             .fillMaxSize(),
-            verticalArrangement = Arrangement.Center,
+            verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
                 text = "Data Jadwal Ujian",
@@ -1812,7 +1812,7 @@ fun DataJadwalUjian(
             modifier = Modifier
                 .padding(innerPadding)
                 .fillMaxSize(),
-            verticalArrangement = Arrangement.Center,
+            verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             item{
@@ -2042,7 +2042,7 @@ fun DataNilai(
         Column(modifier = Modifier
             .padding(innerPadding)
             .fillMaxSize(),
-            verticalArrangement = Arrangement.Center,
+            verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.CenterHorizontally) {
             // Dropdown for class selection
             Text(
@@ -2080,7 +2080,7 @@ fun DataNilai(
             modifier = Modifier
                 .padding(innerPadding)
                 .fillMaxSize(),
-            verticalArrangement = Arrangement.Center,
+            verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             item {
@@ -2456,7 +2456,7 @@ fun  DataRekapan(
         Column(modifier = Modifier
             .padding(innerPadding)
             .fillMaxSize(),
-            verticalArrangement = Arrangement.Center,
+            verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
                 text = "Data Rekapan Siswa",
@@ -2492,7 +2492,7 @@ fun  DataRekapan(
             modifier = Modifier
                 .padding(innerPadding)
                 .fillMaxSize(),
-            verticalArrangement = Arrangement.Center,
+            verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             item{
