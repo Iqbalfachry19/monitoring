@@ -34,6 +34,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -586,7 +588,7 @@ fun LoginPage(navController: NavController) {
                         label = { Text("Nama") },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(32.dp)
+                            .padding(horizontal = 90.dp, vertical = 8.dp)
                         .focusRequester(emailFocusRequester),
                         keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Next),
                         keyboardActions = KeyboardActions(onNext = {
@@ -606,7 +608,7 @@ fun LoginPage(navController: NavController) {
                         label = { Text("Password") },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(32.dp)
+                            .padding(horizontal = 90.dp, vertical = 8.dp)
                         .focusRequester(passwordFocusRequester),
 
                     keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),
@@ -2513,7 +2515,8 @@ fun  DataRekapan(
                                 ),
 
                             modifier = Modifier
-                                .width(width = 200.dp)
+                                .width(width = 300.dp)
+                                .padding(8.dp)
                                 .wrapContentHeight()
                                 .clickable { }
                                 .padding(8.dp)
@@ -2521,7 +2524,7 @@ fun  DataRekapan(
                             Column(
                                 horizontalAlignment = Alignment.Start,
                                 verticalArrangement = Arrangement.Center,
-                                modifier = Modifier.fillMaxSize()
+                                modifier = Modifier.fillMaxSize().padding(8.dp)
                             ) {
                                 Text(
                                     text = "Nama: $nama",
