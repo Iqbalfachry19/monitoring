@@ -124,8 +124,6 @@ import com.example.monitoring.ui.theme.MonitoringTheme
 import com.google.firebase.Firebase
 import com.google.firebase.FirebaseApp
 
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.firestore
 import com.google.firebase.storage.storage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -500,7 +498,7 @@ fun LoginPage(navController: NavController) {
 
     // Function to check user role and navigate
     fun checkUserRoleAndNavigate(userId: String) {
-        val usersRef = FirebaseFirestore.getInstance().collection("user")
+        val usersRef = FirebaseUtil.firestore.collection("user")
         usersRef.document(userId).get()
             .addOnSuccessListener { document ->
                 if (document != null) {
@@ -624,7 +622,7 @@ fun LoginPage(navController: NavController) {
                                             Log.d("user", user.toString())
                                             val userId = user.uid
                                             val usersRef =
-                                                FirebaseFirestore.getInstance().collection("user")
+                                                FirebaseUtil.firestore.collection("user")
                                             usersRef.document(userId).get()
                                                 .addOnSuccessListener { document ->
                                                     if (document != null) {
@@ -928,7 +926,7 @@ fun DataGuruPage(
     role: String
 ) {
 
-    val firestore = FirebaseFirestore.getInstance()
+    val firestore = FirebaseUtil.firestore
     val dataList = remember { mutableStateListOf<Quadruple<String, String, String, String>>() }
     var showDialog by remember { mutableStateOf(false) }
     var documentIdToDelete by remember { mutableStateOf<String?>(null) }
@@ -1141,7 +1139,7 @@ fun DataSiswa(
     role: String
 ){
 
-    val firestore = FirebaseFirestore.getInstance()
+    val firestore = FirebaseUtil.firestore
     val dataList = remember { mutableStateListOf<Quadruple<String,String, String, String>>() }
     var showDialog by remember { mutableStateOf(false) }
 
@@ -1457,7 +1455,7 @@ fun DataJadwalPelajaran(
     role: String
 ){
 
-    val firestore = FirebaseFirestore.getInstance()
+    val firestore = FirebaseUtil.firestore
     val dataList = remember { mutableStateListOf<Sextuple<String,String, String, String,String,String>>() }
     var showDialog by remember { mutableStateOf(false) }
     var documentIdToDelete by remember { mutableStateOf<String?>(null) }
@@ -1691,7 +1689,7 @@ fun DataJadwalUjian(
     role: String
 ){
 
-    val firestore = FirebaseFirestore.getInstance()
+    val firestore = FirebaseUtil.firestore
     val dataList = remember { mutableStateListOf<Septuple<String,String, String, String,String,String,String>>() }
     var showDialog by remember { mutableStateOf(false) }
     var documentIdToDelete by remember { mutableStateOf<String?>(null) }
@@ -1950,7 +1948,7 @@ fun DataNilai(
     role: String
 ){
 
-    val firestore = FirebaseFirestore.getInstance()
+    val firestore = FirebaseUtil.firestore
     val dataList = remember { mutableStateListOf<Nilai<String,String, List<Pair<String, String>>,String,String,String,Double>>() }
     var showDialog by remember { mutableStateOf(false) }
     var documentIdToDelete by remember { mutableStateOf<String?>(null) }
@@ -2199,10 +2197,11 @@ fun DataJadwalKegiatan(
     role: String
 ){
 
-    val firestore = FirebaseFirestore.getInstance()
+    val firestore = FirebaseUtil.firestore
     val dataList = remember { mutableStateListOf<Sextuple<String,String, String, String,String,String>>() }
     var showDialog by remember { mutableStateOf(false) }
     var documentIdToDelete by remember { mutableStateOf<String?>(null) }
+
 
 
     DisposableEffect(Unit) {
@@ -2373,11 +2372,20 @@ fun  DataRekapan(
     role: String
 ){
 
-    val firestore = FirebaseFirestore.getInstance()
+    val firestore = FirebaseUtil.firestore
     val dataList = remember { mutableStateListOf<Sextuple<String,String, String, String,String,String>>() }
     var showDialog by remember { mutableStateOf(false) }
     var documentIdToDelete by remember { mutableStateOf<String?>(null) }
-
+    val classOptions = listOf("4", "5", "6")
+    val semesterOptions = listOf("1", "2")
+    var selectedClass by remember { mutableStateOf(classOptions[0]) }
+    var selectedSemester by remember { mutableStateOf(semesterOptions[0]) }
+    // Function to filter data based on selected class and semester
+    fun filterDataByClassAndSemester(dataList: List<Sextuple<String, String, String, String, String,String>>): List<Sextuple< String, String, String,String, String, String>> {
+        return dataList.filter { (_, _, _, kelas, _, semester) ->
+            kelas == selectedClass && semester == selectedSemester
+        }
+    }
 
     DisposableEffect(Unit) {
         val collectionRef = firestore.collection("absensi")
@@ -2445,7 +2453,41 @@ fun  DataRekapan(
                 , containerColor = Color(0xFF77B0AA) ) { Text("+", fontSize = 24.sp, color = Color(0xFFE3FEF7)) }
         },
     ) { innerPadding ->
+        Column(modifier = Modifier
+            .padding(innerPadding)
+            .fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(
+                text = "Data Rekapan Siswa",
+                style = MaterialTheme.typography.headlineLarge,
+                color = Color(0xFFE3FEF7)
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
 
+                DropdownMenuButton(
+                    expanded = false, // Initially closed
+                    onDismissRequest = {},
+                    modifier = Modifier.padding(8.dp),
+                    buttonText = "Kelas $selectedClass",
+                    options = classOptions,
+                    onOptionSelected = { selectedClass = it }
+                )
+
+                // Button for semester selection
+                DropdownMenuButton(
+                    expanded = false, // Initially closed
+                    onDismissRequest = {},
+                    modifier = Modifier.padding(8.dp),
+                    buttonText = "Semester $selectedSemester",
+                    options = semesterOptions,
+                    onOptionSelected = { selectedSemester = it }
+                )
+            }
         LazyColumn(
             modifier = Modifier
                 .padding(innerPadding)
@@ -2454,10 +2496,8 @@ fun  DataRekapan(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             item{
-                Text(text = "Data Rekapan Kehadiran Siswa", style = MaterialTheme.typography.headlineLarge, color = Color(0xFFE3FEF7), textAlign = TextAlign.Center)
-                Spacer(modifier = Modifier.height(16.dp))
-                // Display the data fetched from Firestore
-                dataList.forEach { (id,nama,jam,kelas,hari,semester) ->
+                  // Display the data fetched from Firestore
+                filterDataByClassAndSemester(dataList).forEach  { (id, nama, jam, kelas, hari, semester) ->
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.padding(8.dp)
@@ -2475,38 +2515,31 @@ fun  DataRekapan(
                                 .clickable { }
                                 .padding(8.dp)
                         ) {
-                            Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center,modifier = Modifier.fillMaxSize()) {
-                                Text(text = nama, style = MaterialTheme.typography.bodySmall)
-                                Spacer(modifier = Modifier.height(4.dp))
-
+                            Column(
+                                horizontalAlignment = Alignment.Start,
+                                verticalArrangement = Arrangement.Center,
+                                modifier = Modifier.fillMaxSize()
+                            ) {
                                 Text(
-                                    text = "kelas $kelas",
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
+                                    text = "Nama: $nama",
+                                    style = MaterialTheme.typography.bodySmall
                                 )
 
                                 Spacer(modifier = Modifier.height(4.dp))
                                 Text(
-                                    text = jam,
+                                    text = "Tanggal: $jam",
                                     style = MaterialTheme.typography.bodyLarge,
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis
                                 )
                                 Spacer(modifier = Modifier.height(4.dp))
                                 Text(
-                                    text = hari,
+                                    text = "Keterangan: $hari",
                                     style = MaterialTheme.typography.bodyLarge,
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis
                                 )
-                                Spacer(modifier = Modifier.height(4.dp))
-                                Text(
-                                    text = "Semester $semester",
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
-                                )
+
 
                             }
                         }
@@ -2517,7 +2550,11 @@ fun  DataRekapan(
                                     navController.navigate(Screen.EditRekapan(id))
                                 }
                             ) {
-                                Icon(Icons.Default.Edit, contentDescription = "Edit", tint = Color.Gray)
+                                Icon(
+                                    Icons.Default.Edit,
+                                    contentDescription = "Edit",
+                                    tint = Color.Gray
+                                )
                             }
 
                             IconButton(
@@ -2536,6 +2573,7 @@ fun  DataRekapan(
                         }
                     }
                 }
+                }
             }
         }
     }
@@ -2548,7 +2586,7 @@ fun ExportData(
     role: String
 ) {
     val context = LocalContext.current as Activity
-    val firestore = FirebaseFirestore.getInstance()
+    val firestore = FirebaseUtil.firestore
     var staffData by remember { mutableStateOf<List<Map<String, Any>>>(emptyList()) }
     var selectedClass by remember { mutableStateOf("4") }
     val classOptions = listOf("4", "5", "6")
@@ -3306,7 +3344,7 @@ fun EditNilai(
     navController: NavController,
     nilaiId: String
 ) {
-    val firestore = FirebaseFirestore.getInstance()
+    val firestore = FirebaseUtil.firestore
     var name by remember { mutableStateOf("") }
     var mataPelajaran by remember { mutableStateOf("") }
     var nilai by remember { mutableStateOf("") }
@@ -3486,7 +3524,7 @@ fun EditRekapan(
     navController: NavController,
     rekapanId: String
 ) {
-    val firestore = FirebaseFirestore.getInstance()
+    val firestore = FirebaseUtil.firestore
     var name by remember { mutableStateOf("") }
     var kelas by remember { mutableStateOf("") }
 
@@ -3577,7 +3615,7 @@ fun submitUpdatedDataToDatabaseAbsensi(
     navController: NavController,
     rekapanId: String
 ) {
-    val firestore = FirebaseFirestore.getInstance()
+    val firestore = FirebaseUtil.firestore
 
     // Update the Firestore document with the new data
     firestore.collection("absensi").document(rekapanId)
@@ -3609,7 +3647,7 @@ fun submitUpdatedDataToDatabaseNilai(
     navController: NavController,
     nilaiId: String
 ) {
-    val firestore = FirebaseFirestore.getInstance()
+    val firestore = FirebaseUtil.firestore
 
     // Update the Firestore document with the new data
     firestore.collection("nilai").document(nilaiId)
@@ -3637,7 +3675,7 @@ fun EditJadwalUjian(
     navController: NavController,
     jadwalId: String
 ) {
-    val firestore = FirebaseFirestore.getInstance()
+    val firestore = FirebaseUtil.firestore
     var name by remember { mutableStateOf("") }
     var kelas by remember { mutableStateOf("") }
     var jam by remember { mutableStateOf("") }
@@ -3733,7 +3771,7 @@ fun EditJadwalPelajaran(
     navController: NavController,
     jadwalId: String
 ) {
-    val firestore = FirebaseFirestore.getInstance()
+    val firestore = FirebaseUtil.firestore
     var name by remember { mutableStateOf("") }
     var kelas by remember { mutableStateOf("") }
     var jam by remember { mutableStateOf("") }
@@ -3818,7 +3856,7 @@ fun EditJadwalKegiatan(
     navController: NavController,
     jadwalId: String
 ) {
-    val firestore = FirebaseFirestore.getInstance()
+    val firestore = FirebaseUtil.firestore
     var name by remember { mutableStateOf("") }
     var kelas by remember { mutableStateOf("") }
     var jam by remember { mutableStateOf("") }
@@ -3896,7 +3934,7 @@ fun submitUpdatedDataToDatabaseUjian(
     navController: NavController,
     jadwalId: String
 ) {
-    val firestore = FirebaseFirestore.getInstance()
+    val firestore = FirebaseUtil.firestore
     val dataMap = hashMapOf(
         "nama" to name,
         "kelas" to kelas,
@@ -3926,7 +3964,7 @@ fun submitUpdatedDataToDatabasePelajaran(
     navController: NavController,
     jadwalId: String
 ) {
-    val firestore = FirebaseFirestore.getInstance()
+    val firestore = FirebaseUtil.firestore
     val dataMap = hashMapOf(
         "nama" to name,
         "kelas" to kelas,
@@ -3954,7 +3992,7 @@ fun submitUpdatedDataToDatabaseKegiatan(
     navController: NavController,
     jadwalId: String
 ) {
-    val firestore = FirebaseFirestore.getInstance()
+    val firestore = FirebaseUtil.firestore
     val dataMap = hashMapOf(
         "nama" to name,
         "kelas" to kelas,
@@ -4060,7 +4098,7 @@ fun EditGuru(
     navController: NavController,
     guruId: String
 ) {
-    val firestore = FirebaseFirestore.getInstance()
+    val firestore = FirebaseUtil.firestore
     var name by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
     var lp by remember { mutableStateOf("") }
@@ -4128,7 +4166,7 @@ fun EditSiswa(
     navController: NavController,
     guruId: String
 ) {
-    val firestore = FirebaseFirestore.getInstance()
+    val firestore = FirebaseUtil.firestore
     var name by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
     var lp by remember { mutableStateOf("") }
@@ -4199,7 +4237,7 @@ fun submitDataToDatabaseSiswa(
     documentId: String,
     data: String
 ) {
-    val firestore = FirebaseFirestore.getInstance()
+    val firestore = FirebaseUtil.firestore
     val dataMap = hashMapOf(
         "nama" to name,
         "keterangan" to description,
@@ -4224,7 +4262,7 @@ fun submitDataToDatabase(
     documentId: String,
     data: String
 ) {
-    val firestore = FirebaseFirestore.getInstance()
+    val firestore = FirebaseUtil.firestore
     val dataMap = hashMapOf(
         "nama" to name,
         "keterangan" to description,
@@ -4244,7 +4282,7 @@ fun submitDataToDatabase(
 private fun submitDataToDatabaseSiswa(name: String, description: String, lp:String,
                                       navController: NavController,dataId:String) {
     // Access the Firestore collection where you want to store the data
-    val firestore = Firebase.firestore
+    val firestore = FirebaseUtil.firestore
     val collectionRef = firestore.collection(dataId)
 
     // Create a new document with a unique ID
@@ -4272,7 +4310,7 @@ private fun submitDataToDatabaseSiswa(name: String, description: String, lp:Stri
 private fun submitDataToDatabase(name: String, description: String, lp: String,
                                  navController: NavController,dataId:String) {
     // Access the Firestore collection where you want to store the data
-    val firestore = Firebase.firestore
+    val firestore = FirebaseUtil.firestore
     val collectionRef = firestore.collection(dataId)
 
     // Create a new document with a unique ID
@@ -4300,7 +4338,7 @@ private fun submitDataToDatabase(name: String, description: String, lp: String,
 private fun submitDataToDatabaseNilai(name: String,mataPelajaran: List<Map<String, String>>,semester:String,kelas:String,peringkat:String,
                                       navController: NavController) {
     // Access the Firestore collection where you want to store the data
-    val firestore = Firebase.firestore
+    val firestore = FirebaseUtil.firestore
     val collectionRef = firestore.collection("nilai")
 
     // Create a new document with a unique ID
@@ -4331,7 +4369,7 @@ private fun submitDataToDatabaseNilai(name: String,mataPelajaran: List<Map<Strin
 private fun submitDataToDatabaseAbsensi(name: String, kelas:String,tanggal:String,keterangan: String,semester: String,
                                         navController: NavController) {
     // Access the Firestore collection where you want to store the data
-    val firestore = Firebase.firestore
+    val firestore = FirebaseUtil.firestore
     val collectionRef = firestore.collection("absensi")
 
     // Create a new document with a unique ID
@@ -4361,7 +4399,7 @@ private fun submitDataToDatabaseAbsensi(name: String, kelas:String,tanggal:Strin
 private fun submitDataToDatabaseUjian(name: String, kelas:String,jam:String ,hari:String,tanggal:String,semester: String,
                                       navController: NavController) {
     // Access the Firestore collection where you want to store the data
-    val firestore = Firebase.firestore
+    val firestore = FirebaseUtil.firestore
     val collectionRef = firestore.collection("jadwalUjian")
 
     // Create a new document with a unique ID
@@ -4392,7 +4430,7 @@ private fun submitDataToDatabaseUjian(name: String, kelas:String,jam:String ,har
 private fun submitDataToDatabasePelajaran(name: String, kelas:String,jam:String ,hari:String,semester: String,
                                           navController: NavController) {
     // Access the Firestore collection where you want to store the data
-    val firestore = Firebase.firestore
+    val firestore = FirebaseUtil.firestore
     val collectionRef = firestore.collection("jadwalPelajaran")
 
     // Create a new document with a unique ID
@@ -4422,7 +4460,7 @@ private fun submitDataToDatabasePelajaran(name: String, kelas:String,jam:String 
 private fun submitDataToDatabaseKegiatan(name: String, kelas:String,jam:String ,hari:String,semester: String,
                                          navController: NavController) {
     // Access the Firestore collection where you want to store the data
-    val firestore = Firebase.firestore
+    val firestore = FirebaseUtil.firestore
     val collectionRef = firestore.collection("jadwalKegiatan")
 
     // Create a new document with a unique ID
@@ -4640,6 +4678,17 @@ fun PreviewLoginPage() {
     MonitoringTheme(darkTheme = true) {
 
             LoginPage(navController = rememberNavController())
+
+    }
+}
+@Preview(showBackground = true, name = "Rekapan Page - Dark Mode")
+@Composable
+fun PreviewRekapanPage() {
+
+
+    MonitoringTheme(darkTheme = true) {
+
+       DataRekapan(navController = rememberNavController(),"admin")
 
     }
 }
