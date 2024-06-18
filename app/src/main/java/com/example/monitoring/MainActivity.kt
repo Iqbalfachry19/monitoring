@@ -96,6 +96,8 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
@@ -570,6 +572,8 @@ fun LoginPage(navController: NavController) {
                             .size(200.dp)
                             .padding(bottom = 16.dp)
                     )
+                    val (emailFocusRequester, passwordFocusRequester) = FocusRequester.createRefs()
+
                     OutlinedTextField(
                         colors = OutlinedTextFieldDefaults.colors(
                             unfocusedTextColor = Color(0xFFE3FEF7),
@@ -582,9 +586,12 @@ fun LoginPage(navController: NavController) {
                         label = { Text("Nama") },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(8.dp),
+                            .padding(32.dp)
+                        .focusRequester(emailFocusRequester),
                         keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Next),
-                        keyboardActions = KeyboardActions { /* Handle next action if needed */ }
+                        keyboardActions = KeyboardActions(onNext = {
+                            passwordFocusRequester.requestFocus()
+                        })
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     OutlinedTextField(
@@ -599,91 +606,87 @@ fun LoginPage(navController: NavController) {
                         label = { Text("Password") },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(8.dp),
-                        keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),
-                        keyboardActions = KeyboardActions { /* Handle done action if needed */ },
+                            .padding(32.dp)
+                        .focusRequester(passwordFocusRequester),
+
+                    keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),
+                        keyboardActions = KeyboardActions(onDone = {
+                            handleLogin(email, password, navController, snackbarHostState, scope)
+                        }),
                         visualTransformation = PasswordVisualTransformation()
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     Button(onClick = {
-                        if (email.isBlank() || password.isBlank()) {
-                            // Show error message if email or password is empty
-                            scope.launch {
-                                snackbarHostState.showSnackbar("Email and password cannot be empty")
-                            }
-                        } else {
-                            val nameEmail = "$email@gmail.com"
-                            FirebaseUtil.auth.signInWithEmailAndPassword(nameEmail, password)
-                                .addOnCompleteListener { task ->
-                                    if (task.isSuccessful) {
-                                        // Authentication successful, navigate to appropriate screen
-                                        val user = FirebaseUtil.auth.currentUser
-                                        if (user != null) {
-                                            Log.d("user", user.toString())
-                                            val userId = user.uid
-                                            val usersRef =
-                                                FirebaseUtil.firestore.collection("user")
-                                            usersRef.document(userId).get()
-                                                .addOnSuccessListener { document ->
-                                                    if (document != null) {
-                                                        val role = document.getString("role")
-                                                        when (role) {
-                                                            "admin" -> {
-                                                                navController.navigate(Screen.AdminDashboard(role)) {
-                                                                    popUpTo(Screen.Login) {
-                                                                        inclusive = true
-                                                                    }
-                                                                }
-                                                            }
-                                                            "guru 4" -> {
-                                                                navController.navigate(Screen.TeacherDashboard(role)) {
-                                                                    popUpTo(Screen.Login) { inclusive = true }
-                                                                }
-                                                            }
-                                                            "guru 5" -> {
-                                                                navController.navigate(Screen.TeacherDashboard(role)) {
-                                                                    popUpTo(Screen.Login) { inclusive = true }
-                                                                }
-                                                            }
-                                                            "guru 6" -> {
-                                                                navController.navigate(Screen.TeacherDashboard(role)) {
-                                                                    popUpTo(Screen.Login) { inclusive = true }
-                                                                }
-
-
-                                                            }
-                                                            else -> {
-                                                                // User doesn't have required role, show error message
-                                                                CoroutineScope(Dispatchers.Main).launch {
-                                                                    snackbarHostState.showSnackbar("Unauthorized access")
-                                                                }
-                                                            }
-                                                        }
-                                                    } else {
-                                                        // Document doesn't exist
-                                                        CoroutineScope(Dispatchers.Main).launch {
-                                                            snackbarHostState.showSnackbar("User document not found")
-                                                        }
-                                                    }
-                                                }
-                                        }
-                                    } else {
-                                        // Authentication failed, show error message
-                                        val errorMessage =
-                                            task.exception?.message ?: "Unknown error"
-                                        CoroutineScope(Dispatchers.Main).launch {
-                                            snackbarHostState.showSnackbar(errorMessage)
-                                        }
-
-                                    }
-                                }
-                        }
+                        handleLogin(email, password, navController, snackbarHostState, scope)
                     }) {
                         Text("Login")
                     }
                 }
             }
         )
+    }
+}
+fun handleLogin(
+    email: String,
+    password: String,
+    navController: NavController,
+    snackbarHostState: SnackbarHostState,
+    scope: CoroutineScope
+) {
+    if (email.isBlank() || password.isBlank()) {
+        // Show error message if email or password is empty
+        scope.launch {
+            snackbarHostState.showSnackbar("Email and password cannot be empty")
+        }
+    } else {
+        val nameEmail = "$email@gmail.com"
+        FirebaseUtil.auth.signInWithEmailAndPassword(nameEmail, password)
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    // Authentication successful, navigate to appropriate screen
+                    val user = FirebaseUtil.auth.currentUser
+                    if (user != null) {
+                        Log.d("user", user.toString())
+                        val userId = user.uid
+                        val usersRef = FirebaseUtil.firestore.collection("user")
+                        usersRef.document(userId).get()
+                            .addOnSuccessListener { document ->
+                                if (document != null) {
+                                    val role = document.getString("role")
+                                    when (role) {
+                                        "admin" -> {
+                                            navController.navigate(Screen.AdminDashboard(role)) {
+                                                popUpTo(Screen.Login) { inclusive = true }
+                                            }
+                                        }
+                                        "guru 4", "guru 5", "guru 6" -> {
+                                            navController.navigate(Screen.TeacherDashboard(role)) {
+                                                popUpTo(Screen.Login) { inclusive = true }
+                                            }
+                                        }
+                                        else -> {
+                                            // User doesn't have required role, show error message
+                                            scope.launch {
+                                                snackbarHostState.showSnackbar("Unauthorized access")
+                                            }
+                                        }
+                                    }
+                                } else {
+                                    // Document doesn't exist
+                                    scope.launch {
+                                        snackbarHostState.showSnackbar("User document not found")
+                                    }
+                                }
+                            }
+                    }
+                } else {
+                    // Authentication failed, show error message
+                    val errorMessage = task.exception?.message ?: "Unknown error"
+                    scope.launch {
+                        snackbarHostState.showSnackbar(errorMessage)
+                    }
+                }
+            }
     }
 }
 //@Composable
