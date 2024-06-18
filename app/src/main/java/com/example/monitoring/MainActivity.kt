@@ -2915,7 +2915,7 @@ fun TambahRekapan(
         TextField(
             value = name,
             onValueChange = { name = it },
-            label = { Text("Nama Mata Pelajaran") },
+            label = { Text("Nama Siswa") },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp)
