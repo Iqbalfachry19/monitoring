@@ -1855,8 +1855,6 @@ fun DataJadwalUjian(
                                 Text(
                                     text = nama,
                                     style = MaterialTheme.typography.bodyLarge,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis,
                                     color=Color.White,
                                 )
 
@@ -1865,8 +1863,6 @@ fun DataJadwalUjian(
                                 Text(
                                     text = jam,
                                     style = MaterialTheme.typography.bodyLarge,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis,
                                     color=Color.White
                                 )
 
