@@ -2111,14 +2111,29 @@ fun DataNilai(
                             .padding(vertical = 8.dp, horizontal = 16.dp),
                         horizontalArrangement = Arrangement.SpaceEvenly
                     ){
+                        Card(
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.tertiary,
 
+                                ),
 
+                            modifier = Modifier
+                                .width(width = 250.dp)
+                                .padding(8.dp)
+                                .wrapContentHeight()
+                                .clickable { }
+                                .padding(8.dp)
+                        ) {
                             Column(
                                 horizontalAlignment = Alignment.Start,
                                 verticalArrangement = Arrangement.Center,
-                                modifier = Modifier.weight(2f)
+                                modifier = Modifier.fillMaxSize().padding(8.dp)
                             ) {
-                                Text(text = "NAMA: $nama", style = MaterialTheme.typography.bodySmall,color=Color.White)
+                                Text(
+                                    text = "NAMA: $nama",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = Color.White
+                                )
                                 Spacer(modifier = Modifier.height(4.dp))
 
 
@@ -2128,18 +2143,18 @@ fun DataNilai(
                                         text = "$pelajaran: $nilai",
                                         style = MaterialTheme.typography.bodyLarge,
                                         maxLines = 1,
-                                        color=Color.White
+                                        color = Color.White
                                     )
                                 }
 
 
                                 Spacer(modifier = Modifier.height(4.dp))
                                 Text(
-                                    text = "Nilai rata-rata: $rata",
+                                    text = "Nilai rata-rata: %.2f".format(rata),
                                     style = MaterialTheme.typography.bodyLarge,
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis,
-                                    color=Color.White
+                                    color = Color.White
                                 )
                                 Spacer(modifier = Modifier.height(4.dp))
                                 Text(
@@ -2147,10 +2162,10 @@ fun DataNilai(
                                     style = MaterialTheme.typography.bodyLarge,
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis,
-                                    color=Color.White
+                                    color = Color.White
                                 )
                             }
-
+                        }
 
                         if (role == "admin") {
                             Row(
@@ -2305,16 +2320,8 @@ fun DataJadwalKegiatan(
                                 .clickable { }
                                 .padding(8.dp)
                         ) {
-                            Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center,modifier = Modifier.fillMaxSize()) {
+                            Column(horizontalAlignment = Alignment.Start, verticalArrangement = Arrangement.Center,  modifier = Modifier.fillMaxSize().padding(8.dp)) {
                                 Text(text = nama, style = MaterialTheme.typography.bodySmall)
-                                Spacer(modifier = Modifier.height(4.dp))
-
-                                Text(
-                                    text = "Kelas $kelas",
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
-                                )
 
                                 Spacer(modifier = Modifier.height(4.dp))
                                 Text(
@@ -2330,13 +2337,7 @@ fun DataJadwalKegiatan(
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis
                                 )
-                                Spacer(modifier = Modifier.height(4.dp))
-                                Text(
-                                    text = "Semester $semester",
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
-                                )
+
 
                             }
                         }
@@ -3216,7 +3217,14 @@ fun TambahJadwalUjian(
         // Display the selected image
 
         // Button to select image
-
+        TextField(
+            value = hari,
+            onValueChange = { hari = it },
+            label = { Text("Hari") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        )
 
         // Text field for name
         TextField(
@@ -3245,14 +3253,7 @@ fun TambahJadwalUjian(
                 .fillMaxWidth()
                 .padding(16.dp)
         )
-        TextField(
-            value = hari,
-            onValueChange = { hari = it },
-            label = { Text("Hari") },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-        )
+
         TextField(
             value = tanggal,
             onValueChange = { tanggal = it },
@@ -3701,7 +3702,15 @@ fun EditJadwalUjian(
 
     Column(modifier = Modifier.fillMaxSize()) {
         Text(text="Edit Data Jadwal Ujian", modifier = Modifier.align(Alignment.CenterHorizontally))
-
+        // Text field for day
+        TextField(
+            value = hari,
+            onValueChange = { hari = it },
+            label = { Text("Hari") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        )
         // Text field for name
         TextField(
             value = name,
@@ -3732,15 +3741,7 @@ fun EditJadwalUjian(
                 .padding(16.dp)
         )
 
-        // Text field for day
-        TextField(
-            value = hari,
-            onValueChange = { hari = it },
-            label = { Text("Hari") },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-        )
+
         // Text field for day
         TextField(
             value = tanggal,
