@@ -2582,6 +2582,8 @@ fun  DataRekapan(
     }
 }
 
+
+
 @OptIn(ExperimentalCoilApi::class)
 @Composable
 fun ExportData(
@@ -2590,18 +2592,35 @@ fun ExportData(
 ) {
     val context = LocalContext.current as Activity
     val firestore = FirebaseUtil.firestore
-    var staffData by remember { mutableStateOf<List<Map<String, Any>>>(emptyList()) }
+    var nilaiData by remember { mutableStateOf<List<Map<String, Any>>>(emptyList()) }
+    var absensiData by remember { mutableStateOf<List<Map<String, Any>>>(emptyList()) }
     var selectedClass by remember { mutableStateOf("4") }
+    var exportType by remember { mutableStateOf<String?>(null) }
     val classOptions = listOf("4", "5", "6")
 
-    // Fetch existing data from Firestore
-    LaunchedEffect(Unit) {
-        val documents = firestore.collection("siswa").get().await()
-        staffData = documents.map { it.data }
+    // Fetch data based on export type and selected class
+    LaunchedEffect(exportType, selectedClass) {
+        if (exportType != null) {
+            val collection = when (exportType) {
+                "nilai" -> "nilai"
+                "absensi" -> "absensi"
+                else -> null
+            }
+            if (collection != null) {
+                val documents = firestore.collection(collection).get().await()
+                val fetchedData = documents.map { it.data }
+                if (exportType == "nilai") {
+                    nilaiData = fetchedData
+                } else if (exportType == "absensi") {
+                    absensiData = fetchedData
+                }
+            }
+        }
     }
 
     // Filter data based on selected class
-    val filteredStaffData = staffData.filter { it["keterangan"] == selectedClass }.sortedBy { it["nama"].toString()}
+    val filteredNilaiData = nilaiData.filter { it["kelas"] == selectedClass }.sortedBy { it["nama"].toString() }
+    val filteredAbsensiData = absensiData.filter { it["kelas"] == selectedClass }.sortedBy { it["nama"].toString() }
 
     Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
         Text(
@@ -2615,7 +2634,7 @@ fun ExportData(
         var expanded by remember { mutableStateOf(false) }
         Box {
             Button(onClick = { expanded = true }) {
-                Text("Select Class: $selectedClass")
+                Text("Pilih Kelas: $selectedClass")
             }
             DropdownMenu(
                 expanded = expanded,
@@ -2623,7 +2642,7 @@ fun ExportData(
             ) {
                 classOptions.forEach { classOption ->
                     DropdownMenuItem({
-                        Text("Class $classOption")
+                        Text("Kelas $classOption")
                     },onClick = {
                         selectedClass = classOption
                         expanded = false
@@ -2632,20 +2651,44 @@ fun ExportData(
             }
         }
 
-        // Button to export data to PDF
+        // Button to export nilai to PDF
         Button(
             onClick = {
-                exportDataToPDF(context, filteredStaffData)
+                exportType = "nilai"
             },
             modifier = Modifier
                 .align(Alignment.CenterHorizontally)
                 .padding(16.dp)
         ) {
-            Text("Export to PDF")
+            Text("Export Nilai to PDF")
+        }
+
+        // Button to export absensi to PDF
+        Button(
+            onClick = {
+                exportType = "absensi"
+            },
+            modifier = Modifier
+                .align(Alignment.CenterHorizontally)
+                .padding(16.dp)
+        ) {
+            Text("Export Absensi to PDF")
+        }
+
+        // Export data if available
+        LaunchedEffect(exportType) {
+            if (exportType == "nilai" && filteredNilaiData.isNotEmpty()) {
+                exportDataToPDF(context, filteredNilaiData, exportType!!)
+                exportType = null
+            } else if (exportType == "absensi" && filteredAbsensiData.isNotEmpty()) {
+                exportDataToPDF(context, filteredAbsensiData, exportType!!)
+                exportType = null
+            }
         }
     }
 }
-fun exportDataToPDF(context: Context, staffData: List<Map<String, Any>>) {
+
+fun exportDataToPDF(context: Context, staffData: List<Map<String, Any>>, type: String) {
     val pdfDocument = PdfDocument()
     val pageInfo = PdfDocument.PageInfo.Builder(595, 842, 1).create() // A4 size
     val paint = Paint().apply {
@@ -2667,9 +2710,28 @@ fun exportDataToPDF(context: Context, staffData: List<Map<String, Any>>) {
 
         canvas.drawText("Nama: ${data["nama"] ?: ""}", 50f, yPos, paint)
         yPos += 20f
-        canvas.drawText("Keterangan: ${data["keterangan"] ?: ""}", 50f, yPos, paint)
-        yPos += 20f
-        canvas.drawText("L/P: ${data["lp"] ?: ""}", 50f, yPos, paint)
+        canvas.drawText("Kelas: ${data["kelas"] ?: ""}", 50f, yPos, paint)
+
+        if (type == "absensi") {
+            yPos += 20f
+            canvas.drawText("Keterangan: ${data["keterangan"] ?: ""}", 50f, yPos, paint)
+            yPos += 20f
+            canvas.drawText("Semester: ${data["semester"] ?: ""}", 50f, yPos, paint)
+            yPos += 20f
+            canvas.drawText("Tanggal: ${data["tanggal"] ?: ""}", 50f, yPos, paint)
+        } else if (type == "nilai") {
+            yPos += 20f
+            canvas.drawText("Semester: ${data["semester"] ?: ""}", 50f, yPos, paint)
+            yPos += 20f
+            canvas.drawText("Peringkat: ${data["peringkat"] ?: ""}", 50f, yPos, paint)
+            yPos += 20f
+            val mataPelajaran = data["mata_pelajaran"] as? List<Map<String, Any>> ?: emptyList()
+            mataPelajaran.forEach { pelajaran ->
+                canvas.drawText("${pelajaran["nama"] ?: ""}: ${pelajaran["nilai"] ?: ""}", 50f, yPos, paint)
+                yPos += 20f
+            }
+        }
+
         yPos += 40f
     }
 
@@ -2677,7 +2739,7 @@ fun exportDataToPDF(context: Context, staffData: List<Map<String, Any>>) {
 
     val downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
     if (downloadsDir != null) {
-        val file = File(downloadsDir, "data_siswa.pdf")
+        val file = File(downloadsDir, "$type.pdf")
         try {
             val outputStream = FileOutputStream(file)
             pdfDocument.writeTo(outputStream)
@@ -2692,7 +2754,8 @@ fun exportDataToPDF(context: Context, staffData: List<Map<String, Any>>) {
         Toast.makeText(context, "Failed to access downloads directory", Toast.LENGTH_LONG).show()
     }
 }
-@OptIn(ExperimentalCoilApi::class)
+
+
 @Composable
 fun TambahSiswa(
     navController: NavController
