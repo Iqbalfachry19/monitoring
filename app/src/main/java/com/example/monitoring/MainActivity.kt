@@ -1625,12 +1625,14 @@ fun DataJadwalPelajaran(
                             color = Color(0xFFE3FEF7),
                             modifier = Modifier.weight(2f)
                         )
-                        Text(
-                            "Edit",
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = Color(0xFFE3FEF7),
-                            modifier = Modifier.weight(1f)
-                        )
+                        if (role == "admin") {
+                            Text(
+                                "Edit",
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = Color(0xFFE3FEF7),
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
                     }
 
                     val daysOfWeek = listOf("senin", "selasa", "rabu", "kamis", "jumat", "sabtu")
