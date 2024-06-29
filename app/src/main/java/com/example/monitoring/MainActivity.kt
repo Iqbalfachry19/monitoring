@@ -136,6 +136,7 @@ import kotlinx.coroutines.tasks.await
 import kotlinx.serialization.Serializable
 import java.io.File
 import java.io.FileOutputStream
+import java.util.Locale
 import java.util.UUID
 
 data class NavigationItem<T>(
@@ -2419,7 +2420,49 @@ fun DataJadwalKegiatan(
         }
     }
 }
+val monthIndexMap = mapOf(
+    "januari" to 1,
+    "februari" to 2,
+    "maret" to 3,
+    "april" to 4,
+    "mei" to 5,
+    "juni" to 6,
+    "juli" to 7,
+    "agustus" to 8,
+    "september" to 9,
+    "oktober" to 10,
+    "november" to 11,
+    "desember" to 12
+)
+fun parseTanggal(tanggal: String): Triple<List<Int>, List<String>, Int> {
+    val days = mutableListOf<Int>()
+    val months = mutableListOf<String>()
+    var year = 0
 
+    // Split the tanggal string by ", " or " dan "
+    val parts = tanggal.split(", ", " dan ")
+
+    parts.forEach { part ->
+        // Extract day and month
+        val regexResult = Regex("(\\d+) ([a-zA-Z]+)").find(part)
+        if (regexResult != null) {
+            val (dayStr, monthStr) = regexResult.destructured
+            val day = dayStr.toIntOrNull()
+            if (day != null) {
+                days.add(day)
+                months.add(monthStr)
+            }
+        }
+
+        // Extract year (assuming it's always at the end of the string)
+        val yearRegexResult = Regex("\\d{4}$").find(part)
+        if (yearRegexResult != null) {
+            year = yearRegexResult.value.toIntOrNull() ?: 0
+        }
+    }
+
+    return Triple(days, months, year)
+}
 @Composable
 fun  DataRekapan(
     navController: NavController,
@@ -2434,10 +2477,12 @@ fun  DataRekapan(
     val semesterOptions = listOf("1", "2")
     var selectedClass by remember { mutableStateOf(classOptions[0]) }
     var selectedSemester by remember { mutableStateOf(semesterOptions[0]) }
-    // Function to filter data based on selected class and semester
-    fun filterDataByClassAndSemester(dataList: List<Sextuple<String, String, String, String, String,String>>): List<Sextuple< String, String, String,String, String, String>> {
+    fun filterDataByClassAndSemester(dataList: List<Sextuple<String, String, String, String, String, String>>): List<Sextuple<String, String, String, String, String, String>> {
         return dataList.filter { (_, _, _, kelas, _, semester) ->
             kelas == selectedClass && semester == selectedSemester
+        }.sortedBy { item ->
+            val (_, months, _) = parseTanggal(item.third)
+            months.map { month -> monthIndexMap[month.toLowerCase(Locale.ROOT)] ?: 0 }.minOrNull()
         }
     }
 
