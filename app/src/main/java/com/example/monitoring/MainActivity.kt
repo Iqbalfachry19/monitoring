@@ -1558,7 +1558,7 @@ fun DataJadwalPelajaran(
     }
     Scaffold(
         floatingActionButton = {
-            if (role != "ortu") {
+            if(role != "ortu" && role != "guru 4" && role != "guru 5" && role != "guru 6") {
                 ExtendedFloatingActionButton(
                     onClick = {
                         // show snackbar as a suspend function
@@ -1803,7 +1803,7 @@ fun DataJadwalUjian(
     }
     Scaffold(
         floatingActionButton = {
-            if(role != "ortu") {
+            if(role != "ortu" && role != "guru 4" && role != "guru 5" && role != "guru 6") {
             ExtendedFloatingActionButton(
                 onClick = {
                     // show snackbar as a suspend function
@@ -2322,7 +2322,7 @@ fun DataJadwalKegiatan(
     }
     Scaffold(
         floatingActionButton = {
-            if (role != "ortu") {
+            if(role != "ortu" && role != "guru 4" && role != "guru 5" && role != "guru 6") {
                 ExtendedFloatingActionButton(
                     onClick = {
                         // show snackbar as a suspend function
