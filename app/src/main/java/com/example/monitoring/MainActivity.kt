@@ -1845,13 +1845,14 @@ fun DataJadwalUjian(
                     horizontalArrangement = Arrangement.End
                 ) {
 
-
-                    Text(
-                        "Edit",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = Color(0xFFE3FEF7),
-                        modifier = Modifier.padding(end = 42.dp)
-                    )
+                    if (role == "admin") {
+                        Text(
+                            "Edit",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = Color(0xFFE3FEF7),
+                            modifier = Modifier.padding(end = 42.dp)
+                        )
+                    }
                 }
                 // Display the data fetched from Firestore
                 filterDataByClassAndSemester(dataList).forEach { (id, nama, jam, kelas, hari, tanggal, semester) ->
