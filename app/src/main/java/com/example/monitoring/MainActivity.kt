@@ -1010,19 +1010,21 @@ fun DataGuruPage(
     }
     Scaffold(
         floatingActionButton = {
+if(role != "ortu") {
+    ExtendedFloatingActionButton(
+        onClick = {
+            // show snackbar as a suspend function
 
-            ExtendedFloatingActionButton(
-                onClick = {
-                    // show snackbar as a suspend function
-
-                    navController.navigate(Screen.TambahGuru)
-                }, containerColor = Color(0xFF77B0AA)) {
-                Text(
-                    "+",
-                    fontSize = 24.sp,
-                    color = Color(0xFFE3FEF7)
-                )
-            }
+            navController.navigate(Screen.TambahGuru)
+        }, containerColor = Color(0xFF77B0AA)
+    ) {
+        Text(
+            "+",
+            fontSize = 24.sp,
+            color = Color(0xFFE3FEF7)
+        )
+    }
+}
         },
     ) { innerPadding ->
 
@@ -1225,14 +1227,17 @@ fun DataSiswa(
     Scaffold(
 
         floatingActionButton = {
-            ExtendedFloatingActionButton(
-                onClick = {
-                    // show snackbar as a suspend function
-                    navController.navigate(Screen.TambahSiswa)
-                },
-                containerColor = Color(0xFF77B0AA)
-            ) { Text("+", fontSize = 24.sp, color = Color(0xFFE3FEF7)) }
-        },
+            if (role != "ortu") {
+                ExtendedFloatingActionButton(
+                    onClick = {
+                        // show snackbar as a suspend function
+                        navController.navigate(Screen.TambahSiswa)
+                    },
+                    containerColor = Color(0xFF77B0AA)
+                ) { Text("+", fontSize = 24.sp, color = Color(0xFFE3FEF7)) }
+
+            }
+        }
     ) { innerPadding ->
         Column(
             modifier = Modifier
@@ -1547,15 +1552,21 @@ fun DataJadwalPelajaran(
     }
     Scaffold(
         floatingActionButton = {
+            if (role != "ortu") {
+                ExtendedFloatingActionButton(
+                    onClick = {
+                        // show snackbar as a suspend function
 
-            ExtendedFloatingActionButton(
-                onClick = {
-                    // show snackbar as a suspend function
-
-                    navController.navigate(Screen.TambahJadwalPelajaran)
+                        navController.navigate(Screen.TambahJadwalPelajaran)
+                    }, containerColor = Color(0xFF77B0AA)) {
+                    Text(
+                        "+",
+                        fontSize = 24.sp,
+                        color = Color(0xFFE3FEF7)
+                    )
                 }
-                , containerColor = Color(0xFF77B0AA) ) { Text("+", fontSize = 24.sp, color = Color(0xFFE3FEF7)) }
-        },
+            }
+        }
     ) { innerPadding ->
         Column(modifier = Modifier
             .padding(innerPadding)
@@ -1786,7 +1797,7 @@ fun DataJadwalUjian(
     }
     Scaffold(
         floatingActionButton = {
-
+            if(role != "ortu") {
             ExtendedFloatingActionButton(
                 onClick = {
                     // show snackbar as a suspend function
@@ -1794,7 +1805,8 @@ fun DataJadwalUjian(
                     navController.navigate(Screen.TambahJadwalUjian)
                 }
                 , containerColor = Color(0xFF77B0AA) ) { Text("+", fontSize = 24.sp, color = Color(0xFFE3FEF7)) }
-        },
+        }
+        }
     ) { innerPadding ->
         Column(modifier = Modifier
             .padding(innerPadding)
@@ -2050,15 +2062,21 @@ fun DataNilai(
     }
     Scaffold(
         floatingActionButton = {
+            if (role != "ortu") {
+                ExtendedFloatingActionButton(
+                    onClick = {
+                        // show snackbar as a suspend function
 
-            ExtendedFloatingActionButton(
-                onClick = {
-                    // show snackbar as a suspend function
-
-                    navController.navigate(Screen.TambahNilai)
+                        navController.navigate(Screen.TambahNilai)
+                    }, containerColor = Color(0xFF77B0AA)) {
+                    Text(
+                        "+",
+                        fontSize = 24.sp,
+                        color = Color(0xFFE3FEF7)
+                    )
                 }
-                , containerColor = Color(0xFF77B0AA) ) { Text("+", fontSize = 24.sp, color = Color(0xFFE3FEF7)) }
-        },
+            }
+        }
     ) { innerPadding ->
         Column(modifier = Modifier
             .padding(innerPadding)
@@ -2298,15 +2316,21 @@ fun DataJadwalKegiatan(
     }
     Scaffold(
         floatingActionButton = {
+            if (role != "ortu") {
+                ExtendedFloatingActionButton(
+                    onClick = {
+                        // show snackbar as a suspend function
 
-            ExtendedFloatingActionButton(
-                onClick = {
-                    // show snackbar as a suspend function
-
-                    navController.navigate(Screen.TambahJadwalKegiatan)
+                        navController.navigate(Screen.TambahJadwalKegiatan)
+                    }, containerColor = Color(0xFF77B0AA)) {
+                    Text(
+                        "+",
+                        fontSize = 24.sp,
+                        color = Color(0xFFE3FEF7)
+                    )
                 }
-                , containerColor = Color(0xFF77B0AA) ) { Text("+", fontSize = 24.sp, color = Color(0xFFE3FEF7)) }
-        },
+            }
+        }
     ) { innerPadding ->
 
         LazyColumn(
@@ -2467,15 +2491,21 @@ fun  DataRekapan(
     }
     Scaffold(
         floatingActionButton = {
+            if (role != "ortu") {
+                ExtendedFloatingActionButton(
+                    onClick = {
+                        // show snackbar as a suspend function
 
-            ExtendedFloatingActionButton(
-                onClick = {
-                    // show snackbar as a suspend function
-
-                    navController.navigate(Screen.TambahRekapan)
+                        navController.navigate(Screen.TambahRekapan)
+                    }, containerColor = Color(0xFF77B0AA)) {
+                    Text(
+                        "+",
+                        fontSize = 24.sp,
+                        color = Color(0xFFE3FEF7)
+                    )
                 }
-                , containerColor = Color(0xFF77B0AA) ) { Text("+", fontSize = 24.sp, color = Color(0xFFE3FEF7)) }
-        },
+            }
+        }
     ) { innerPadding ->
         Column(modifier = Modifier
             .padding(innerPadding)
