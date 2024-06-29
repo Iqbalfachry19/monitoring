@@ -2557,7 +2557,7 @@ fun  DataRekapan(
         ) {
             item{
                   // Display the data fetched from Firestore
-                filterDataByClassAndSemester(dataList).forEach  { (id, nama, jam, kelas, hari, semester) ->
+                filterDataByClassAndSemester(dataList).forEach  { (id, nama, tanggal, kelas, keterangan, semester) ->
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.padding(8.dp)
@@ -2588,14 +2588,14 @@ fun  DataRekapan(
 
                                 Spacer(modifier = Modifier.height(4.dp))
                                 Text(
-                                    text = "Tanggal: $jam",
+                                    text = "Tanggal: $tanggal",
                                     style = MaterialTheme.typography.bodyLarge,
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis
                                 )
                                 Spacer(modifier = Modifier.height(4.dp))
                                 Text(
-                                    text = "Keterangan: $hari",
+                                    text = "Keterangan: $keterangan",
                                     style = MaterialTheme.typography.bodyLarge,
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis
