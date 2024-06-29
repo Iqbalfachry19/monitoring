@@ -158,7 +158,8 @@ sealed interface Screen {
 
     @Serializable
     data class TeacherDashboard(val role: String) : Screen
-
+    @Serializable
+    data class OrtuDashboard(val role: String) : Screen
     @Serializable
     data class Settings(val role: String) : Screen
 
@@ -380,6 +381,13 @@ class MainActivity : ComponentActivity() {
                             TeacherDashboard(navController,it,role)
                         }
                     }
+                    composable<Screen.OrtuDashboard> {
+                            backStackEntry ->
+                        val role = backStackEntry.toRoute<Screen.OrtuDashboard>().role
+                        ScreenWithScaffold(navController,role) {
+                            OrtuDashboard(navController,it,role)
+                        }
+                    }
                 }
             }
         }
@@ -390,7 +398,7 @@ fun NavBackStackEntry?.fromRoute(role: String): Screen {
         ?.substringAfterLast(".")?.let {
             when (it) {
                 Screen.TeacherDashboard::class.simpleName -> return Screen.TeacherDashboard(role)
-
+                Screen.OrtuDashboard::class.simpleName -> return Screen.OrtuDashboard(role)
                 Screen.AdminDashboard::class.simpleName -> return Screen.AdminDashboard(role)
                 Screen.Settings::class.simpleName -> return Screen.Settings(role)
                 else -> return Screen.AdminDashboard(role)
@@ -404,8 +412,12 @@ fun ScreenWithScaffold(navController: NavController,role: String, content: @Comp
 
     val items1 = listOf(
         NavigationItem(
-            route = if (role == "admin") Screen.AdminDashboard(role) else Screen.TeacherDashboard(role) ,
-
+            route = when (role) {
+                "admin" -> Screen.AdminDashboard(role)
+                "guru 4", "guru 5", "guru 6" -> Screen.TeacherDashboard(role)
+                "ortu" -> Screen.OrtuDashboard(role)
+                else -> Screen.AdminDashboard(role)
+            },
             title= "Home",
             selectedIcon = Icons.Filled.Home,
             unselectedIcon = Icons.Outlined.Home,
@@ -507,6 +519,11 @@ fun LoginPage(navController: NavController) {
             .addOnSuccessListener { document ->
                 if (document != null) {
                     when (val role = document.getString("role")) {
+                        "ortu" -> {
+                            navController.navigate(Screen.OrtuDashboard(role)) {
+                                popUpTo(Screen.Login) { inclusive = true }
+                            }
+                        }
                         "admin" -> {
                             navController.navigate(Screen.AdminDashboard(role)) {
                                 popUpTo(Screen.Login) { inclusive = true }
@@ -2091,14 +2108,16 @@ fun DataNilai(
                         .padding(vertical = 8.dp, horizontal = 16.dp),
                     horizontalArrangement = Arrangement.End
                 ) {
-
-                    Text(
-                        "Edit",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = Color(0xFFE3FEF7),
-                        modifier = Modifier.padding(end = 42.dp)
-                    )
+                    if (role == "admin") {
+                        Text(
+                            "Edit",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = Color(0xFFE3FEF7),
+                            modifier = Modifier.padding(end = 42.dp)
+                        )
+                    }
                 }
+
                 // Display the data fetched from Firestore
                 filterDataByClassAndSemester(dataList).forEach { (id, nama, matapelajaran, semester, kelas, peringkat,rata) ->
                     Row(
@@ -4577,7 +4596,108 @@ fun uploadImageToFirebase(uri: Uri, callback: (String) -> Unit) {
         Log.e("FirebaseStorage", "Failed to upload image: ${exception.message}")
     }
 }
+@Composable
+fun OrtuDashboard(
+    navController: NavController,
+    it: PaddingValues,
+    role: String
+) {
 
+
+
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(it)
+        ,
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically){
+            Text(text = "Dashboard Ortu", style = MaterialTheme.typography.headlineLarge, color = Color(0xFFE3FEF7))
+            Spacer(modifier = Modifier.width(65.dp))
+
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+        val cards= listOf(CardItem(
+            title = "Data Guru",
+            route = Screen.DataGuru(role)
+        ),
+            CardItem(
+                title = "Export Data",
+                route = Screen.ExportData(role),
+                icon = Icons.Filled.Share
+            ),
+            CardItem(
+                title = "Data Siswa",
+                route = Screen.DataSiswa(role)
+            ),
+            CardItem(
+                title = "Data Jadwal Pelajaran",
+                route =Screen.DataJadwalPelajaran(role),
+                icon = Icons.Filled.DateRange
+            ),
+            CardItem(
+                title = "Data Jadwal Ujian",
+                route =Screen.DataJadwalUjian(role),
+                icon = Icons.Filled.DateRange
+            ),
+            CardItem(
+                title = "Data Nilai dan Peringkat Siswa",
+                route =Screen.DataNilai(role),
+                icon = Icons.Filled.Star
+            ),
+            CardItem(
+                title = "Data Kegiatan",
+                route =Screen.DataJadwalKegiatan(role),
+                icon = Icons.Filled.DateRange
+            ),
+            CardItem(
+                title = "Data Rekapan Kehadiran Siswa",
+                route =Screen.DataRekapan(role),
+                icon = Icons.Filled.Face
+            ),
+        )
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(2)
+        ) {
+            items(cards) {
+                Card(
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.tertiary,
+
+                        ),
+                    modifier = Modifier
+                        .size(width = 200.dp, height = 100.dp)
+                        .clickable { navController.navigate(it.route) }
+                        .padding(8.dp)
+                ) {
+                    Column(
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        it.icon?.let { it1 ->
+                            Icon(
+                                imageVector = it1,
+                                contentDescription = "Person"
+                            )
+                        }
+                        Text(
+                            text = it.title,
+                            textAlign = TextAlign.Center
+                        )
+                    }   }
+            }
+
+        }
+
+    }
+//
+
+
+}
 @Composable
 fun TeacherDashboard(
     navController: NavController,
@@ -4586,64 +4706,6 @@ fun TeacherDashboard(
 ) {
 
 
-//    val items = listOf(
-//
-//        NavigationBottomItem(
-//            title= "Data Guru",
-//            selectedIcon = Icons.Filled.Person,
-//            unselectedIcon = Icons.Outlined.Person,
-//            hasNews =false
-//        ),
-//
-//        NavigationBottomItem(
-//            title= "Data Staff",
-//            selectedIcon = Icons.Filled.Person,
-//            unselectedIcon = Icons.Outlined.Person
-//            ,
-//            hasNews =false
-//        ),
-//        NavigationBottomItem(
-//            title= "Data Siswa",
-//            selectedIcon = Icons.Filled.Person,
-//            unselectedIcon = Icons.Outlined.Person,
-//            hasNews =false
-//        ),
-//        NavigationItem(
-//            title= "Data \nJadwal \nPelajaran",
-//            selectedIcon = Icons.Filled.Person,
-//            unselectedIcon = Icons.Outlined.Person,
-//            hasNews =false
-//        ),
-//        NavigationItem(
-//            title= "Data \nJadwal Ujian",
-//            selectedIcon = Icons.Filled.Person,
-//            unselectedIcon = Icons.Outlined.Person,
-//            hasNews =false
-//        ),NavigationItem(
-//            title= "Data \nNilai \ndan \nPeringkat\n Siswa",
-//            selectedIcon = Icons.Filled.Person,
-//            unselectedIcon = Icons.Outlined.Person,
-//            hasNews =false
-//        ),NavigationItem(
-//            title= "Data \nPerkembangan \nNilai",
-//            selectedIcon = Icons.Filled.Person,
-//            unselectedIcon = Icons.Outlined.Person,
-//            hasNews =false
-//        ),NavigationItem(
-//            title= "Data \nRekapan \nKehadiran Siswa",
-//            selectedIcon = Icons.Filled.Person,
-//            unselectedIcon = Icons.Outlined.Person,
-//            hasNews =false
-//        ),
-//    )
-
-
-//        Row {
-//
-//            if(showNavigationRail){
-//                NavigationSideBar(items = items, selectedItemIndex =selectedItemIndex, onNavigate = {selectedItemIndex = it},padding=it )
-//
-//            }
 
     // Implement admin dashboard UI
     Column(
