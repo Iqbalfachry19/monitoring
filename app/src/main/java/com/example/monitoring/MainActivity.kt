@@ -678,6 +678,11 @@ fun handleLogin(
                                                 popUpTo(Screen.Login) { inclusive = true }
                                             }
                                         }
+                                        "ortu" -> {
+                                            navController.navigate(Screen.OrtuDashboard(role)) {
+                                                popUpTo(Screen.Login) { inclusive = true }
+                                            }
+                                        }
                                         "guru 4", "guru 5", "guru 6" -> {
                                             navController.navigate(Screen.TeacherDashboard(role)) {
                                                 popUpTo(Screen.Login) { inclusive = true }
