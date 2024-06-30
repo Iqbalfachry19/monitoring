@@ -1,12 +1,14 @@
 package com.example.monitoring
 
 import android.app.Activity
+import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Paint
 import android.graphics.pdf.PdfDocument
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.util.Log
@@ -115,6 +117,7 @@ import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
@@ -2687,12 +2690,13 @@ fun  DataRekapan(
 
 
 
-@OptIn(ExperimentalCoilApi::class)
+
 @Composable
 fun ExportData(
     navController: NavController,
     role: String
 ) {
+    val viewModel = viewModel<MainViewModel>()
     val context = LocalContext.current as Activity
     val firestore = FirebaseUtil.firestore
     var nilaiData by remember { mutableStateOf<List<Map<String, Any>>>(emptyList()) }
@@ -2700,6 +2704,50 @@ fun ExportData(
     var selectedClass by remember { mutableStateOf("4") }
     var exportType by remember { mutableStateOf<String?>(null) }
     val classOptions = listOf("4", "5", "6")
+    val pdfSaveSuccess = remember { mutableStateOf(false) }
+    val savedFilePath = remember { mutableStateOf<String?>(null) }
+
+    // Function to request storage permission
+    val permissionsToRequest = if (Build.VERSION.SDK_INT >= 33) {
+        arrayOf(
+            android.Manifest.permission.READ_MEDIA_AUDIO,
+            android.Manifest.permission.READ_MEDIA_VIDEO,
+            android.Manifest.permission.READ_MEDIA_IMAGES
+        )
+    } else {
+        arrayOf(
+            android.Manifest.permission.READ_EXTERNAL_STORAGE,
+            android.Manifest.permission.WRITE_EXTERNAL_STORAGE,
+        )
+    }
+
+    val multiplePermissionResultLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestMultiplePermissions(),
+        onResult = { perms ->
+            permissionsToRequest.forEach { permission ->
+                viewModel.onPermissionResult(
+                    permission = permission,
+                    isGranted = perms[permission] == true
+                )
+            }
+        }
+    )
+
+    // Handle permission requests on initial launch
+    LaunchedEffect(Unit) {
+        multiplePermissionResultLauncher.launch(permissionsToRequest)
+    }
+
+    // Function to handle PDF export success
+    val handleExportSuccess: (File) -> Unit = { file ->
+        pdfSaveSuccess.value = true
+        savedFilePath.value = file.absolutePath
+    }
+
+    // Function to handle PDF export failure
+    val handleExportError: (String) -> Unit = { errorMessage ->
+        Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show()
+    }
 
     // Fetch data based on export type and selected class
     LaunchedEffect(exportType, selectedClass) {
@@ -2725,10 +2773,53 @@ fun ExportData(
     val filteredNilaiData = nilaiData.filter { it["kelas"] == selectedClass }.sortedBy { it["nama"].toString() }
     val filteredAbsensiData = absensiData.filter { it["kelas"] == selectedClass }.sortedBy { it["nama"].toString() }
 
+    // Show AlertDialog on PDF save success
+    if (pdfSaveSuccess.value) {
+        AlertDialog(
+            onDismissRequest = {
+                pdfSaveSuccess.value = false
+            },
+            title = { Text("File Saved") },
+            text = {
+                Column {
+                    Text("PDF saved to ${savedFilePath.value}")
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Button(
+                            onClick = {
+                                // Implement view action if needed
+                                openPdfFile(context, savedFilePath.value)
+                                pdfSaveSuccess.value = false
+                            }
+                        ) {
+                            Text("View")
+                        }
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Button(
+                            onClick = {
+                                // Implement ignore action if needed
+                                pdfSaveSuccess.value = false
+                            }
+                        ) {
+                            Text("Ignore")
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+
+            }
+        )
+    }
+
+    // Composable UI
     Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
         Text(
             text = "Export Data Siswa",
-            modifier = Modifier.align(Alignment.CenterHorizontally),
+            modifier = Modifier.align(Alignment.CenterHorizontally).padding(bottom = 200.dp),
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold
         )
@@ -2758,6 +2849,7 @@ fun ExportData(
         Button(
             onClick = {
                 exportType = "nilai"
+                exportDataToPDF(context, filteredNilaiData, exportType!!, handleExportSuccess, handleExportError)
             },
             modifier = Modifier
                 .align(Alignment.CenterHorizontally)
@@ -2770,6 +2862,7 @@ fun ExportData(
         Button(
             onClick = {
                 exportType = "absensi"
+                exportDataToPDF(context, filteredAbsensiData, exportType!!, handleExportSuccess, handleExportError)
             },
             modifier = Modifier
                 .align(Alignment.CenterHorizontally)
@@ -2777,21 +2870,46 @@ fun ExportData(
         ) {
             Text("Export Absensi to PDF")
         }
-
-        // Export data if available
-        LaunchedEffect(exportType) {
-            if (exportType == "nilai" && filteredNilaiData.isNotEmpty()) {
-                exportDataToPDF(context, filteredNilaiData, exportType!!)
-                exportType = null
-            } else if (exportType == "absensi" && filteredAbsensiData.isNotEmpty()) {
-                exportDataToPDF(context, filteredAbsensiData, exportType!!)
-                exportType = null
-            }
-        }
     }
 }
 
-fun exportDataToPDF(context: Context, staffData: List<Map<String, Any>>, type: String) {
+fun openPdfFile(context: Context, filePath: String?) {
+    if (filePath.isNullOrEmpty()) {
+        Toast.makeText(context, "File path is null or empty", Toast.LENGTH_SHORT).show()
+        return
+    }
+
+    val file = File(filePath)
+    if (!file.exists()) {
+        Toast.makeText(context, "File does not exist", Toast.LENGTH_SHORT).show()
+        return
+    }
+
+    val uri = FileProvider.getUriForFile(
+        context,
+        context.packageName + ".provider",
+        file
+    )
+
+    val intent = Intent(Intent.ACTION_VIEW).apply {
+        setDataAndType(uri, "application/pdf")
+        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+    }
+
+    try {
+        context.startActivity(intent)
+    } catch (e: ActivityNotFoundException) {
+        Toast.makeText(context, "No PDF viewer found", Toast.LENGTH_SHORT).show()
+    }
+}
+
+fun exportDataToPDF(
+    context: Context,
+    staffData: List<Map<String, Any>>,
+    type: String,
+    onSuccess: (file: File) -> Unit,
+    onError: (String) -> Unit
+) {
     val pdfDocument = PdfDocument()
     val pageInfo = PdfDocument.PageInfo.Builder(595, 842, 1).create() // A4 size
     val paint = Paint().apply {
@@ -2848,15 +2966,17 @@ fun exportDataToPDF(context: Context, staffData: List<Map<String, Any>>, type: S
             pdfDocument.writeTo(outputStream)
             pdfDocument.close()
             outputStream.close()
-            Toast.makeText(context, "PDF saved to ${file.absolutePath}", Toast.LENGTH_LONG).show()
+            onSuccess(file) // Invoke success callback
         } catch (e: Exception) {
             pdfDocument.close()
-            Toast.makeText(context, "Failed to save PDF: ${e.message}", Toast.LENGTH_LONG).show()
+            onError("Failed to save PDF: ${e.message}")
         }
     } else {
-        Toast.makeText(context, "Failed to access downloads directory", Toast.LENGTH_LONG).show()
+        onError("Failed to access downloads directory")
     }
 }
+
+
 
 
 @Composable
