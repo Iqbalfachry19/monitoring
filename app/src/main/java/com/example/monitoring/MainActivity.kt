@@ -2849,8 +2849,12 @@ fun ExportData(
         Button(
             onClick = {
                 exportType = "nilai"
-                exportDataToPDF(context, filteredNilaiData, exportType!!, handleExportSuccess, handleExportError)
-            },
+                if (role == "admin") {
+                    exportDataToPDF(context, filteredNilaiData, exportType!!, selectedClass, handleExportSuccess, handleExportError)
+                } else {
+                    Toast.makeText(context, "Only admin can perform export", Toast.LENGTH_SHORT).show()
+                }
+                      },
             modifier = Modifier
                 .align(Alignment.CenterHorizontally)
                 .padding(16.dp)
@@ -2862,8 +2866,12 @@ fun ExportData(
         Button(
             onClick = {
                 exportType = "absensi"
-                exportDataToPDF(context, filteredAbsensiData, exportType!!, handleExportSuccess, handleExportError)
-            },
+                if (role == "admin") {
+                    exportDataToPDF(context, filteredNilaiData, exportType!!, selectedClass, handleExportSuccess, handleExportError)
+                } else {
+                    Toast.makeText(context, "Only admin can perform export", Toast.LENGTH_SHORT).show()
+                }
+                      },
             modifier = Modifier
                 .align(Alignment.CenterHorizontally)
                 .padding(16.dp)
@@ -2907,6 +2915,7 @@ fun exportDataToPDF(
     context: Context,
     staffData: List<Map<String, Any>>,
     type: String,
+    selectedClass:String,
     onSuccess: (file: File) -> Unit,
     onError: (String) -> Unit
 ) {
@@ -2957,10 +2966,11 @@ fun exportDataToPDF(
     }
 
     pdfDocument.finishPage(currentPage)
+    val safeFilename = "export_${type}_kelas_${selectedClass}.pdf"
 
     val downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
     if (downloadsDir != null) {
-        val file = File(downloadsDir, "$type.pdf")
+        val file = File(downloadsDir, safeFilename)
         try {
             val outputStream = FileOutputStream(file)
             pdfDocument.writeTo(outputStream)
